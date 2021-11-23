@@ -67,6 +67,21 @@ class Personne
      */
     private $commentaire;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=CategoriePersonne::class)
+     */
+    private $categorie;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Table::class, inversedBy="personnes")
+     */
+    private $table;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"})
+     */
+    private $conjoint;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -188,6 +203,42 @@ class Personne
     public function setCommentaire(?string $commentaire): self
     {
         $this->commentaire = $commentaire;
+
+        return $this;
+    }
+
+    public function getCategorie(): ?CategoriePersonne
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?CategoriePersonne $categorie): self
+    {
+        $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    public function getTable(): ?Table
+    {
+        return $this->table;
+    }
+
+    public function setTable(?Table $table): self
+    {
+        $this->table = $table;
+
+        return $this;
+    }
+
+    public function getConjoint(): ?self
+    {
+        return $this->conjoint;
+    }
+
+    public function setConjoint(?self $conjoint): self
+    {
+        $this->conjoint = $conjoint;
 
         return $this;
     }
