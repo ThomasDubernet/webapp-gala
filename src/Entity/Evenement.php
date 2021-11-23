@@ -37,6 +37,16 @@ class Evenement
      */
     private $adresse;
 
+    /**
+     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"})
+     */
+    private $plan;
+
+    /**
+     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"})
+     */
+    private $imageTicket;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +96,30 @@ class Evenement
     public function setAdresse(?string $adresse): self
     {
         $this->adresse = $adresse;
+
+        return $this;
+    }
+
+    public function getPlan(): ?MediaObject
+    {
+        return $this->plan;
+    }
+
+    public function setPlan(?MediaObject $plan): self
+    {
+        $this->plan = $plan;
+
+        return $this;
+    }
+
+    public function getImageTicket(): ?MediaObject
+    {
+        return $this->imageTicket;
+    }
+
+    public function setImageTicket(?MediaObject $imageTicket): self
+    {
+        $this->imageTicket = $imageTicket;
 
         return $this;
     }

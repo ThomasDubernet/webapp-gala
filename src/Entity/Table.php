@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TableRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -32,6 +34,21 @@ class Table
      * @ORM\Column(type="integer")
      */
     private $nombrePlacesMax;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=CategorieTable::class)
+     */
+    private $categorie;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Personne::class, mappedBy="attributionTable")
+     */
+    private $personnes;
+
+    public function __construct()
+    {
+        $this->personnes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -70,6 +87,48 @@ class Table
     public function setNombrePlacesMax(int $nombrePlacesMax): self
     {
         $this->nombrePlacesMax = $nombrePlacesMax;
+
+        return $this;
+    }
+
+    public function getCategorie(): ?CategorieTable
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?CategorieTable $categorie): self
+    {
+        $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Personne[]
+     */
+    public function getPersonnes(): Collection
+    {
+        return $this->personnes;
+    }
+
+    public function addPersonne(Personne $personne): self
+    {
+        if (!$this->personnes->contains($personne)) {
+            $this->personnes[] = $personne;
+            $personne->setAttributionTable($this);
+        }
+
+        return $this;
+    }
+
+    public function removePersonne(Personne $personne): self
+    {
+        if ($this->personnes->removeElement($personne)) {
+            // set the owning side to null (unless already changed)
+            if ($personne->getAttributionTable() === $this) {
+                $personne->setAttributionTable(null);
+            }
+        }
 
         return $this;
     }
