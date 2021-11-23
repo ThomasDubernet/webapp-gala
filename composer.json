@@ -45,6 +45,7 @@
         "twig/twig": "^2.12|^3.0"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
         "phpunit/phpunit": "^9.5",
         "symfony/browser-kit": "5.3.*",
         "symfony/css-selector": "5.3.*",
@@ -86,6 +87,19 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "prepare": [
+            "symfony console doctrine:database:drop --if-exists --force",
+            "symfony console doctrine:database:create",
+            "symfony console d:s:u --force",
+            "symfony console doctrine:fixtures:load -n"
+        ],
+        "upmigration": [
+            "symfony console doctrine:database:drop --if-exists --force",
+            "symfony console d:d:c",
+            "symfony console make:migration",
+            "symfony console d:m:m",
+            "symfony console doctrine:fixtures:load -n"
         ]
     },
     "conflict": {
