@@ -1,0 +1,28 @@
+.custom-table {
+  width: 100px;
+  height: 100px;
+  background: #000000;
+  border: 2px solid black;
+  border-radius: 50%;
+  position: relative;
+  margin: 25px;
+  color: white;
+
+  .number {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .number-max {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}

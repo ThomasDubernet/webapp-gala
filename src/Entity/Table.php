@@ -41,7 +41,7 @@ class Table
     private $categorie;
 
     /**
-     * @ORM\OneToMany(targetEntity=Personne::class, mappedBy="attributionTable")
+     * @ORM\OneToMany(targetEntity=Personne::class, mappedBy="table")
      */
     private $personnes;
 
@@ -115,7 +115,7 @@ class Table
     {
         if (!$this->personnes->contains($personne)) {
             $this->personnes[] = $personne;
-            $personne->setAttributionTable($this);
+            $personne->setTable($this);
         }
 
         return $this;
@@ -125,8 +125,8 @@ class Table
     {
         if ($this->personnes->removeElement($personne)) {
             // set the owning side to null (unless already changed)
-            if ($personne->getAttributionTable() === $this) {
-                $personne->setAttributionTable(null);
+            if ($personne->getTable() === $this) {
+                $personne->setTable(null);
             }
         }
 

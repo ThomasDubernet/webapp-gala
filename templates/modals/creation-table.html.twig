@@ -1,12 +1,17 @@
 <div class="modal fade" id="creationTableModal" tabindex="-1" aria-labelledby="creationTableModalLabel" aria-hidden="true" >
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Création d'une Table</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          formulaire de créa table
+          {{ form_start(table_form) }}
+            {{ form_row(table_form.nom) }}
+            {{ form_row(table_form.numero) }}
+            {{ form_row(table_form.nombrePlacesMax) }}
+            {{ form_row(table_form.categorie) }}
+          {{ form_end(table_form) }}
         </div>
       </div>
     </div>

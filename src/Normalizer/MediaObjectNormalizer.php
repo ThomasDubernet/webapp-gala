@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Serializer;
+namespace App\Normalizer;
 
 use App\Entity\MediaObject;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
