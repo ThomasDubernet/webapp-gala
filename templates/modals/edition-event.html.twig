@@ -1,12 +1,19 @@
 <div class="modal fade" id="editionEventModal" tabindex="-1" aria-labelledby="editionEventModalLabel" aria-hidden="true" >
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalLabel">Edition de l'évènement</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          formulaire de créa event
+          {{ form_start(event_form) }}
+              {{ form_row(event_form.nom) }}
+              {{ form_row(event_form.nomSalle) }}
+              {{ form_row(event_form.date) }}
+              {{ form_row(event_form.adresse) }}
+              {{ form_row(event_form.plan) }}
+              {{ form_row(event_form.imageTicket) }}
+          {{ form_end(event_form) }}
         </div>
       </div>
     </div>

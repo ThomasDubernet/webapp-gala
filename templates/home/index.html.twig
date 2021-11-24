@@ -3,5 +3,17 @@
 {% block title %}Reservation BERTH{% endblock %}
 
 {% block body %}
-
+  <h1>All Tables</h1>
+  <div class="d-flex">
+    {% for table in all_tables %}
+      <div class="custom-table" style="background:{{table.categorie.couleur}};">
+        <p class="number">N°{{table.numero}}</p>
+        <p class="number-max">
+        {{table.personnes.count}} / {{table.nombrePlacesMax}}
+        </p>
+      </div>
+    {% endfor %}
+  </div>
+  <h1>All Personnes</h1>
+  {{dump(all_personnes)}}
 {% endblock %}
