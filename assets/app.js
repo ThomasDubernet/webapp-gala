@@ -14,3 +14,5 @@ import './bootstrap';
 import { Tooltip, Toast, Popover } from 'bootstrap'
 
 import "bootstrap-icons/font/bootstrap-icons.css";
+
+import "./components/search.js"
