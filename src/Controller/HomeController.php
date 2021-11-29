@@ -31,23 +31,7 @@ class HomeController extends AbstractController
      */
     public function index(Request $request): Response
     {
-        $newTable = new Table();
-        $newPersonne = new Personne();
         $newEvent = new Evenement();
-
-        $tableForm = $this->createForm(TableType::class, $newTable);
-        $tableForm->handleRequest($request);
-        if ($tableForm->isSubmitted() && $tableForm->isValid()) {
-            $this->em->persist($newTable);
-            $this->em->flush();
-        }
-
-        $personneForm = $this->createForm(PersonneType::class, $newPersonne);
-        $personneForm->handleRequest($request);
-        if ($personneForm->isSubmitted() && $personneForm->isValid()) {
-            $this->em->persist($newPersonne);
-            $this->em->flush();
-        }
 
         $allEvents = $this->em->getRepository(Evenement::class)->findAll();
         $eventForm = $this->createForm(EventType::class, count($allEvents) > 0 ? $allEvents[0] : $newEvent);
@@ -62,8 +46,6 @@ class HomeController extends AbstractController
         $allEvents = $this->em->getRepository(Evenement::class)->findAll();
 
         return $this->render('home/index.html.twig', [
-            'table_form' => $tableForm->createView(),
-            'personne_form' => $personneForm->createView(),
             'event_form' => $eventForm->createView(),
             'all_tables' => $allTables,
             'all_personnes' => $allPersonnes,
