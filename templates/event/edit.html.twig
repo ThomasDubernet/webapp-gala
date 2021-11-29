@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Reservation BERTH - Edition de l'évènement{% endblock %}
+
+{% block body %}
+    <h1>Edition de l'évènement</h1>
+        <a href="{{ path('home') }}">Retour à l'accueil'</a>
+    
+    {{ include('event/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+
+{% endblock %}

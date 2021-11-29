@@ -3,59 +3,12 @@
 {% block title %}Reservation BERTH - Edition d'une personne{% endblock %}
 
 {% block body %}
-    {{ form_start(form) }}
-        <div class="row">
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-6">
-                        {{ form_row(form.prenom) }}
-                    </div>
-                    <div class="col-6">
-                        {{ form_row(form.nom) }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        {{ form_row(form.email) }}
-                    </div>
-                    <div class="col-6">
-                        {{ form_row(form.telephone) }}
-                    </div>
-                </div>
-            {{ form_row(form.adresse) }}
-            </div>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-6">
-                        {{ form_row(form.montantBillet) }}
-                    </div>
-                    <div class="col-6">
-                        {{ form_row(form.montantPaye) }}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-6">
-                        {{ form_row(form.dateReglement) }}
-                    </div>
-                    <div class="col-6">
-                        {{ form_row(form.moyenPaiement) }}
-                    </div>
-                </div>
-            {# {{ form_row(form.conjoint) }} #}
-            </div>
-        </div>
+    <h1>Edition d'une personne</h1>
+    <div class="d-flex align-items-center justify-content-between">
+        <a href="{{ path('personne_index') }}">Retour à la liste</a>
+        {{ include('personne/_delete_form.html.twig') }}
+    </div>
+    
+    {{ include('personne/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
 
-        <div class="col-8 m-auto">
-            {{ form_row(form.commentaire) }}
-        </div>
-
-        <div class="row">
-            <div class="col-6">
-            {{ form_row(form.categorie) }}
-            </div>
-            <div class="col-6">
-            {{ form_row(form.table) }}
-            </div>
-        </div>
-    {{ form_end(form) }}
 {% endblock %}

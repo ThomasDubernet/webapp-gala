@@ -25,7 +25,7 @@ return (
               </button>
               <div className="dropdown-menu" aria-labelledby="dropdownPersonneButton">
                 <div className="d-flex align-items-center flex-column">
-                    <a className="m-2 dropdown-item" href={"/personnes/" + id}>Editer la fiche</a>
+                    <a className="m-2 dropdown-item" href={"/personne/" + id + "/edit"}>Editer la fiche</a>
                     <a className="m-2 dropdown-item" href="#">Renvoyer le billet</a>
                     <a className="m-2 dropdown-item" href="#">Imprimer le billet</a>
                     <hr className="w-100" />
@@ -44,7 +44,7 @@ return (
 const  Search = () => {
   const { items: personnes, load, loading } = useGetMany('personnes')
   const [ filteredStudents, setFilteredStudents ] = useState([])
-  const [ activeModal, setActiveModal] = useState(true)
+  const [ activeModal, setActiveModal] = useState(false)
 
   useEffect(() => {
     load()
@@ -65,7 +65,7 @@ const  Search = () => {
 
   return (
     <React.Fragment>
-      <input type="text" onFocus={() => setActiveModal(true)} onChange={handleSearch} />
+      <input className="form-control me-2" type="search" placeholder="Rechercher" aria-label="Rechercher" onFocus={() => setActiveModal(true)} onChange={handleSearch} />
       {activeModal &&
         <div className="modal-results-personnes">
           <button className="btn btn-outline-secondary close" onClick={() => setActiveModal(false)}><i className="bi bi-x-lg"></i></button>

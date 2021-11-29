@@ -72,12 +72,6 @@ class PersonneType extends AbstractType
                 'required' => false
             ])
             // ->add('conjoint')
-            ->add('creation', SubmitType::class, [
-                'label' => 'Créer',
-                'attr' => [
-                    'class' => 'btn btn-primary'
-                ]
-            ])
         ;
     }
 

@@ -4,7 +4,7 @@ namespace App\Form;
 
 use App\Entity\Evenement;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -22,7 +22,7 @@ class EventType extends AbstractType
             ->add('nomSalle', TextType::class, [
                 'label' => 'Nom de la salle'
             ])
-            ->add('date', DateType::class, [
+            ->add('date', DateTimeType::class, [
                 'label' => 'Date de l\'évènement'
             ])
             ->add('adresse', TextType::class, [
@@ -34,12 +34,6 @@ class EventType extends AbstractType
             // ->add('imageTicket', FileType::class, [
             //     'label' => 'Image de fond du ticket'
             // ])
-            ->add('creation', SubmitType::class, [
-                'label' => 'Editer',
-                'attr' => [
-                    'class' => 'btn btn-primary'
-                ]
-            ])
         ;
     }
 

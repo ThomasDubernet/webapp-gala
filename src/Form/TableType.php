@@ -31,12 +31,6 @@ class TableType extends AbstractType
                 'choice_label' => 'nom',
                 'label' => 'Catégorie',
             ])
-            ->add('creation', SubmitType::class, [
-                'label' => 'Créer la table',
-                'attr' => [
-                    'class' => 'btn btn-primary'
-                ]
-            ])
         ;
     }
 
