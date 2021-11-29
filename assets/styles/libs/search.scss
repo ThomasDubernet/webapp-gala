@@ -1,0 +1,43 @@
+custom-searchbar {
+  p {
+    margin: 0em;
+  }
+  button {
+    width: fit-content;
+    height: fit-content;
+  }
+  .modal-results-personnes {
+    position: absolute;
+    top: 85px;
+    left: 25px;
+    height: calc(100vh - 110px);
+    width: calc(100vw - 50px);
+    background: white;
+    z-index: 99;
+    padding: 25px;
+    border-radius: 25px;
+    box-shadow: 0 .5rem 1rem rgba(#000000, .25);
+
+    .title {
+      width: 100%;
+      text-align: center;
+    }
+
+    .content {
+      display: grid;
+      gap: 15px;
+      grid-template-columns: repeat(4, 1fr);
+
+      .card-personne {
+        padding: 20px;
+        border: 2px solid black;
+        border-radius: 10px;
+      
+        .header {
+          display: flex;
+          justify-content: space-between;
+        }
+      }
+    }
+  }
+}

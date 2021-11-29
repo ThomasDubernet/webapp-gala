@@ -28,12 +28,12 @@ class EventType extends AbstractType
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse de l\'évènement '
             ])
-            ->add('plan', FileType::class, [
-                'label' => 'Plan de la salle'
-            ])
-            ->add('imageTicket', FileType::class, [
-                'label' => 'Image de fond du ticket'
-            ])
+            // ->add('plan', FileType::class, [
+            //     'label' => 'Plan de la salle'
+            // ])
+            // ->add('imageTicket', FileType::class, [
+            //     'label' => 'Image de fond du ticket'
+            // ])
             ->add('creation', SubmitType::class, [
                 'label' => 'Editer',
                 'attr' => [
