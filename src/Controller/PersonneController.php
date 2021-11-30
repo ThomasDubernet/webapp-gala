@@ -57,15 +57,14 @@ class PersonneController extends AbstractController
             if ($_POST['action'] == "Créer avec un conjoint") {
                 $this->em->persist($personne);
                 $this->em->flush();
-                
+
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
                 ]);
-                
             }
             $this->em->persist($personne);
             $this->em->flush();
-            
+
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -84,7 +83,6 @@ class PersonneController extends AbstractController
         $conjoint = new Personne();
         $form = $this->createForm(PersonneType::class, $conjoint);
         $form->handleRequest($request);
-
 
         if ($form->isSubmitted() && $form->isValid()) {
             $conjoint->setConjoint($personne);
