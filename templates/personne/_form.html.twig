@@ -36,7 +36,9 @@
                     {{ form_row(form.moyenPaiement) }}
                 </div>
             </div>
-        {# {{ form_row(form.conjoint) }} #}
+            {% if personneId is defined %}
+                <input type="text" name="conjoint" value="{{personneId}}" />
+            {% endif %}
         </div>
     </div>
 
@@ -52,5 +54,10 @@
         {{ form_row(form.table) }}
         </div>
     </div>
-    <button class="btn btn-primary">{{ button_label|default('Créer') }}</button>
+    <div class="d-flex align-items-center justify-content-center mt-4">
+        <input class="btn btn-primary mx-3" type="submit" name="action" value="{{conjoint ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint'}}" />
+        {% if (update == false) and (conjoint == false) %}
+            <input class="btn btn-primary mx-3" type="submit" name="action" value="Créer avec un conjoint" />
+        {% endif %}
+    </div>
 {{ form_end(form) }}

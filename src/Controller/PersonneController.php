@@ -46,11 +46,50 @@ class PersonneController extends AbstractController
     public function new(Request $request): Response
     {
         $personne = new Personne();
+        $conjoint = new Personne();
         $form = $this->createForm(PersonneType::class, $personne);
+        $formConjoint = $this->createForm(PersonneType::class, $conjoint);
+        $form->handleRequest($request);
+        $formConjoint->handleRequest($request);
+
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($_POST['action'] == "Créer avec un conjoint") {
+                $this->em->persist($personne);
+                $this->em->flush();
+                
+                return $this->redirectToRoute('conjoint_new', [
+                    'id' => $personne->getId()
+                ]);
+                
+            }
+            $this->em->persist($personne);
+            $this->em->flush();
+            
+            return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->renderForm('personne/new.html.twig', [
+            'personne' => $personne,
+            'form' => $form
+        ]);
+    }
+
+    /**
+     * @Route("/{id}/new_conjoint", name="conjoint_new", methods={"GET", "POST"})
+     */
+    public function newConjoint($id, Request $request): Response
+    {
+        $personne = $this->em->getRepository(Personne::class)->find($id);
+        $conjoint = new Personne();
+        $form = $this->createForm(PersonneType::class, $conjoint);
         $form->handleRequest($request);
 
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $conjoint->setConjoint($personne);
+            $personne->setConjoint($conjoint);
+            $this->em->persist($conjoint);
             $this->em->persist($personne);
             $this->em->flush();
 
@@ -58,8 +97,9 @@ class PersonneController extends AbstractController
         }
 
         return $this->renderForm('personne/new.html.twig', [
-            'personne' => $personne,
-            'form' => $form
+            'conjoint' => $conjoint,
+            'form' => $form,
+            'title' => "Création du conjoint"
         ]);
     }
 

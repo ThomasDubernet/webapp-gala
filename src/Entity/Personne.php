@@ -83,7 +83,7 @@ class Personne
     private $table;
 
     /**
-     * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"}, fetch="EAGER")
      */
     private $conjoint;
 
