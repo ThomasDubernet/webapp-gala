@@ -13,11 +13,7 @@
         {% include "components/navigation.html.twig" %}
         {# {% include "modals/index.html.twig" %} #}
 
-        <div class="container">
-            {% block body %}{% endblock %}
-        </div>
-
-
+        {% block body %}{% endblock %}
 
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}

@@ -3,9 +3,9 @@
 {% block title %}Nouvelle personne{% endblock %}
 
 {% block body %}
-    <h1 class="mb-4">{{ title|default('Créer une personne') }}</h1>
+    <div class="container">
+        <h1 class="mb-4">{{ title|default('Créer une personne') }}</h1>
 
-    {{ include('personne/_form.html.twig', {'button_label': 'Créer', 'update': false, 'conjoint' : conjoint is defined ? true : false }) }}
-
-    {# <a href="{{ path('home') }}">Retour à l'accueil</a> #}
+        {{ include('personne/_form.html.twig', {'button_label': 'Créer', 'update': false, 'conjoint' : conjoint is defined ? true : false }) }}
+    </div>
 {% endblock %}

@@ -3,9 +3,11 @@
 {% block title %}New Table{% endblock %}
 
 {% block body %}
-    <h1>Création d'une table</h1>
+    <div class="container">
+        <h1>Création d'une table</h1>
 
-    {{ include('table/_form.html.twig') }}
+        {{ include('table/_form.html.twig') }}
 
-    <a href="{{ path('home') }}">Retour à l'accueil</a>
+        <a href="{{ path('home') }}">Retour à l'accueil</a>
+    </div>
 {% endblock %}
