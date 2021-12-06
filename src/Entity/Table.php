@@ -58,6 +58,18 @@ class Table
      */
     private $personnes;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"admin"})
+     */
+    private $posX;
+
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     * @Groups({"admin"})
+     */
+    private $posY;
+
     public function __construct()
     {
         $this->personnes = new ArrayCollection();
@@ -142,6 +154,30 @@ class Table
                 $personne->setTable(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPosX(): ?int
+    {
+        return $this->posX;
+    }
+
+    public function setPosX(?int $posX): self
+    {
+        $this->posX = $posX;
+
+        return $this;
+    }
+
+    public function getPosY(): ?int
+    {
+        return $this->posY;
+    }
+
+    public function setPosY(?int $posY): self
+    {
+        $this->posY = $posY;
 
         return $this;
     }
