@@ -5,6 +5,9 @@ namespace App\Entity;
 use App\Repository\PersonneRepository;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
 
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
@@ -12,6 +15,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
  *  collectionOperations={"get"},
  *  itemOperations={"get"}
  * )
+ * @ApiFilter(ExistsFilter::class, properties={"table"})
  */
 class Personne
 {
@@ -19,71 +23,84 @@ class Personne
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"admin"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $adresse;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
+     * @Groups({"admin"})
      */
     private $montantBillet;
 
     /**
      * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
+     * @Groups({"admin"})
      */
     private $montantPaye;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"admin"})
      */
     private $dateReglement;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $moyenPaiement;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"admin"})
      */
     private $commentaire;
 
     /**
      * @ORM\ManyToOne(targetEntity=CategoriePersonne::class)
+     * @Groups({"admin"})
      */
     private $categorie;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Table::class, inversedBy="personnes")
+     * @ORM\ManyToOne(targetEntity=Table::class, inversedBy="personnes", fetch="EAGER")
      */
     private $table;
 
     /**
      * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"}, fetch="EAGER")
+     * @Groups({"admin"})
      */
     private $conjoint;
 

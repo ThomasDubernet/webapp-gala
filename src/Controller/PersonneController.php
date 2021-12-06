@@ -46,11 +46,11 @@ class PersonneController extends AbstractController
     public function new(Request $request): Response
     {
         $personne = new Personne();
-        $conjoint = new Personne();
-        $form = $this->createForm(PersonneType::class, $personne);
-        $formConjoint = $this->createForm(PersonneType::class, $conjoint);
+        $form = isset($_GET['table'])
+            ? $this->createForm(PersonneType::class, $personne, ['attr' => ['table' =>  $_GET['table']]])
+            : $this->createForm(PersonneType::class, $personne);
+
         $form->handleRequest($request);
-        $formConjoint->handleRequest($request);
 
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -70,7 +70,7 @@ class PersonneController extends AbstractController
 
         return $this->renderForm('personne/new.html.twig', [
             'personne' => $personne,
-            'form' => $form
+            'form' => $form,
         ]);
     }
 
@@ -119,6 +119,20 @@ class PersonneController extends AbstractController
             'form' => $form->createView(),
             'personne' => $personne
         ]);
+    }
+
+    /**
+     * @Route("/{id}/add-table/{tableId}", name="personne_add_to_table", methods={"GET"})
+     */
+    public function addToTable($id, $tableId): Response
+    {
+        $personne = $this->em->getRepository(Personne::class)->find($id);
+        $table = $this->em->getRepository(Table::class)->find($tableId);
+        $personne->setTable($table);
+        $this->em->persist($personne);
+        $this->em->flush();
+
+        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
     }
 
     /**
