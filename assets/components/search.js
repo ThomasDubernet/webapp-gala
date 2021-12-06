@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 
-const Personne = ({personne}) => {
+export const Personne = ({personne, children}) => {
   const {
     id,
     prenom,
@@ -37,6 +37,7 @@ return (
     </div>
     <a href={"mailto:" + email}>{email}</a>
     <p>{adresse}</p>
+    {children}
   </div>
 )
 }
