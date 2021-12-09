@@ -3,7 +3,32 @@
     {{ form_row(form.nomSalle) }}
     {{ form_row(form.date) }}
     {{ form_row(form.adresse) }}
-    {# {{ form_row(form.plan) }}
-    {{ form_row(form.imageTicket) }} #}
+    <div class="row">
+        {% if event.plan != null %}
+            <div class="col-6">
+                <div class="box-img">
+                    <img class="w-100" src="{{ vich_uploader_asset(event.plan) }}" alt="{{ event.plan.filePath }}">
+                </div>
+                {{ form_row(form.planFile) }}
+            </div>
+        {% else %}
+            <div class="col-6">
+                {{ form_row(form.planFile) }}
+            </div>
+        {% endif %}
+
+        {% if event.imageTicket != null %}
+            <div class="col-6">
+                <div class="box-img">
+                    <img class="w-100" src="{{ vich_uploader_asset(event.imageTicket) }}" alt="{{ event.imageTicket.filePath }}">
+                </div>
+                {{ form_row(form.imageTicketFile) }}
+            </div>
+        {% else %}
+            <div class="col-6">
+                {{ form_row(form.imageTicketFile) }}
+            </div>
+        {% endif %}
+    </div>
     <button class="btn btn-primary">{{ button_label|default('Créer') }}</button>
 {{ form_end(form) }}

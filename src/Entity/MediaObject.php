@@ -6,6 +6,7 @@ use App\Controller\MediaObjectController;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity
@@ -19,6 +20,7 @@ class MediaObject
      * @ORM\Column(type="integer")
      * @ORM\GeneratedValue
      * @ORM\Id
+     * @Groups({"admin"})
      */
     private $id;
 
@@ -39,6 +41,7 @@ class MediaObject
      * @var string|null
      *
      * @ORM\Column(nullable=true)
+     * @Groups({"admin"})
      */
     public $filePath;
 

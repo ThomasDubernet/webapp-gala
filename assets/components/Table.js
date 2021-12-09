@@ -72,7 +72,9 @@ const Table = ({table, load, ...props}) => {
         fetch('/api/tables/' + id, {
             method: 'DELETE'
         })
-        load()
+        setTimeout(() => {
+            load()
+        }, 1000)
     }
 
     const handleStop = (event, data) => {

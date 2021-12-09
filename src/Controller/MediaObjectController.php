@@ -40,10 +40,4 @@ final class MediaObjectController extends AbstractController
 
         return $mediaObject;
     }
-
-    public function getRealPath($fileName)
-    {
-        $filePath = $this->getParameter('upload_directory') . "/" . $fileName;
-        return $filePath;
-    }
 }

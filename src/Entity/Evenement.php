@@ -4,9 +4,14 @@ namespace App\Entity;
 
 use App\Repository\EvenementRepository;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=EvenementRepository::class)
+ * @ApiResource(
+ *  collectionOperations={"get"}
+ * )
  */
 class Evenement
 {
@@ -14,36 +19,43 @@ class Evenement
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"admin"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $nomSalle;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
+     * @Groups({"admin"})
      */
     private $date;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $adresse;
 
     /**
-     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"}, fetch="EAGER")
+     * @Groups({"admin"})
      */
     private $plan;
 
     /**
-     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"}, fetch="EAGER")
+     * @Groups({"admin"})
      */
     private $imageTicket;
 
