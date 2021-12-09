@@ -35,18 +35,27 @@
   height: 70px;
   border: 3px solid transparent;
 }
-.fake-div-dragg {
+
+custom-plan {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+.plan-canvas {
   position: absolute;
   top: 0;
-  right: 0;
-  bottom: 0;
   left: 0;
-  z-index: -1;
+  width: 100vw;
+  margin-top: 2px;
+  height: calc(100vh - 62px);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
 }
 
-.plan-canvas {
-  position: relative;
-  background: blanchedalmond;
-  width: 100vw;
-  height: calc(100vh - 60px);
+.loading {
+  position: absolute;
+  top: 40vh;
+  left: 52vw;
+  transform: translate(-50%, -50%);
 }

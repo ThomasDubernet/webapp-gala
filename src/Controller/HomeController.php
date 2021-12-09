@@ -10,6 +10,7 @@ use App\Form\PersonneType;
 use App\Form\TableType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -21,9 +22,15 @@ class HomeController extends AbstractController
      */
     private $em;
 
-    public function __construct(EntityManagerInterface $em)
+    /**
+     * @var MediaObjectController
+     */
+    private $mediaObjectController;
+
+    public function __construct(EntityManagerInterface $em, MediaObjectController $mediaObjectController)
     {
         $this->em = $em;
+        $this->mediaObjectController = $mediaObjectController;
     }
 
     /**
@@ -37,6 +44,19 @@ class HomeController extends AbstractController
         $eventForm = $this->createForm(EventType::class, count($allEvents) > 0 ? $allEvents[0] : $newEvent);
         $eventForm->handleRequest($request);
         if ($eventForm->isSubmitted() && $eventForm->isValid()) {
+            $plan = $eventForm->get('plan')->getData();
+            $imageTicket = $eventForm->get('imageTicket')->getData();
+
+            if ($plan instanceof UploadedFile) {
+                $planMedia = $this->mediaObjectController->create($plan);
+                $newEvent->setPlan($planMedia);
+            }
+
+            if ($imageTicket instanceof UploadedFile) {
+                $imageTicketMedia = $this->mediaObjectController->create($imageTicket);
+                $newEvent->setImageTicket($imageTicketMedia);
+            }
+
             $this->em->persist($newEvent);
             $this->em->flush();
         }

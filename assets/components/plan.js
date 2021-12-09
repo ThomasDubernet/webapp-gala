@@ -6,14 +6,18 @@ import Table from './Table';
 
 const Plan = () => {
     const { items: tables, load, loading } = useGetMany('tables')
+    const { items: events, load: loadEvents } = useGetMany('evenements')
 
     useEffect(() => {
         load()
+        loadEvents()
     }, [])
 
-    return !loading && (
+    return !loading ? (
         <React.Fragment>
-            <div className="plan-canvas">
+            <div className="plan-canvas" style={events.length > 0 ? {
+                backgroundImage: `url('${events[0].plan.contentUrl}')`
+            } : null}>
                 {tables.length > 0
                     ? tables.map((table, index) => (
                         <Table key={index} table={table} load={load}/>
@@ -22,6 +26,8 @@ const Plan = () => {
                 }
             </div>
         </React.Fragment>
+    ) : (
+        <p className="loading">Chargement...</p>
     )
 }
 

@@ -3,16 +3,25 @@
 namespace App\Form;
 
 use App\Entity\Evenement;
+use App\Entity\MediaObject;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class EventType extends AbstractType
 {
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -20,20 +29,26 @@ class EventType extends AbstractType
                 'label' => 'Nom de l\'évènement'
             ])
             ->add('nomSalle', TextType::class, [
-                'label' => 'Nom de la salle'
+                'label' => 'Nom de la salle',
+                'required' => false
             ])
             ->add('date', DateTimeType::class, [
                 'label' => 'Date de l\'évènement'
             ])
             ->add('adresse', TextType::class, [
-                'label' => 'Adresse de l\'évènement '
+                'label' => 'Adresse de l\'évènement ',
+                'required' => false
             ])
-            // ->add('plan', FileType::class, [
-            //     'label' => 'Plan de la salle'
-            // ])
-            // ->add('imageTicket', FileType::class, [
-            //     'label' => 'Image de fond du ticket'
-            // ])
+            ->add('planFile', FileType::class, [
+                'label' => 'Plan de la salle',
+                'mapped' => false,
+                'required' => false
+            ])
+            ->add('imageTicketFile', FileType::class, [
+                'label' => 'Image de fond du ticket',
+                'mapped' => false,
+                'required' => false
+            ])
         ;
     }
 
