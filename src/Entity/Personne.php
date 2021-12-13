@@ -104,6 +104,21 @@ class Personne
      */
     private $conjoint;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Ticket::class, mappedBy="personne", cascade={"persist", "remove"})
+     */
+    private $ticket;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $codePostal;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $ville;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -261,6 +276,47 @@ class Personne
     public function setConjoint(?self $conjoint): self
     {
         $this->conjoint = $conjoint;
+
+        return $this;
+    }
+
+    public function getTicket(): ?Ticket
+    {
+        return $this->ticket;
+    }
+
+    public function setTicket(Ticket $ticket): self
+    {
+        // set the owning side of the relation if necessary
+        if ($ticket->getPersonne() !== $this) {
+            $ticket->setPersonne($this);
+        }
+
+        $this->ticket = $ticket;
+
+        return $this;
+    }
+
+    public function getCodePostal(): ?string
+    {
+        return $this->codePostal;
+    }
+
+    public function setCodePostal(?string $codePostal): self
+    {
+        $this->codePostal = $codePostal;
+
+        return $this;
+    }
+
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    public function setVille(?string $ville): self
+    {
+        $this->ville = $ville;
 
         return $this;
     }

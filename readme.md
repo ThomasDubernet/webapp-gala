@@ -15,6 +15,7 @@ Ce projet est un starter avec symfony 5 Il est configuré avec :
 * Docker-compose
 * Node.js
 * Yarn ( ou npm )
+* wkhtmltopdf
 
 Vous pouvez vérifier les pré-requis (sauf Docker et Docker-compose) avec la commande suivante (Symfony CLI) :
 
@@ -35,6 +36,18 @@ yarn watch
 Pour servir symfony sur un port personnalisé (ex: 8008) :
 ```bash
 symfony serve --port=8008 -d
+```
+
+## Gestion des pdf
+Pour générer des pdf j'utilise **KnpSnappyBundle** et **wkhtmltopdf**
+# Installation
+Pour KnpSnappy :
+```bash
+composer require knplabs/knp-snappy-bundle 
+```
+Pour wkhtmltopdf sur mac os :
+```bash
+brew install --cask wkhtmltopdf 
 ```
 
 ## Lancer les tests
