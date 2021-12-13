@@ -105,8 +105,8 @@ const Table = ({table, load, ...props}) => {
         <React.Fragment>
             <Draggable
                 defaultPosition={{
-                    x: posX !== null ? posX : 0 ,
-                    y: posY !== null ? posY : -260 
+                    x: posX !== null ? posX : 580 ,
+                    y: posY !== null ? posY : 160
                 }}
                 onStop={handleStop}
             >

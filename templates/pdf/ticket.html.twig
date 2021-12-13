@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-size: 20px;
+            font-family: 'Roboto';
+        }
+        .canvas-pdf {
+            box-sizing: border-box;
+            background: url("{{image_ticket_path}}");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: contain;
+            height: 894px;
+            position: relative;
+        }
+        .infos-personne {
+            position: absolute;
+            box-sizing: border-box;
+            width: 330px;
+            height: 350px;
+            right: 0;
+            top: 220px;
+            color: #FFF;
+            padding: 70px 50px;
+        }
+        p {
+            font-size: 25px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .bar {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-pdf">
+        <div class="infos-personne">
+            <div class="test"></div>
+            <p>{{nom}}</p>
+            <p>{{prenom}}</p>
+
+            <p class="bar">—</p>
+
+            <p>{{rue}}</p>
+            <p>{{code_postal}} {{ville}}</p>
+
+            <p class="bar">—</p>
+
+            <p>Billet n°{{numero_ticket}}</p>
+        </div>
+    </div>
+</body>
+</html>
