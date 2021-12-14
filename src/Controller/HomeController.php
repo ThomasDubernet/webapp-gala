@@ -27,7 +27,7 @@ class HomeController extends AbstractController
      */
     private $eventController;
 
-    public function __construct(EntityManagerInterface $em,EventController $eventController)
+    public function __construct(EntityManagerInterface $em, EventController $eventController)
     {
         $this->em = $em;
         $this->eventController = $eventController;
