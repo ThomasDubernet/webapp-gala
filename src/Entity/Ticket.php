@@ -5,9 +5,12 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\TicketRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *  normalizationContext={"groups"={"admin"}}
+ * )
  * @ORM\Entity(repositoryClass=TicketRepository::class)
  */
 class Ticket
@@ -21,6 +24,7 @@ class Ticket
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"admin"})
      */
     private $fichier;
 

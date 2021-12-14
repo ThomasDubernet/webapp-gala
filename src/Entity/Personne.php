@@ -12,8 +12,9 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
  * @ApiResource(
+ *  normalizationContext={"groups"={"admin"}},
  *  collectionOperations={"get"},
- *  itemOperations={"get"}
+ *  itemOperations={"get", "put"}
  * )
  * @ApiFilter(ExistsFilter::class, properties={"table"})
  */
@@ -105,19 +106,28 @@ class Personne
     private $conjoint;
 
     /**
-     * @ORM\OneToOne(targetEntity=Ticket::class, mappedBy="personne", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=Ticket::class, mappedBy="personne", cascade={"persist", "remove"}, fetch="EAGER")
+     * @Groups({"admin"})
      */
     private $ticket;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $codePostal;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"admin"})
      */
     private $ville;
+
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     * @Groups({"admin"})
+     */
+    private $present;
 
     public function getId(): ?int
     {
@@ -317,6 +327,18 @@ class Personne
     public function setVille(?string $ville): self
     {
         $this->ville = $ville;
+
+        return $this;
+    }
+
+    public function getPresent(): ?bool
+    {
+        return $this->present;
+    }
+
+    public function setPresent(?bool $present): self
+    {
+        $this->present = $present;
 
         return $this;
     }

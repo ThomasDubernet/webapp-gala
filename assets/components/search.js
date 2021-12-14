@@ -3,43 +3,86 @@ import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 
 export const Personne = ({personne, children}) => {
+  const [payed, setPayed] = useState(false)
+  console.log(personne)
   const {
     id,
     prenom,
     nom,
     adresse,
+    codePostal,
+    ville,
     email,
+    ticket: {
+      fichier: filename
+    },
+    montantBillet,
+    montantPaye,
   } = personne
 
-return (
-  <div className="card-personne">
-    <div className="header">
-      <div className="fullname">
-        <h5>{prenom}</h5>
-        <h5>{nom}</h5>
-      </div>
-      <div className="ml-auto btn-group dropstart">
-          <div className="dropdown">
-              <button className="btn btn-sm btn-outline-secondary" type="button" id="dropdownPersonneButton" data-bs-toggle="dropdown" aria-expanded="false">
-                <i className="bi bi-three-dots"></i>
-              </button>
-              <div className="dropdown-menu" aria-labelledby="dropdownPersonneButton">
-                <div className="d-flex align-items-center flex-column">
-                    <a className="m-2 dropdown-item" href={"/personne/" + id + "/edit"}>Editer la fiche</a>
-                    <a className="m-2 dropdown-item" href="#">Renvoyer le billet</a>
-                    <a className="m-2 dropdown-item" href="#">Imprimer le billet</a>
-                    <hr className="w-100" />
-                    <button type="button" className="m-2 btn btn-danger">Supprimer</button>
-                </div>
+  useEffect(() => {
+    if (montantBillet !== null && montantBillet == montantPaye) {
+      setPayed(true)
+    }
+  }, [personne])
+
+  return (
+    <div className="card-personne">
+      <div className={"bubble bg-" + (payed ? 'success' : "danger")}></div>
+      <div className="header">
+        <div className="fullname">
+          <h5>{prenom}</h5>
+          <h5>{nom}</h5>
+        </div>
+        <div className="ml-auto btn-group dropstart">
+            <div className="dropdown">
+                <button className="btn btn-sm btn-outline-secondary" type="button" id="dropdownPersonneButton" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i className="bi bi-three-dots"></i>
+                </button>
+                <div className="dropdown-menu" aria-labelledby="dropdownPersonneButton">
+                  <div className="d-flex align-items-center flex-column">
+                      <a className="m-2 dropdown-item" href={"/personne/" + id + "/edit"}>Editer la fiche</a>
+                      <a className="m-2 dropdown-item" href="#">Renvoyer le billet</a>
+                      <a className="m-2 dropdown-item" target="_blank" href={"/uploads/" + filename}>Imprimer le billet</a>
+                      <hr className="w-100" />
+                      <button type="button" className="m-2 btn btn-danger">Supprimer</button>
+                  </div>
+              </div>
             </div>
-          </div>
+        </div>
       </div>
+      <a href={"mailto:" + email}>{email}</a>
+      <p>{adresse}<br/>{codePostal} {ville}</p>
+
+      {children}
     </div>
-    <a href={"mailto:" + email}>{email}</a>
-    <p>{adresse}</p>
-    {children}
-  </div>
-)
+  )
+}
+
+const PersonneProvider = ({personne}) => {
+  const [checked, setChecked] = useState(personne.present ? true : false)
+
+  const handleChange = () => {
+    fetch('/api/personnes/' + personne.id, {
+      method: "PUT",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        present: !checked
+      })
+    })
+    setChecked(!checked)
+  }
+
+  return (
+    <Personne personne={personne}>
+      <div className="d-flex align-items-center">
+        <p>Présent ?</p>
+        <input style={{marginLeft: "10px"}} type="checkbox" name="presence" checked={checked} onChange={handleChange} />
+      </div>
+    </Personne>
+  )
 }
 
 const  Search = () => {
@@ -74,7 +117,7 @@ const  Search = () => {
           <div className="content">
             {filteredStudents.length > 0 ?
               filteredStudents.map((personne, index) => (
-                <Personne key={index} personne={personne} />
+                <PersonneProvider key={index} personne={personne} />
               ))
               : "Aucune personne ne correspond à votre recherche"
             }

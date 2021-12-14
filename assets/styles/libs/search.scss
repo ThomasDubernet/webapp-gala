@@ -35,9 +35,26 @@ custom-searchbar {
   border: 2px solid black;
   border-radius: 10px;
   max-height: 210px;
+  position: relative;
+
+  .bubble {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
 
   .header {
     display: flex;
     justify-content: space-between;
+    
+    h5 {
+      margin-bottom: 0;
+    }
+    .fullname {
+      margin-bottom: .25rem;
+    }
   }
 }
