@@ -59,6 +59,16 @@ class Evenement
      */
     private $imageTicket;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $codePostal;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $ville;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -132,6 +142,30 @@ class Evenement
     public function setImageTicket(?MediaObject $imageTicket): self
     {
         $this->imageTicket = $imageTicket;
+
+        return $this;
+    }
+
+    public function getCodePostal(): ?string
+    {
+        return $this->codePostal;
+    }
+
+    public function setCodePostal(?string $codePostal): self
+    {
+        $this->codePostal = $codePostal;
+
+        return $this;
+    }
+
+    public function getVille(): ?string
+    {
+        return $this->ville;
+    }
+
+    public function setVille(?string $ville): self
+    {
+        $this->ville = $ville;
 
         return $this;
     }
