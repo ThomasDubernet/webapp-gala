@@ -23,19 +23,13 @@ class HomeController extends AbstractController
     private $em;
 
     /**
-     * @var MediaObjectController
-     */
-    private $mediaObjectController;
-
-    /**
      * @var EventController
      */
     private $eventController;
 
-    public function __construct(EntityManagerInterface $em, MediaObjectController $mediaObjectController, EventController $eventController)
+    public function __construct(EntityManagerInterface $em,EventController $eventController)
     {
         $this->em = $em;
-        $this->mediaObjectController = $mediaObjectController;
         $this->eventController = $eventController;
     }
 
@@ -49,6 +43,5 @@ class HomeController extends AbstractController
         } else {
             return $this->redirectToRoute('event_edit');
         }
-
     }
 }

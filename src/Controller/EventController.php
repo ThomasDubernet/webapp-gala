@@ -92,10 +92,10 @@ class EventController extends AbstractController
                 "Plan",
                 "ImageTicket",
             ];
-            
+
             foreach ($infosToVerify as $value) {
                 if (method_exists(Evenement::class, "get" . $value)) {
-                    if(!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
+                    if (!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
                         return false;
                     }
                 }
