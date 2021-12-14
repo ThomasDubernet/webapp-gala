@@ -92,10 +92,17 @@ class EventController extends AbstractController
                 "Plan",
                 "ImageTicket",
             ];
+<<<<<<< HEAD
 
             foreach ($infosToVerify as $value) {
                 if (method_exists(Evenement::class, "get" . $value)) {
                     if (!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
+=======
+            
+            foreach ($infosToVerify as $value) {
+                if (method_exists(Evenement::class, "get" . $value)) {
+                    if(!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
+>>>>>>> bcafd5f (Mise en place de la vérification des champs de l'évènement avant utlisation du site)
                         return false;
                     }
                 }
