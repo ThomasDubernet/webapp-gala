@@ -93,6 +93,7 @@ class EventController extends AbstractController
                 "ImageTicket",
             ];
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             foreach ($infosToVerify as $value) {
                 if (method_exists(Evenement::class, "get" . $value)) {
@@ -103,6 +104,12 @@ class EventController extends AbstractController
                 if (method_exists(Evenement::class, "get" . $value)) {
                     if(!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
 >>>>>>> bcafd5f (Mise en place de la vérification des champs de l'évènement avant utlisation du site)
+=======
+
+            foreach ($infosToVerify as $value) {
+                if (method_exists(Evenement::class, "get" . $value)) {
+                    if (!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
+>>>>>>> e4ce5d7 (phpcs)
                         return false;
                     }
                 }
