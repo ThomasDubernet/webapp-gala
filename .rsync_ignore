@@ -37,6 +37,7 @@ deploy.sh
 .gitlab-ci.yaml
 postcss.config.js
 docker-compose.yaml
+.htaccess
 ###< Files ###
 
 ###> Folders
