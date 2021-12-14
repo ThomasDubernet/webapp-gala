@@ -14,6 +14,7 @@ export const Personne = ({personne, children}) => {
     ville,
     email,
     ticket: {
+      id: ticketId,
       fichier: filename
     },
     montantBillet,
@@ -42,7 +43,7 @@ export const Personne = ({personne, children}) => {
                 <div className="dropdown-menu" aria-labelledby="dropdownPersonneButton">
                   <div className="d-flex align-items-center flex-column">
                       <a className="m-2 dropdown-item" href={"/personne/" + id + "/edit"}>Editer la fiche</a>
-                      <a className="m-2 dropdown-item" href="#">Renvoyer le billet</a>
+                      <a className="m-2 dropdown-item" href={"/ticket/" + ticketId +"/send"}>Renvoyer le billet</a>
                       <a className="m-2 dropdown-item" target="_blank" href={"/uploads/" + filename}>Imprimer le billet</a>
                       <hr className="w-100" />
                       <button type="button" className="m-2 btn btn-danger">Supprimer</button>
@@ -77,7 +78,7 @@ const PersonneProvider = ({personne}) => {
 
   return (
     <Personne personne={personne}>
-      <div className="d-flex align-items-center">
+      <div style={{marginTop: "15px"}} className="d-flex align-items-center">
         <p>Présent ?</p>
         <input style={{marginLeft: "10px"}} type="checkbox" name="presence" checked={checked} onChange={handleChange} />
       </div>

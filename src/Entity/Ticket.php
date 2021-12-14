@@ -19,6 +19,7 @@ class Ticket
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"admin"})
      */
     private $id;
 
@@ -34,7 +35,7 @@ class Ticket
     private $numero;
 
     /**
-     * @ORM\OneToOne(targetEntity=Personne::class, inversedBy="ticket", cascade={"persist", "remove"})
+     * @ORM\OneToOne(targetEntity=Personne::class, inversedBy="ticket", cascade={"persist", "remove"}, fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
      */
     private $personne;

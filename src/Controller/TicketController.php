@@ -5,8 +5,13 @@ namespace App\Controller;
 use App\Entity\Personne;
 use App\Entity\Ticket;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Annotation\Route;
 
-class TicketController
+/**
+ * @Route("/ticket")
+ */
+class TicketController extends AbstractController
 {
     /**
      * @var EntityManagerInterface
@@ -40,5 +45,14 @@ class TicketController
         $this->em->flush();
 
         return $ticket;
+    }
+
+    /**
+     * @Route("/{id}/send", name="send_ticket")
+     */
+    public function sendTicket(Ticket $ticket)
+    {
+        $personne = $ticket->getPersonne();
+        dd($ticket, $personne);
     }
 }
