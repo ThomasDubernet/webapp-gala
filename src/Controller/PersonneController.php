@@ -65,7 +65,9 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('pdf_creation', [
+                'id' => $personne->getId()
+            ]);
         }
 
         return $this->renderForm('personne/new.html.twig', [

@@ -37,7 +37,7 @@ class PdfController extends AbstractController
     }
 
     /**
-     * @Route("/pdf/ticket/{id}", name="pdf_view")
+     * @Route("/pdf/ticket/{id}", name="pdf_creation")
      */
     public function index($id)/*: RedirectResponse */
     {
