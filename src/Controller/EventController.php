@@ -33,11 +33,13 @@ class EventController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/edit", name="event_edit")
+     * @Route("/edit", name="event_edit")
      */
-    public function edit($id, Request $request): Response
+    public function edit(Request $request): Response
     {
-        $event = $this->em->getRepository(Evenement::class)->find($id);
+        $allEvents = $this->em->getRepository(Evenement::class)->findAll();
+
+        $event = count($allEvents) > 0 ? $allEvents[0] : new Evenement();
 
         $form = $this->createForm(EventType::class, $event);
         $form->handleRequest($request);
@@ -72,5 +74,33 @@ class EventController extends AbstractController
             'event' => $event,
             'form' => $form
         ]);
+    }
+
+    public function verification(): bool
+    {
+        $allEvents = $this->em->getRepository(Evenement::class)->findAll();
+
+        if ($allEvents[0] instanceof Evenement) {
+            $event = $allEvents[0];
+            $infosToVerify = [
+                "Nom",
+                "NomSalle",
+                "Date",
+                "Adresse",
+                "CodePostal",
+                "Ville",
+                "Plan",
+                "ImageTicket",
+            ];
+            
+            foreach ($infosToVerify as $value) {
+                if (method_exists(Evenement::class, "get" . $value)) {
+                    if(!$event->{"get" . $value}() || $event->{"get" . $value}() == null) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
     }
 }

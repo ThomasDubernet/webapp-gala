@@ -27,49 +27,28 @@ class HomeController extends AbstractController
      */
     private $mediaObjectController;
 
-    public function __construct(EntityManagerInterface $em, MediaObjectController $mediaObjectController)
+    /**
+     * @var EventController
+     */
+    private $eventController;
+
+    public function __construct(EntityManagerInterface $em, MediaObjectController $mediaObjectController, EventController $eventController)
     {
         $this->em = $em;
         $this->mediaObjectController = $mediaObjectController;
+        $this->eventController = $eventController;
     }
 
     /**
      * @Route("/", name="home")
      */
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $newEvent = new Evenement();
-
-        $allEvents = $this->em->getRepository(Evenement::class)->findAll();
-        $eventForm = $this->createForm(EventType::class, count($allEvents) > 0 ? $allEvents[0] : $newEvent);
-        $eventForm->handleRequest($request);
-        if ($eventForm->isSubmitted() && $eventForm->isValid()) {
-            $plan = $eventForm->get('plan')->getData();
-            $imageTicket = $eventForm->get('imageTicket')->getData();
-
-            if ($plan instanceof UploadedFile) {
-                $planMedia = $this->mediaObjectController->create($plan);
-                $newEvent->setPlan($planMedia);
-            }
-
-            if ($imageTicket instanceof UploadedFile) {
-                $imageTicketMedia = $this->mediaObjectController->create($imageTicket);
-                $newEvent->setImageTicket($imageTicketMedia);
-            }
-
-            $this->em->persist($newEvent);
-            $this->em->flush();
+        if ($this->eventController->verification()) {
+            return $this->render('home/index.html.twig', []);
+        } else {
+            return $this->redirectToRoute('event_edit');
         }
 
-        $allTables = $this->em->getRepository(Table::class)->findAll();
-        $allPersonnes = $this->em->getRepository(Personne::class)->findAll();
-        $allEvents = $this->em->getRepository(Evenement::class)->findAll();
-
-        return $this->render('home/index.html.twig', [
-            'event_form' => $eventForm->createView(),
-            'all_tables' => $allTables,
-            'all_personnes' => $allPersonnes,
-            'event' => count($allEvents) > 0 ? $allEvents[0] : null,
-        ]);
     }
 }

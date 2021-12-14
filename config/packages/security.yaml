@@ -28,7 +28,7 @@ security:
                 # "login" is the name of the route created previously
                     
                 check_path: login
-                default_target_path: /
+                default_target_path: /evenement/edit
 
             logout: 
                 path: /logout

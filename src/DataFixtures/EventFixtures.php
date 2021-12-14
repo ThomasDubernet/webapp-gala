@@ -13,10 +13,10 @@ class EventFixtures extends Fixture
     {
         $event = new Evenement();
 
-        $event->setNom('event')
-                ->setNomSalle('Salle event')
-                ->setDate(new DateTime())
-                ->setAdresse('Placde de la victoire, 33000 Bordeaux');
+        // $event->setNom('event')
+        //         ->setNomSalle('Salle event')
+        //         ->setDate(new DateTime())
+        //         ->setAdresse('Placde de la victoire, 33000 Bordeaux');
 
 
         $manager->persist($event);

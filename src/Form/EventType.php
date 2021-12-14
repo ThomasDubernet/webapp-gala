@@ -39,6 +39,14 @@ class EventType extends AbstractType
                 'label' => 'Adresse de l\'évènement ',
                 'required' => false
             ])
+            ->add('codePostal', TextType::class, [
+                'label' => 'Code postal',
+                'required' => false
+            ])
+            ->add('ville', TextType::class, [
+                'label' => 'Ville',
+                'required' => false
+            ])
             ->add('planFile', FileType::class, [
                 'label' => 'Plan de la salle',
                 'mapped' => false,
