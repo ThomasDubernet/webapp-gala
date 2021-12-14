@@ -94,12 +94,14 @@
             "@auto-scripts"
         ],
         "prepare": [
+            "rm -rf public/uploads/*",
             "symfony console doctrine:database:drop --if-exists --force",
             "symfony console doctrine:database:create",
             "symfony console d:s:u --force",
             "symfony console doctrine:fixtures:load -n"
         ],
         "upmigration": [
+            "rm -rf public/uploads/*",
             "rm -f migrations/Version*",
             "symfony console doctrine:database:drop --if-exists --force",
             "symfony console d:d:c",
