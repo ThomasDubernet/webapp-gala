@@ -1,13 +1,10 @@
-
 ###> symfony/framework-bundle ###
-/.DS_Store
 /.env.local
 /.env.local.php
 /.env.*.local
 /.env.test
 /config/secrets/prod/prod.decrypt.private.php
-/public/bundles/
-/public/uploads/
+/public/uploads/*
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
@@ -24,7 +21,6 @@
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
-/public/build/
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
@@ -32,4 +28,19 @@ node_modules
 
 ###> Custom ###
 deploy.sh
+.rsync_ignore
 ###< Custom ###
+
+###> Files ###
+.env
+.DS_Store
+.gitlab-ci.yaml
+postcss.config.js
+docker-compose.yaml
+###< Files ###
+
+###> Folders
+/assets/
+/tests/
+/.git/
+###< Folders
