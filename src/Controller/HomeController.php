@@ -18,16 +18,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
     /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-
-    /**
      * @var EventController
      */
     private $eventController;
 
-    public function __construct(EntityManagerInterface $em, EventController $eventController)
+    public function __construct(EventController $eventController)
     {
         $this->em = $em;
         $this->eventController = $eventController;
