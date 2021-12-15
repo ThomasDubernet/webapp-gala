@@ -24,7 +24,7 @@ class TableType extends AbstractType
                 'label' => 'Numéro'
             ])
             ->add('nombrePlacesMax', NumberType::class, [
-                'label' => 'Nom de places assises maximum'
+                'label' => 'Nombres de places assises maximum'
             ])
             ->add('categorie', EntityType::class, [
                 'class' => CategorieTable::class,

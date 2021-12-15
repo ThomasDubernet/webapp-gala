@@ -60,11 +60,11 @@ class PersonneType extends AbstractType
                 'label' => 'Email'
             ])
             ->add('montantBillet', NumberType::class, [
-                'label' => 'Montant du billet',
+                'label' => 'Montant du billet (saisir 0 si conjoint)',
                 'required' => false
             ])
             ->add('montantPaye', NumberType::class, [
-                'label' => 'Montant déjà payé',
+                'label' => 'Montant déjà payé (saisir 0 si conjoint)',
                 'required' => false
             ])
             ->add('dateReglement', DateType::class, [

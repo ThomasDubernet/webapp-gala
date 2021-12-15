@@ -40,12 +40,8 @@ class PdfController extends AbstractController
         $this->ticketController = $ticketController;
     }
 
-    /**
-     * @Route("/pdf/ticket/{id}", name="pdf_creation_ticket")
-     */
-    public function createTicket($id)
+    public function createTicket(Personne $personne)
     {
-        $personne = $this->em->getRepository(Personne::class)->find($id);
         $mPdf = $this->MpdfFactory->createMpdfObject([
             'mode' => 'utf-8',
             'format' => 'A4',
@@ -77,10 +73,6 @@ class PdfController extends AbstractController
                 'image_ticket_path' => $imageTicketPath,
             ]));
             $mPdf->Output($uploadDir . '/' . $filename, 'F');
-
-            return $this->redirectToRoute('home');
-        } else {
-            return 'error';
         }
     }
 

@@ -22,7 +22,7 @@ const Plan = () => {
                     ? tables.map((table, index) => (
                         <Table key={index} table={table} load={load}/>
                     ))
-                    : <p>Aucune table n'a été crée.</p>
+                    : <p>Aucune table n'a été créée.</p>
                 }
             </div>
         </React.Fragment>

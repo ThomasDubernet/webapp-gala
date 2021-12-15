@@ -25,9 +25,15 @@ class PersonneController extends AbstractController
      */
     private $em;
 
-    public function __construct(EntityManagerInterface $em)
+    /**
+     * @var PdfController
+     */
+    private $pdfController;
+
+    public function __construct(EntityManagerInterface $em, PdfController $pdfController)
     {
         $this->em = $em;
+        $this->pdfController = $pdfController;
     }
 
     /**
@@ -57,6 +63,7 @@ class PersonneController extends AbstractController
             if ($_POST['action'] == "Créer avec un conjoint") {
                 $this->em->persist($personne);
                 $this->em->flush();
+                $this->pdfController->createTicket($personne);
 
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
@@ -65,9 +72,8 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            return $this->redirectToRoute('pdf_creation_ticket', [
-                'id' => $personne->getId()
-            ]);
+            $this->pdfController->createTicket($personne);
+            return $this->render('home/index.html.twig');
         }
 
         return $this->renderForm('personne/new.html.twig', [
@@ -92,6 +98,8 @@ class PersonneController extends AbstractController
             $this->em->persist($conjoint);
             $this->em->persist($personne);
             $this->em->flush();
+
+            $this->pdfController->createTicket($conjoint);
 
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
