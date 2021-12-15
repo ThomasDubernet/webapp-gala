@@ -2828,6 +2828,7 @@
             "time": "2021-10-20T09:43:03+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "setasign/fpdi",
             "version": "v2.3.6",
             "source": {
@@ -2900,6 +2901,8 @@
             "time": "2021-02-11T11:37:01+00:00"
         },
         {
+=======
+>>>>>>> ea0b94f6c4e9a7482dc4642d74a1a0de1e846d67
             "name": "symfony/apache-pack",
             "version": "v1.0.1",
             "source": {
