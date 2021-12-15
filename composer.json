@@ -16,6 +16,7 @@
         "knplabs/knp-snappy-bundle": "^1.8",
         "nelmio/cors-bundle": "^2.1",
         "phpdocumentor/reflection-docblock": "^5.3",
+        "sasedev/mpdf-bundle": "^2.0",
         "sensio/framework-extra-bundle": "^6.1",
         "symfony/apache-pack": "^1.0",
         "symfony/asset": "5.3.*",

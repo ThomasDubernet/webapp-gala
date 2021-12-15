@@ -144,6 +144,9 @@
     "monolog/monolog": {
         "version": "2.3.5"
     },
+    "mpdf/mpdf": {
+        "version": "v8.0.15"
+    },
     "myclabs/deep-copy": {
         "version": "1.10.2"
     },
@@ -161,6 +164,9 @@
     },
     "nikic/php-parser": {
         "version": "v4.13.1"
+    },
+    "paragonie/random_compat": {
+        "version": "v9.99.100"
     },
     "phar-io/manifest": {
         "version": "2.0.3"
@@ -224,6 +230,9 @@
     "psr/log": {
         "version": "1.1.4"
     },
+    "sasedev/mpdf-bundle": {
+        "version": "2.0.0"
+    },
     "sebastian/cli-parser": {
         "version": "1.0.1"
     },
@@ -283,6 +292,9 @@
         "files": [
             "config/packages/sensio_framework_extra.yaml"
         ]
+    },
+    "setasign/fpdi": {
+        "version": "v2.3.6"
     },
     "symfony/apache-pack": {
         "version": "1.0",
