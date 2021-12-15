@@ -24,7 +24,6 @@ class HomeController extends AbstractController
 
     public function __construct(EventController $eventController)
     {
-        $this->em = $em;
         $this->eventController = $eventController;
     }
 

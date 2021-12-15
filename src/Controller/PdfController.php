@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sasedev\MpdfBundle\Factory\MpdfFactory;
+use \Mpdf\Mpdf;
 
 class PdfController extends AbstractController
 {
