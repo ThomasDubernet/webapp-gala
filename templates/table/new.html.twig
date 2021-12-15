@@ -4,10 +4,13 @@
 
 {% block body %}
     <div class="container">
+        <div class="my-2">
+            <a href="{{ path('home') }}">Accès au plan</a>
+        </div>
         <h1>Création d'une table</h1>
+        {# <div class="d-flex align-items-center justify-content-between">
+        </div> #}
 
         {{ include('table/_form.html.twig') }}
-
-        <a href="{{ path('home') }}">Retour à l'accueil</a>
     </div>
 {% endblock %}
