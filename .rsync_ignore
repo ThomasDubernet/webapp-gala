@@ -6,7 +6,6 @@
 /config/secrets/prod/prod.decrypt.private.php
 /public/uploads/*
 /var/
-/vendor/
 ###< symfony/framework-bundle ###
 
 ###> symfony/phpunit-bridge ###
@@ -38,10 +37,16 @@ deploy.sh
 postcss.config.js
 docker-compose.yaml
 .htaccess
+php.ini
+.user.ini
+error_log
+/public/.htaccess
+/public/php.ini
+/public/.user.ini
 ###< Files ###
 
 ###> Folders
 /assets/
 /tests/
 /.git/
-###< Folders
+###< Foldersa
