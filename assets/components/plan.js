@@ -1,6 +1,6 @@
 import React, { useEffect} from 'react'
 // import { ContextMenu, ContextMenuTrigger, MenuItem, SubMenu } from 'react-contextmenu'
-import { render } from 'react-dom'
+import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 import Table from './Table';
 

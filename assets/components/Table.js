@@ -140,7 +140,7 @@ const Table = ({table, load, ...props}) => {
                         <i className="bi bi-chevron-right"></i>
                     </div>
                 </CustomMenuItem>
-                <CustomMenuItem>Imprimer la liste des personnes</CustomMenuItem>
+                <CustomMenuItem><a href={"/table/" + id + "/pdf"}>Imprimer la liste des personnes</a></CustomMenuItem>
                 <hr />
                 <div className="d-flex">
                     <button style={{fontSize: "14px"}} onClick={() => window.confirm('Êtes vous sûr de vouloir supprimer cette table ?') && handleDelete()} className="btn btn-danger mx-auto" disabled={personnes.length > 0 ? true : false}>Supprimer la table</button>

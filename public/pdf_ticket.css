@@ -1,0 +1,24 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    font-family: 'Roboto';
+}
+#canvas {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    height: 300px;
+}
+#infos-personne {
+    width: 180px;
+    height: 300px;
+    margin-left: auto;
+    margin-right: 35px;
+}
+p {
+    font-size: 16px;
+    text-align: center;
+    margin: 0;
+    color: #FFF;
+}

@@ -65,7 +65,7 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            return $this->redirectToRoute('pdf_creation', [
+            return $this->redirectToRoute('pdf_creation_ticket', [
                 'id' => $personne->getId()
             ]);
         }

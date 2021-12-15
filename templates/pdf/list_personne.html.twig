@@ -1,0 +1,29 @@
+<h1>Table n°{{table.numero}} | {{table.nom}}</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Prénom</th>
+            <th>Nom</th>
+            <th>Téléphone</th>
+            <th>Email</th>
+            <th>N° Billet</th>
+            <th>Conjoint</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for personne in personnes %}
+            <tr>
+                <td style="width: 15%;">{{ personne.prenom }}</td>
+                <td style="width: 15%;">{{ personne.nom }}</td>
+                <td style="width: 15%;">{{ personne.telephone }}</td>
+                <td style="width: 15%;">{{ personne.email }}</td>
+                <td style="width: 5%;">{{ personne.ticket != null ? personne.ticket.numero : null }}</td>
+                <td style="width: 20%;">
+                {% if personne.conjoint != null %}
+                    {{personne.conjoint.prenom}} {{personne.conjoint.nom}}
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

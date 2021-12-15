@@ -31,6 +31,7 @@ class Ticket
 
     /**
      * @ORM\Column(type="integer")
+     * @Groups({"admin"})
      */
     private $numero;
 
