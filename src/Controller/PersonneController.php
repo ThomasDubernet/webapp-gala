@@ -30,10 +30,20 @@ class PersonneController extends AbstractController
      */
     private $pdfController;
 
-    public function __construct(EntityManagerInterface $em, PdfController $pdfController)
+    /**
+     * @var MailerController
+     */
+    private $mailerController;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        PdfController $pdfController,
+        MailerController $mailerController
+    )
     {
         $this->em = $em;
         $this->pdfController = $pdfController;
+        $this->mailerController = $mailerController;
     }
 
     /**
@@ -64,6 +74,7 @@ class PersonneController extends AbstractController
                 $this->em->persist($personne);
                 $this->em->flush();
                 $this->pdfController->createTicket($personne);
+                $this->mailerController->sendTicket($personne);
 
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
@@ -73,6 +84,7 @@ class PersonneController extends AbstractController
             $this->em->flush();
 
             $this->pdfController->createTicket($personne);
+            $this->mailerController->sendTicket($personne);
             return $this->render('home/index.html.twig');
         }
 
@@ -100,6 +112,7 @@ class PersonneController extends AbstractController
             $this->em->flush();
 
             $this->pdfController->createTicket($conjoint);
+            $this->mailerController->sendTicket($conjoint);
 
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
