@@ -85,7 +85,7 @@ class PersonneController extends AbstractController
 
             $this->pdfController->createTicket($personne);
             $this->mailerController->sendTicket($personne);
-            return $this->render('home/index.html.twig');
+            return $this->redirectToRoute('home');
         }
 
         return $this->renderForm('personne/new.html.twig', [
@@ -135,7 +135,7 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('personne_index');
         }
 
         return $this->render('personne/edit.html.twig', [
@@ -164,6 +164,13 @@ class PersonneController extends AbstractController
     public function delete(Request $request, Personne $personne): Response
     {
         if ($this->isCsrfTokenValid('delete' . $personne->getId(), $request->request->get('_token'))) {
+            if ($personne->getConjoint() !== null) {
+                $conjoint = $personne->getConjoint();
+                $conjoint->setConjoint(null);
+                $personne->setConjoint(null);
+
+                $this->em->persist($conjoint);
+            }
             $this->em->remove($personne);
             $this->em->flush();
         }

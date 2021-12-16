@@ -13,6 +13,7 @@ import Draggable from 'react-draggable'
 
 const CustomMenuItem = styled(MenuItem)`
     font-size: 14px;
+    margin-bottom: .5rem;
 `
 
 const Table = ({table, load, ...props}) => {
@@ -118,12 +119,12 @@ const Table = ({table, load, ...props}) => {
                 >
                     <p className="number">N°{numero}</p>
                     <p className="number-max">
-                    {personnes.length} / {nbMax}
+                        {personnes.length} / {nbMax}
                     </p>
+                    <p className='nom-table'>{nom}</p>
                 </div>
             </Draggable>
 
-            {/* ContextMenu */}
             <Menu
                 open={contextMenu !== null}
                 onClose={handleMenuClose}
@@ -140,8 +141,13 @@ const Table = ({table, load, ...props}) => {
                         <i className="bi bi-chevron-right"></i>
                     </div>
                 </CustomMenuItem>
-                <CustomMenuItem><a href={"/table/" + id + "/pdf"} target="_blank">Imprimer la liste des personnes</a></CustomMenuItem>
+                <CustomMenuItem><a className="no-style" href={"/table/" + id + "/pdf"} target="_blank">Imprimer la liste des personnes</a></CustomMenuItem>
                 <hr />
+                {/* <div className="d-flex"> */}
+                <CustomMenuItem>
+                    <a className="no-style" href={"/table/" + id + "/edit"}>Editer la table</a>
+                </CustomMenuItem>
+                {/* </div> */}
                 <div className="d-flex">
                     <button style={{fontSize: "14px"}} onClick={() => window.confirm('Êtes vous sûr de vouloir supprimer cette table ?') && handleDelete()} className="btn btn-danger mx-auto" disabled={personnes.length > 0 ? true : false}>Supprimer la table</button>
                 </div>

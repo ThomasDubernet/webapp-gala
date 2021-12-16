@@ -50,10 +50,12 @@ class EventType extends AbstractType
             ->add('planFile', FileType::class, [
                 'label' => 'Plan de la salle',
                 'mapped' => false,
+                'required' => false
             ])
             ->add('imageTicketFile', FileType::class, [
                 'label' => 'Image de fond du ticket',
                 'mapped' => false,
+                'required' => false
             ])
         ;
     }

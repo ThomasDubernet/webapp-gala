@@ -4,19 +4,17 @@
 
 {% block body %}
     <div class="container">
-        <div class="my-2">
-            <a href="{{ path('home') }}">Accès au plan</a>
-        </div>
-        <h1 class="mb-4">Liste des personnes:</h1>
+        <h1 class="mb-4">Liste des personnes</h1>
 
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>Id</th>
-                    <th>Prénom</th>
                     <th>Nom</th>
+                    <th>Prénom</th>
                     <th>Email</th>
                     <th>Conjoint</th>
+                    <th>A payé</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -24,12 +22,19 @@
             {% for personne in personnes %}
                 <tr id="personne-{{personne.id}}">
                     <td>{{ personne.id }}</td>
-                    <td>{{ personne.prenom }}</td>
                     <td>{{ personne.nom }}</td>
+                    <td>{{ personne.prenom }}</td>
                     <td>{{ personne.email }}</td>
                     <td>
                     {% if personne.conjoint != null %}
                         <a href="#personne-{{personne.conjoint.id}}">{{personne.conjoint.id}}</a>
+                    {% endif %}
+                    </td>
+                    <td>
+                    {% if (personne.montantBillet != null) and (personne.montantBillet == personne.montantPaye) %}
+                        <div class="bubble bg-success bubble-list"></div>
+                    {% else %}
+                        <div class="bubble bg-danger bubble-list"></div>
                     {% endif %}
                     </td>
                     <td>

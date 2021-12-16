@@ -1,13 +1,18 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
     <div class="container-fluid">
         <a class="navbar-brand" style="height: 45px;" href="{{ path('home') }}">
-            <img class="h-100" src="/logo.jpeg" alt="logo" />
+            <img class="h-100" src="/logo-2.jpeg" alt="logo" />
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+            {% if app.request.get('_route') != 'home' %}
+                <li class="nav-item mx-2">
+                    <a href="{{ path('home') }}" class="btn btn-outline-primary">Accès au plan</a>
+                </li>
+            {% endif %}
                 <li class="nav-item mx-2">
                     <a href="{{ path('table_new') }}" class="btn btn-outline-primary">Créer une table</a>
                 </li>

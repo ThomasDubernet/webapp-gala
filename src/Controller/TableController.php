@@ -17,6 +17,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class TableController extends AbstractController
 {
     /**
+     * @var EntityManagerInterface
+     */
+    private $em;
+
+    public function __construct(EntityManagerInterface $em)
+    {
+        $this->em = $em;
+    }
+    /**
      * @Route("/new", name="table_new", methods={"GET", "POST"})
      */
     public function new(Request $request, EntityManagerInterface $entityManager): Response
@@ -35,6 +44,27 @@ class TableController extends AbstractController
         return $this->renderForm('table/new.html.twig', [
             'table' => $table,
             'form' => $form,
+        ]);
+    }
+
+    /**
+     * @Route("/{id}/edit", name="table_edit", methods={"GET", "POST"})
+     */
+    public function edit(Table $table, Request $request): Response
+    {
+        $form = $this->createForm(TableType::class, $table);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->em->persist($table);
+            $this->em->flush();
+
+            return $this->redirectToRoute('home');
+        }
+
+        return $this->render('table/edit.html.twig', [
+            'table' => $table,
+            'form' => $form->createView(),
         ]);
     }
 }

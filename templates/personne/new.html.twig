@@ -4,11 +4,6 @@
 
 {% block body %}
     <div class="container">
-        <div class="my-2 d-flex align-items-center">
-            <a href="{{ path('home') }}">Accès au plan</a>
-            <span class="d-block mx-1">/</span>
-            <a href="{{ path('personne_index') }}">Liste des personnes</a>
-        </div>
         <h1 class="mb-4">{{ title|default('Créer une personne') }}</h1>
 
         {{ include('personne/_form.html.twig', {'button_label': 'Créer', 'update': false, 'conjoint' : conjoint is defined ? true : false }) }}

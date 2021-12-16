@@ -8,3 +8,27 @@ body {
     width: 100vw;
     height: 100vh;
 }
+
+td {
+    position: relative;
+}
+
+
+.bubble {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+
+    &.bubble-list {
+        position: absolute;
+        top: 50%;
+        left: 30%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+a.no-style {
+    color: inherit;
+    text-decoration: none;
+}

@@ -4,9 +4,6 @@
 
 {% block body %}
     <div class="container">
-        <div class="my-2">
-            <a href="{{ path('home') }}">Accès au plan</a>
-        </div>
         <h1>Edition de l'évènement</h1>
         
         {{ include('event/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
