@@ -44,9 +44,25 @@
                     {{ form_row(form.moyenPaiement) }}
                 </div>
             </div>
-            {% if personneId is defined %}
-                <input type="text" name="conjoint" value="{{personneId}}" />
+            {% if (personne.conjoint is defined) and (personne.conjoint != null)  %}
+                <div class="mb-3">
+                    <label class="form-label">Conjoint</label>
+                    <input disabled class="form-control" value="{{personne.conjoint.prenom}} {{personne.conjoint.nom}}" />
+                </div>
+            {% elseif (update == true) and (personne.conjoint == false) %}
+                <div class="mb-3 d-flex flex-column">
+                    <label class="form-label">Conjoint</label>
+                    <a class="btn btn-primary form-control w-50" href="{{ path('conjoint_new', {'id': personne.id}) }}" >Créer le conjoint</a>
+                </div>
             {% endif %}
+            <div class="row">
+                <div class="col-6">
+                {{ form_row(form.categorie) }}
+                </div>
+                <div class="col-6">
+                {{ form_row(form.table) }}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -54,14 +70,6 @@
         {{ form_row(form.commentaire) }}
     </div>
 
-    <div class="row">
-        <div class="col-6">
-        {{ form_row(form.categorie) }}
-        </div>
-        <div class="col-6">
-        {{ form_row(form.table) }}
-        </div>
-    </div>
     <div class="d-flex align-items-center justify-content-center mt-4">
         <input class="btn btn-primary mx-3" type="submit" name="action" value="{{conjoint is defined ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint'}}" />
         {% if (update == false) and (conjoint == false) %}
