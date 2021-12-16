@@ -145,7 +145,7 @@ class PersonneController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/add-table/{tableId}", name="personne_add_to_table", methods={"GET"})
+     * @Route("/{id}/add_table/{tableId}", name="personne_add_to_table", methods={"GET"})
      */
     public function addToTable($id, $tableId): Response
     {

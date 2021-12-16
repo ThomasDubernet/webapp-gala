@@ -69,6 +69,11 @@ class Evenement
      */
     private $ville;
 
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $textEmail;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -166,6 +171,18 @@ class Evenement
     public function setVille(?string $ville): self
     {
         $this->ville = $ville;
+
+        return $this;
+    }
+
+    public function getTextEmail(): ?string
+    {
+        return $this->textEmail;
+    }
+
+    public function setTextEmail(?string $textEmail): self
+    {
+        $this->textEmail = $textEmail;
 
         return $this;
     }

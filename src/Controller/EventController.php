@@ -91,6 +91,7 @@ class EventController extends AbstractController
                 "Ville",
                 "Plan",
                 "ImageTicket",
+                "TextEmail"
             ];
 
             foreach ($infosToVerify as $value) {

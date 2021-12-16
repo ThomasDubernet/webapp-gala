@@ -48,7 +48,7 @@ class MailerController extends AbstractController
         ->subject('Billet de reservation')
         ->htmlTemplate('emails/ticket.html.twig')
         ->context([
-            'text_content' => "Bonjour, voici votre billet pour le gala du 13 Décembre 2022." /* $event->getTextEmail() */
+            'text_content' => $event->getTextEmail()
         ])
         ->attachFromPath($uploadDir . "/" . $file);
 

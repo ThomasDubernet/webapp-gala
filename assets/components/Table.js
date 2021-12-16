@@ -202,7 +202,7 @@ const Table = ({table, load, ...props}) => {
                         {filteredStudents.length > 0
                             ? filteredStudents.map((personne, index) => (
                                 <SearchPersonne key={index} personne={personne} >
-                                    <a className="btn btn-sm btn-outline-primary" href={`/personne/${personne.id}/add-table/${id}`}>Ajouter</a>
+                                    <a className="btn btn-sm btn-outline-primary" href={`/personne/${personne.id}/add_table/${id}`}>Ajouter</a>
                                 </SearchPersonne>
                             ))
                             : "Aucune personne ne correspond à votre recherche"

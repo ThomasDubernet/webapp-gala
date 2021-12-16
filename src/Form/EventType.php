@@ -9,6 +9,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -30,32 +31,29 @@ class EventType extends AbstractType
             ])
             ->add('nomSalle', TextType::class, [
                 'label' => 'Nom de la salle',
-                'required' => false
             ])
             ->add('date', DateTimeType::class, [
                 'label' => 'Date de l\'évènement'
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse de l\'évènement ',
-                'required' => false
             ])
             ->add('codePostal', TextType::class, [
                 'label' => 'Code postal',
-                'required' => false
             ])
             ->add('ville', TextType::class, [
                 'label' => 'Ville',
-                'required' => false
+            ])
+            ->add('textEmail', TextareaType::class, [
+                'label' => 'Texte de l\'email',
             ])
             ->add('planFile', FileType::class, [
                 'label' => 'Plan de la salle',
                 'mapped' => false,
-                'required' => false
             ])
             ->add('imageTicketFile', FileType::class, [
                 'label' => 'Image de fond du ticket',
                 'mapped' => false,
-                'required' => false
             ])
         ;
     }
