@@ -134,7 +134,7 @@ class Personne
     private $present;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Civilite::class)
+     * @ORM\ManyToOne(targetEntity=Civilite::class, fetch="EAGER")
      * @Groups({"admin", "personne", "table", "ticket"})
      */
     private $civilite;

@@ -29,7 +29,7 @@ class Table
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"table", "personne"})
      */
     private $nom;

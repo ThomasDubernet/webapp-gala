@@ -65,6 +65,7 @@ class PdfController extends AbstractController
             $mPdf->WriteHtml($stylesheet, 1);
             $mPdf->WriteHtml($this->renderView('pdf/ticket.html.twig', [
                 'numero_ticket' => $ticket->getNumero(),
+                'civilite' => $personne->getCivilite()->getNom(),
                 'prenom' => $personne->getPrenom(),
                 'nom' => $personne->getNom(),
                 'rue' => $personne->getAdresse(),
@@ -72,7 +73,9 @@ class PdfController extends AbstractController
                 'ville' => $personne->getVille(),
                 'image_ticket_path' => $imageTicketPath,
             ]));
-            $mPdf->Output($uploadDir . '/' . $filename, 'F');
+
+            $mPdf->Output($filename, 'I');
+            // $mPdf->Output($uploadDir . '/' . $filename, 'F');
         }
     }
 

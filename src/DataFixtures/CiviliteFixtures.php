@@ -15,10 +15,10 @@ class CiviliteFixtures extends Fixture
         $civilite->setNom('M.');
         
         $civilite1 = new Civilite();
-        $civilite1->setNom('Mme.');
+        $civilite1->setNom('Mme');
 
         $civilite2 = new Civilite();
-        $civilite2->setNom('Mlle.');
+        $civilite2->setNom('Mlle');
 
         $manager->persist($civilite);
         $manager->persist($civilite1);
