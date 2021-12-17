@@ -35,8 +35,8 @@ class TableController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($table);
-            $entityManager->flush();
+            $this->em->persist($table);
+            $this->em->flush();
 
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
