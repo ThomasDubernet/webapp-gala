@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Civilite;
 use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
@@ -101,12 +102,22 @@ class PersonneController extends AbstractController
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
         $civilite = null;
+        $payed = null;
+        $paiementDate = null;
+        $moyenPaiement = null;
+
         if ($personne->getCivilite()->getNom() == "M.") {
-            $civilite = "Mme.";
+            $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'Mme.']);
         } else if ($personne->getCivilite()->getNom() == "Mme.") {
-            $civilite = "M.";
+            $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'M.']);
+        }
+        if ($personne->getMontantBillet() !== null && $personne->getMontantBillet() == $personne->getMontantPaye()) {
+            $payed = 0;
+            // $paiementDate = $personne->getDateReglement();
+            // $moyenPaiement = $personne->getMoyenPaiement();
         }
         $conjoint = new Personne();
+
         $conjoint
             ->setCivilite($civilite)
             ->setNom($personne->getNom() != null ? $personne->getNom() : null)
@@ -116,7 +127,11 @@ class PersonneController extends AbstractController
             ->setEmail($personne->getEmail() != null ? $personne->getEmail() : null)
             ->setTelephone($personne->getTelephone() != null ? $personne->getTelephone() : null)
             ->setCategorie($personne->getCategorie() != null ? $personne->getCategorie() : null)
-            ->setTable($personne->getTable() != null ? $personne->getTable() : null);
+            ->setTable($personne->getTable() != null ? $personne->getTable() : null)
+            ->setDateReglement($paiementDate)
+            ->setMoyenPaiement($moyenPaiement)
+            ->setMontantBillet($payed)
+            ->setMontantPaye($payed);
 
         $form = $this->createForm(PersonneType::class, $conjoint);
         $form->handleRequest($request);
@@ -149,6 +164,16 @@ class PersonneController extends AbstractController
         $form = $this->createForm(PersonneType::class, $personne);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $montantBillet = $personne->getMontantBillet();
+            $montantPaye = $personne->getMontantPaye();
+            $conjoint = $personne->getConjoint();
+
+            if ($conjoint !== null && $montantBillet !== null && $montantBillet == $montantPaye) {
+                $conjoint->setMontantBillet(0);
+                $conjoint->setMontantPaye(0);
+                $this->em->persist($conjoint);
+            }
+
             $this->em->persist($personne);
             $this->em->flush();
 

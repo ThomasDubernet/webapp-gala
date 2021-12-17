@@ -130,7 +130,7 @@ class Personne
     private $present;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\ManyToOne(targetEntity=Civilite::class)
      */
     private $civilite;
 
@@ -348,12 +348,12 @@ class Personne
         return $this;
     }
 
-    public function getCivilite(): ?string
+    public function getCivilite(): ?Civilite
     {
         return $this->civilite;
     }
 
-    public function setCivilite(string $civilite): self
+    public function setCivilite(?Civilite $civilite): self
     {
         $this->civilite = $civilite;
 

@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\CategoriePersonne;
+use App\Entity\Civilite;
 use App\Entity\Personne;
 use App\Entity\Table;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,15 +40,12 @@ class PersonneType extends AbstractType
             : null;
 
         $builder
-            ->add('civilite', ChoiceType::class, [
+            ->add('civilite', EntityType::class, [
+                'class' => Civilite::class,
                 'label' => 'Civilité',
                 'placeholder' => 'Choisir',
-                'required' => false,
-                'choices' => [
-                    "M." => "M.",
-                    "Mme." => "Mme.",
-                    "Mlle." => "Mlle."
-                ]
+                'choice_label' => 'nom',
+                'required' => false
             ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom'
