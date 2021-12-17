@@ -17,6 +17,7 @@ export const Personne = ({personne, children}) => {
       id: ticketId,
       fichier: filename
     },
+    table,
     montantBillet,
     montantPaye,
   } = personne
@@ -52,6 +53,7 @@ export const Personne = ({personne, children}) => {
             </div>
         </div>
       </div>
+      {table !== null ? <p>Table n°{table.numero}</p> : <p>Pas de table</p>}
       <a href={"mailto:" + email}>{email}</a>
       <p>{adresse}<br/>{codePostal} {ville}</p>
 

@@ -141,7 +141,7 @@ const Table = ({table, load, ...props}) => {
                         <i className="bi bi-chevron-right"></i>
                     </div>
                 </CustomMenuItem>
-                <CustomMenuItem><a className="no-style" href={"/table/" + id + "/pdf"} target="_blank">Imprimer la liste des personnes</a></CustomMenuItem>
+                {/* <CustomMenuItem><a className="no-style" href={"/table/" + id + "/pdf"} target="_blank">Imprimer la liste des personnes</a></CustomMenuItem> */}
                 <hr />
                 {/* <div className="d-flex"> */}
                 <CustomMenuItem>
