@@ -15,19 +15,19 @@ class CategorieTable
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"table"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"table"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"table"})
      */
     private $couleur;
 

@@ -13,7 +13,7 @@ use App\Validator\Constraints as MyContraints;;
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
  * @ApiResource(
- *  normalizationContext={"groups"={"admin"}},
+ *  normalizationContext={"groups"={"admin", "personne"}},
  *  collectionOperations={"get"},
  *  itemOperations={"get", "put"}
  * )
@@ -25,115 +25,117 @@ class Personne
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"personne", "table", "ticket"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"personne", "table", "ticket"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne", "table", "ticket"})
      */
     private $prenom;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $adresse;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $telephone;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $montantBillet;
 
     /**
      * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $montantPaye;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      * @MyContraints\dateReglementConstraint
      */
     private $dateReglement;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      * @MyContraints\moyenReglementConstraint
      */
     private $moyenPaiement;
 
     /**
      * @ORM\Column(type="text", nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $commentaire;
 
     /**
      * @ORM\ManyToOne(targetEntity=CategoriePersonne::class)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $categorie;
 
     /**
      * @ORM\ManyToOne(targetEntity=Table::class, inversedBy="personnes", fetch="EAGER")
+     * @Groups({"personne", "ticket"})
      */
     private $table;
 
     /**
      * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $conjoint;
 
     /**
      * @ORM\OneToOne(targetEntity=Ticket::class, mappedBy="personne", cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $ticket;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $codePostal;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne", "ticket"})
      */
     private $ville;
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $present;
 
     /**
      * @ORM\ManyToOne(targetEntity=Civilite::class)
+     * @Groups({"admin", "personne", "table", "ticket"})
      */
     private $civilite;
 

@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 /**
  * @ORM\Entity(repositoryClass=TableRepository::class)
  * @ApiResource(
- *  normalizationContext={"groups"={"admin"}},
+ *  normalizationContext={"groups"={"admin", "table"}},
  *  collectionOperations={"get"},
  *  itemOperations={"get", "put", "delete"}
  * )
@@ -24,49 +24,49 @@ class Table
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $nom;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $numero;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $nombrePlacesMax;
 
     /**
      * @ORM\ManyToOne(targetEntity=CategorieTable::class)
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $categorie;
 
     /**
      * @ORM\OneToMany(targetEntity=Personne::class, mappedBy="table", fetch="EAGER")
-     * @Groups({"admin"})
+     * @Groups({"table"})
      */
     private $personnes;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $posX;
 
     /**
      * @ORM\Column(type="integer", nullable=true)
-     * @Groups({"admin"})
+     * @Groups({"table", "personne"})
      */
     private $posY;
 

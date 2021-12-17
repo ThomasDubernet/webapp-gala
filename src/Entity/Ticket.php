@@ -9,7 +9,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ApiResource(
- *  normalizationContext={"groups"={"admin"}}
+ *  normalizationContext={"groups"={"admin", "ticket"}}
  * )
  * @ORM\Entity(repositoryClass=TicketRepository::class)
  */
@@ -19,25 +19,26 @@ class Ticket
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"ticket", "personne"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"ticket", "personne"})
      */
     private $fichier;
 
     /**
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"ticket", "personne"})
      */
     private $numero;
 
     /**
      * @ORM\OneToOne(targetEntity=Personne::class, inversedBy="ticket", cascade={"persist", "remove"}, fetch="EAGER")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"ticket"})
      */
     private $personne;
 

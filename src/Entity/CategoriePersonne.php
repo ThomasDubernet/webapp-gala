@@ -15,13 +15,13 @@ class CategoriePersonne
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"admin"})
+     * @Groups({"personne"})
      */
     private $nom;
 
