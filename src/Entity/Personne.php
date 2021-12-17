@@ -35,7 +35,7 @@ class Personne
     private $nom;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"admin"})
      */
     private $prenom;
@@ -128,6 +128,11 @@ class Personne
      * @Groups({"admin"})
      */
     private $present;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $civilite;
 
     public function getId(): ?int
     {
@@ -339,6 +344,18 @@ class Personne
     public function setPresent(?bool $present): self
     {
         $this->present = $present;
+
+        return $this;
+    }
+
+    public function getCivilite(): ?string
+    {
+        return $this->civilite;
+    }
+
+    public function setCivilite(string $civilite): self
+    {
+        $this->civilite = $civilite;
 
         return $this;
     }

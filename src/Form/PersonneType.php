@@ -39,11 +39,22 @@ class PersonneType extends AbstractType
             : null;
 
         $builder
+            ->add('civilite', ChoiceType::class, [
+                'label' => 'Civilité',
+                'placeholder' => 'Choisir',
+                'required' => false,
+                'choices' => [
+                    "M." => "M.",
+                    "Mme." => "Mme.",
+                    "Mlle." => "Mlle."
+                ]
+            ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom'
             ])
             ->add('prenom', TextType::class, [
-                'label' => 'Prénom'
+                'label' => 'Prénom',
+                'required' => false
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse postale'
@@ -89,7 +100,8 @@ class PersonneType extends AbstractType
                     'Virement' => 'virement',
                     'Espèces' => 'especes',
                     'Carte Bancaire' => 'carte_bancaire',
-                    'Paiement en ligne' => 'paiement_en_ligne'
+                    'Paiement en ligne' => 'paiement_en_ligne',
+                    'Retenue sur salaire' => 'retenue_sur_salaire'
                 ]
             ])
             ->add('commentaire', TextareaType::class, [

@@ -117,7 +117,7 @@ const Table = ({table, load, ...props}) => {
                     onContextMenu={handleContextMenu}
                     
                 >
-                    <p className="number">N°{numero}</p>
+                    <p className="number">T{numero}</p>
                     <p className="number-max">
                         {personnes.length} / {nbMax}
                     </p>

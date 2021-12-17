@@ -100,7 +100,24 @@ class PersonneController extends AbstractController
     public function newConjoint($id, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
+        $civilite = null;
+        if ($personne->getCivilite()->getNom() == "M.") {
+            $civilite = "Mme.";
+        } else if ($personne->getCivilite()->getNom() == "Mme.") {
+            $civilite = "M.";
+        }
         $conjoint = new Personne();
+        $conjoint
+            ->setCivilite($civilite)
+            ->setNom($personne->getNom() != null ? $personne->getNom() : null)
+            ->setAdresse($personne->getAdresse() != null ? $personne->getAdresse() : null)
+            ->setCodePostal($personne->getCodePostal() != null ? $personne->getCodePostal() : null)
+            ->setVille($personne->getVille() != null ? $personne->getVille() : null)
+            ->setEmail($personne->getEmail() != null ? $personne->getEmail() : null)
+            ->setTelephone($personne->getTelephone() != null ? $personne->getTelephone() : null)
+            ->setCategorie($personne->getCategorie() != null ? $personne->getCategorie() : null)
+            ->setTable($personne->getTable() != null ? $personne->getTable() : null);
+
         $form = $this->createForm(PersonneType::class, $conjoint);
         $form->handleRequest($request);
 
