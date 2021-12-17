@@ -89,6 +89,9 @@ const Table = ({table, load, ...props}) => {
                 posY: data.y,
             })
         })
+        setTimeout(() => {
+            load()
+        }, 300)
     }
 
     useEffect(() => {
@@ -106,14 +109,15 @@ const Table = ({table, load, ...props}) => {
         <React.Fragment>
             <Draggable
                 defaultPosition={{
-                    x: posX !== null ? posX : 0 ,
-                    y: posY !== null ? posY : 0
+                    x: posX !== null ? posX : 750,
+                    y: posY !== null ? posY : 350
                 }}
                 onStop={handleStop}
             >
                 <div
-                    className={"custom-table table-window-" + id}
+                    className={`custom-table table-window-${id}`}
                     style={{background: couleur}}
+                    onClick={() => removeDefaultClasse(this)}
                     onContextMenu={handleContextMenu}
                     
                 >
