@@ -8,6 +8,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
+use App\Validator\Constraints as MyContraints;;
 
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
@@ -73,12 +74,14 @@ class Personne
     /**
      * @ORM\Column(type="datetime", nullable=true)
      * @Groups({"admin"})
+     * @MyContraints\dateReglementConstraint
      */
     private $dateReglement;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"admin"})
+     * @MyContraints\moyenReglementConstraint
      */
     private $moyenPaiement;
 
