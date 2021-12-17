@@ -113,8 +113,8 @@ class PersonneController extends AbstractController
         }
         if ($personne->getMontantBillet() !== null && $personne->getMontantBillet() == $personne->getMontantPaye()) {
             $payed = 0;
-            // $paiementDate = $personne->getDateReglement();
-            // $moyenPaiement = $personne->getMoyenPaiement();
+            $paiementDate = $personne->getDateReglement();
+            $moyenPaiement = $personne->getMoyenPaiement();
         }
         $conjoint = new Personne();
 
@@ -177,7 +177,7 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            return $this->redirectToRoute('personne_index');
+            return $this->redirectToRoute('home');
         }
 
         return $this->render('personne/edit.html.twig', [
