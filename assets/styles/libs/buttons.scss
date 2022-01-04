@@ -2,7 +2,9 @@
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  position: relative;
+  position: absolute;
+  top: 25px;
+  right: 25px;
   padding: 0;
 
   i {
@@ -13,3 +15,10 @@
   }
 
 }
+
+.btn-add {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+

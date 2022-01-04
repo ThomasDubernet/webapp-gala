@@ -14,7 +14,13 @@ class moyenReglementConstraintValidator extends ConstraintValidator
 
         if ($object instanceof Personne) {
             if ($value == null) {
-                if ($object->getMontantPaye() !== null) {
+                $montantBillet = $object->getMontantBillet();
+                $montantPaye = $object->getMontantPaye();
+                if (
+                    $montantBillet !== null
+                    && $montantPaye !== null
+                    && $montantPaye > 0
+                ) {
                     return $this->context
                         ->buildViolation($constraint->message)
                         ->addViolation();

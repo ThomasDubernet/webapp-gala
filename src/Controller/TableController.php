@@ -35,6 +35,9 @@ class TableController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $table
+                ->setPosX('50.00')
+                ->setPosY('-50.00');
             $this->em->persist($table);
             $this->em->flush();
 

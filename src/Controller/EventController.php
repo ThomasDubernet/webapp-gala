@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
+use App\Entity\MediaObject;
+use App\Entity\Personne;
+use App\Entity\Table;
+use App\Entity\Ticket;
 use App\Form\EventType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -74,6 +78,76 @@ class EventController extends AbstractController
             'event' => $event,
             'form' => $form
         ]);
+    }
+
+    /**
+     * @Route("/init", name="event_init")
+     */
+    public function eventInit()
+    {
+        $this->cleanDatabase();
+        $events = $this->em->getRepository(Evenement::class)->findAll();
+        $event = $events[0];
+        
+        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * @Route("/init_all", name="event_init_all")
+     */
+    public function eventInitAll()
+    {
+        $this->cleanDatabase();
+        $events = $this->em->getRepository(Evenement::class)->findAll();
+        $event = $events[0];
+        $event
+            ->setNom(null)
+            ->setNomSalle(null)
+            ->setDate(null)
+            ->setAdresse(null)
+            ->setPlan(null)
+            ->setImageTicket(null)
+            ->setCodePostal(null)
+            ->setVille(null)
+            ->setTextEmail(null);
+
+
+        $medias = $this->em->getRepository(MediaObject::class)->findAll();
+        $this->em->persist($event);
+        $this->em->remove($medias);
+        $this->em->flush();
+
+        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+    }
+
+    public function cleanDatabase()
+    {
+
+        $personnes = $this->em->getRepository(Personne::class)->findAll();
+        $tables = $this->em->getRepository(Table::class)->findAll();
+        $tickets = $this->em->getRepository(Ticket::class)->findAll();
+        $medias = $this->em->getRepository(MediaObject::class)->findAll();
+
+        foreach ($personnes as $personne) {
+            $table = $personne->getTable();
+            $conjoint = $personne->getConjoint();
+            $personne->setTicket(null);
+
+            if ($table !== null && $table instanceof Table) {
+                $personne->setTable(null);
+                $table->removePersonne($personne);
+            }
+            if ($conjoint !== null && $conjoint instanceof Personne) {
+                $personne->setConjoint(null);
+                $conjoint->setConjoint(null);
+            }
+
+            $this->em->remove($personne);
+        }
+        $this->em->remove($tickets);
+        $this->em->remove($tables);
+
+        $this->em->flush();
     }
 
     public function verification(): bool

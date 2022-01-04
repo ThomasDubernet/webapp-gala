@@ -107,8 +107,8 @@ class PersonneController extends AbstractController
         $moyenPaiement = null;
 
         if ($personne->getCivilite()->getNom() == "M.") {
-            $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'Mme.']);
-        } else if ($personne->getCivilite()->getNom() == "Mme.") {
+            $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'Mme']);
+        } else if ($personne->getCivilite()->getNom() == "Mme") {
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'M.']);
         }
         if ($personne->getMontantBillet() !== null && $personne->getMontantBillet() == $personne->getMontantPaye()) {
@@ -169,8 +169,12 @@ class PersonneController extends AbstractController
             $conjoint = $personne->getConjoint();
 
             if ($conjoint !== null && $montantBillet !== null && $montantBillet == $montantPaye) {
-                $conjoint->setMontantBillet(0);
-                $conjoint->setMontantPaye(0);
+                $conjoint
+                    ->setMontantBillet(0)
+                    ->setMontantPaye(0)
+                    ->setDateReglement($personne->getDateReglement())
+                    ->setMoyenPaiement($personne->getMoyenPaiement());
+                    
                 $this->em->persist($conjoint);
             }
 
