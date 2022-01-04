@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { render } from 'react-dom'
+import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 
 export const Personne = ({personne, children}) => {
   const [payed, setPayed] = useState(false)
-  console.log(personne)
   const {
     id,
     prenom,
@@ -44,7 +43,7 @@ export const Personne = ({personne, children}) => {
                 <div className="dropdown-menu" aria-labelledby="dropdownPersonneButton">
                   <div className="d-flex align-items-center flex-column">
                       <a className="m-2 dropdown-item" href={"/personne/" + id + "/edit"}>Editer la fiche</a>
-                      <a className="m-2 dropdown-item" href={"/ticket/" + ticketId +"/send"}>Renvoyer le billet</a>
+                      <a className="m-2 dropdown-item" href={"/email/" + id}>Renvoyer le billet</a>
                       <a className="m-2 dropdown-item" target="_blank" href={"/uploads/" + filename}>Imprimer le billet</a>
                       <hr className="w-100" />
                       <button type="button" className="m-2 btn btn-danger">Supprimer</button>
@@ -62,10 +61,10 @@ export const Personne = ({personne, children}) => {
   )
 }
 
-const PersonneProvider = ({personne}) => {
-  const [checked, setChecked] = useState(personne.present ? true : false)
+const PersonneProvider = ({personne, load}) => {
 
   const handleChange = () => {
+    const checked = personne.present ? true : false
     fetch('/api/personnes/' + personne.id, {
       method: "PUT",
       headers: {
@@ -74,24 +73,28 @@ const PersonneProvider = ({personne}) => {
       body: JSON.stringify({
         present: !checked
       })
+    }).then(response => {
+      if (response.ok) {
+        load()
+      }
     })
-    setChecked(!checked)
   }
 
   return (
     <Personne personne={personne}>
       <div style={{marginTop: "15px"}} className="d-flex align-items-center">
         <p>Présent ?</p>
-        <input style={{marginLeft: "10px"}} type="checkbox" name="presence" checked={checked} onChange={handleChange} />
+        <input style={{marginLeft: "10px"}} type="checkbox" name="presence" checked={personne.present ? true : false} onChange={handleChange} />
       </div>
     </Personne>
   )
 }
 
 const  Search = () => {
-  const { items: personnes, load, loading } = useGetMany('personnes')
+  const { items: personnes, load } = useGetMany('personnes')
   const [ filteredStudents, setFilteredStudents ] = useState([])
   const [ activeModal, setActiveModal] = useState(false)
+  const [ stringToSearch, setStringToSearch ] = useState('')
 
   useEffect(() => {
     load()
@@ -101,26 +104,39 @@ const  Search = () => {
     personnes.forEach(item => {
       item.fullname = item.prenom + " " + item.nom
     })
-    setFilteredStudents(personnes)
+
+    if (stringToSearch !== '') {
+      const result = personnes.filter(personne => personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase()))
+      setFilteredStudents(result)
+    } else {
+      setFilteredStudents(personnes)
+    }
   }, [personnes])
 
   const handleSearch = (event) => {
     const { value } = event.target
+    setStringToSearch(value)
     const result = personnes.filter(personne => personne.fullname.toLowerCase().includes(value.toLowerCase()))
     setFilteredStudents(result)
   }
 
+  const handleClose = () => {
+    load()
+    setActiveModal(false)
+    setStringToSearch('')
+  }
+
   return (
     <React.Fragment>
-      <input className="form-control me-2" type="search" placeholder="Rechercher" aria-label="Rechercher" onFocus={() => setActiveModal(true)} onChange={handleSearch} />
+      <input className="form-control me-2" type="search" placeholder="Rechercher" aria-label="Rechercher" value={stringToSearch} onFocus={() => setActiveModal(true)} onChange={handleSearch} />
       {activeModal &&
         <div className="modal-results-personnes">
-          <button className="btn btn-outline-secondary close" onClick={() => setActiveModal(false)}><i className="bi bi-x-lg"></i></button>
+          <button className="btn btn-outline-secondary close btn-modal-close" onClick={handleClose}><i className="bi bi-x-lg"></i></button>
           <h3 className="title">Personnes</h3>
           <div className="content">
             {filteredStudents.length > 0 ?
               filteredStudents.map((personne, index) => (
-                <PersonneProvider key={index} personne={personne} />
+                <PersonneProvider key={index} personne={personne} load={load} />
               ))
               : "Aucune personne ne correspond à votre recherche"
             }

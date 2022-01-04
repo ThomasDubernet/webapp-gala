@@ -25,12 +25,14 @@ class CategorieTableFixtures extends Fixture
 
         $mixte->setNom('Mixte')
                 ->setCouleur('#01A451');
+
         $reserve->setNom('Réservé')
                 ->setCouleur('#E81B2A');
 
         $manager->persist($homme);
         $manager->persist($femme);
         $manager->persist($mixte);
+        $manager->persist($reserve);
 
         $manager->flush();
     }

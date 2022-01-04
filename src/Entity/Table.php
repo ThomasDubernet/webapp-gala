@@ -59,13 +59,13 @@ class Table
     private $personnes;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
      * @Groups({"table", "personne"})
      */
     private $posX;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
      * @Groups({"table", "personne"})
      */
     private $posY;
@@ -158,24 +158,24 @@ class Table
         return $this;
     }
 
-    public function getPosX(): ?int
+    public function getPosX(): ?string
     {
         return $this->posX;
     }
 
-    public function setPosX(?int $posX): self
+    public function setPosX(?string $posX): self
     {
         $this->posX = $posX;
 
         return $this;
     }
 
-    public function getPosY(): ?int
+    public function getPosY(): ?string
     {
         return $this->posY;
     }
 
-    public function setPosY(?int $posY): self
+    public function setPosY(?string $posY): self
     {
         $this->posY = $posY;
 

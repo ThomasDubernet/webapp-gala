@@ -17,16 +17,20 @@ custom-searchbar {
     padding: 25px;
     border-radius: 25px;
     box-shadow: 0 .5rem 1rem rgba(#000000, .25);
+    overflow-y: hidden;
 
     .title {
       width: 100%;
       text-align: center;
+      margin-bottom: 45px;
     }
 
     .content {
       display: grid;
       gap: 15px;
       grid-template-columns: repeat(4, 1fr);
+      height: calc(100% - 55px);
+      overflow: scroll;
     }
   }
 }

@@ -74,8 +74,7 @@ class PdfController extends AbstractController
                 'image_ticket_path' => $imageTicketPath,
             ]));
 
-            $mPdf->Output($filename, 'I');
-            // $mPdf->Output($uploadDir . '/' . $filename, 'F');
+            $mPdf->Output($uploadDir . '/' . $filename, 'F');
         }
     }
 

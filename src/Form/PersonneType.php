@@ -45,7 +45,7 @@ class PersonneType extends AbstractType
                 'label' => 'Civilité',
                 'placeholder' => 'Choisir',
                 'choice_label' => 'nom',
-                'required' => false
+                'required' => true
             ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom'
@@ -72,14 +72,14 @@ class PersonneType extends AbstractType
             ->add('montantBillet', NumberType::class, [
                 'label' => 'Montant du billet',
                 'attr' => [
-                    'placeholder' => 'saisir 0 si conjoint'
+                    'placeholder' => 'Saisir 0 si déjà payé ou gratuit'
                 ],
                 'required' => false
             ])
             ->add('montantPaye', NumberType::class, [
                 'label' => 'Montant déjà payé',
                 'attr' => [
-                    'placeholder' => 'saisir 0 si conjoint'
+                    'placeholder' => 'Saisir 0 si déjà payé ou gratuit'
                 ],
                 'required' => false
             ])
@@ -126,7 +126,6 @@ class PersonneType extends AbstractType
                 'required' => false,
                 'data' => $tableToAdd != null ? $tableToAdd : $tableAttributes
             ])
-            // ->add('conjoint')
         ;
     }
 

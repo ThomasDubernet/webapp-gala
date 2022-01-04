@@ -46,13 +46,4 @@ class TicketController extends AbstractController
 
         return $ticket;
     }
-
-    /**
-     * @Route("/{id}/send", name="send_ticket")
-     */
-    public function sendTicket(Ticket $ticket)
-    {
-        $personne = $ticket->getPersonne();
-        dd($ticket, $personne);
-    }
 }
