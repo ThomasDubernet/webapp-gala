@@ -4221,6 +4221,11 @@ raw-body@2.4.0:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
+react-circular-progressbar@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/react-circular-progressbar/-/react-circular-progressbar-2.0.4.tgz#5b04a9cf6be8c522c180e4e99ec6db63677335b0"
+  integrity sha512-OfX0ThSxRYEVGaQSt0DlXfyl5w4DbXHsXetyeivmoQrh9xA9bzVPHNf8aAhOIiwiaxX2WYWpLDB3gcpsDJ9oww==
+
 react-contextmenu@^2.14.0:
   version "2.14.0"
   resolved "https://registry.yarnpkg.com/react-contextmenu/-/react-contextmenu-2.14.0.tgz#d8966f30614b9b780b928be4c8d92bd740d55cdd"

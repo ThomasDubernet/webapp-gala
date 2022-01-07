@@ -12,7 +12,9 @@
     </head>
     <body>
         {% include "components/navigation.html.twig" %}
-        {# {% include "modals/index.html.twig" %} #}
+        {% if message is defined %}
+            <p class="notif-message bg-{{message.type}}">{{message.text}}</p>
+        {% endif %}
 
         {% block body %}{% endblock %}
 

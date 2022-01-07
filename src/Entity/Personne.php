@@ -129,7 +129,7 @@ class Personne
 
     /**
      * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"personne"})
+     * @Groups({"personne", "table"})
      */
     private $present;
 
@@ -138,6 +138,11 @@ class Personne
      * @Groups({"admin", "personne", "table", "ticket"})
      */
     private $civilite;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $idCerfa;
 
     public function getId(): ?int
     {
@@ -161,7 +166,7 @@ class Personne
         return $this->prenom;
     }
 
-    public function setPrenom(string $prenom): self
+    public function setPrenom(?string $prenom): self
     {
         $this->prenom = $prenom;
 
@@ -361,6 +366,18 @@ class Personne
     public function setCivilite(?Civilite $civilite): self
     {
         $this->civilite = $civilite;
+
+        return $this;
+    }
+
+    public function getIdCerfa(): ?string
+    {
+        return $this->idCerfa;
+    }
+
+    public function setIdCerfa(?string $idCerfa): self
+    {
+        $this->idCerfa = $idCerfa;
 
         return $this;
     }

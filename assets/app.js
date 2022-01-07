@@ -17,3 +17,14 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 import "./components/search.js"
 import "./components/plan.js"
+
+document.addEventListener('DOMContentLoaded', () => {
+    
+    const formImport = document.getElementById('form_import')
+    const inputImport = document.getElementById('import_importFile')
+
+    inputImport.addEventListener('change', (e) => {
+        e.preventDefault()
+        formImport.submit()
+    })
+})
