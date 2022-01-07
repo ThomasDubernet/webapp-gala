@@ -53,7 +53,7 @@ class PersonneController extends AbstractController
     public function index(PersonneRepository $repo): Response
     {
         return $this->render('personne/index.html.twig', [
-            'personnes' => $repo->findAll()
+            'personnes' => $repo->findBy([], ['nom' => 'ASC'])
         ]);
     }
 

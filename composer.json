@@ -15,6 +15,7 @@
         "doctrine/orm": "^2.10",
         "nelmio/cors-bundle": "^2.1",
         "phpdocumentor/reflection-docblock": "^5.3",
+        "phpoffice/phpspreadsheet": "^1.20",
         "sasedev/mpdf-bundle": "^2.0",
         "sensio/framework-extra-bundle": "^6.1",
         "symfony/apache-pack": "^1.0",

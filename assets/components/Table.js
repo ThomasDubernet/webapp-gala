@@ -11,6 +11,8 @@ import { styled } from '@mui/material/styles'
 import { useGetMany } from '../hooks'
 import Draggable from 'react-draggable'
 
+import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
+
 const CustomMenuItem = styled(MenuItem)`
     font-size: 14px;
     margin-bottom: .5rem;
@@ -36,6 +38,7 @@ const Table = ({table, load, plan}) => {
     const [ contextMenu, setContextMenu] = useState(null)
     const [ loading, setLoading] = useState(true)
     const [ planRef, setPlanRef] = useState(null)
+    const [ percentPresent, setPercentPresent] = useState(null)
 
     const [height, setHeight] = useState(null)
 
@@ -147,6 +150,8 @@ const Table = ({table, load, plan}) => {
     }
 
     useEffect(() => {
+        setPercentPresent(table.personnes.length * 100 / table.nombrePlacesMax)
+
         loadPersonnes()
         if ( plan.current !== null ) {
             setPlanRef(plan.current)
@@ -188,22 +193,33 @@ const Table = ({table, load, plan}) => {
                 offsetParent={planRef}
                 onStop={handleStop}
             >
-                <div
-                    className={`custom-table table-window-${id}`}
-                    style={{
-                        background: couleur,
-                        width: height + 'px',
-                        height: height + 'px'
-                    }}
-                    onContextMenu={handleContextMenu}
-                    
-                >
-                    <p className="number">T{numero}</p>
-                    <p className="number-max">
-                        {personnes.length} / {nbMax}
-                    </p>
-                    <p className='nom-table'>{nom}</p>
-                </div>
+                    <div
+                        className={`custom-table table-window-${id}`}
+                        style={{
+                            background: couleur,
+                            width: height + 'px',
+                            height: height + 'px'
+                        }}
+                        onContextMenu={handleContextMenu}
+                        
+                    >
+
+                        <CircularProgressbarWithChildren
+                            strokeWidth={4}
+                            value={percentPresent}
+                            styles={{
+                                path: {
+                                    stroke: "#000000"
+                                }
+                            }}
+                        >
+                            <p className="number">T{numero}</p>
+                            <p className="number-max">
+                                {personnes.length} / {nbMax}
+                            </p>
+                            <p className='nom-table'>{nom}</p>
+                        </CircularProgressbarWithChildren>
+                    </div>
             </Draggable>
 
             <Menu
@@ -298,9 +314,9 @@ const Table = ({table, load, plan}) => {
     )
 }
 
-const Personne = ({ personne: { prenom, nom, id } }) => (
+const Personne = ({ personne: { prenom, nom, id, present } }) => (
     <div className="d-flex align-items-center justify-content-between w-100 my-3 mx-0">
-        <p className="m-0">{prenom + " " + nom}</p>
+        <p className="m-0" style={{color: (present ? "#008000" : "#000000")}}>{prenom !== null ? prenom : null} {nom}</p>
         <a className="link-three-dots" href={`/personne/${id}/edit`}><i className="bi bi-three-dots"></i></a>
     </div>
 )

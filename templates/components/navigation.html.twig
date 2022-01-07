@@ -35,9 +35,20 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <div class="d-flex align-items-center flex-column">
                         <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
+                        {# {{ form_start(form_import, {'attr': {'id': 'form_import'}}) }}
+                            {{ form_row(form_import.importFile) }}
+                        {{ form_end(form_import) }} #}
+                        <form  action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input type="hidden" name="current_url" value="{{ app.request.requesturi }}" />
+                                <label for="import_importFile" class="form-label required">Import file</label>
+                                <input type="file" id="import_importFile" name="import[importFile]" required="required" class="form-control">
+                            </div>
+                        </form>
+                        <a class="m-2 dropdown-item" href="{{ path('export') }}">Exporter</a>
                         {# <a class="m-2 dropdown-item" href="/pdf/plan">Imprimer le plan de salle</a> #}
                         <hr class="w-100">
-                        <button type="button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#reinitialisationEventModal">Réinitialiser l'évènement</button>
+                        <button type="button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#reinitialisationEventModal">Réinitialiser</button>
                         <a class="m-2 dropdown-item" href="/logout">Déconnexion</a>
                     </div>
                 </div>
@@ -55,8 +66,8 @@
         </div>
         <div class="modal-body">
           <div class="d-flex align-items-center justify-content-around">
-            <a class="btn btn-outline-primary" href="{{ path('event_init')}}">Garder la salle</a>
-            <a class="btn btn-outline-primary" href="{{ path('event_init_all')}}">Tout réinitialiser</a>
+            <a class="btn btn-outline-primary" href="{{ path('reset_simple')}}">Garder la salle</a>
+            <a class="btn btn-outline-primary" href="{{ path('reset_all')}}">Tout réinitialiser</a>
           </div>
         </div>
       </div>
