@@ -1,0 +1,114 @@
+.custom-table {
+  background: #000000;
+  border-radius: 50%;
+  position: absolute;
+  color: white;
+  z-index: -1;
+  margin: 10px;
+  transform-origin: center center;
+
+  .number {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+  }
+
+  .number-max {
+    position: absolute;
+    top: 70%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+  }
+  .nom-table {
+    color: black;
+    position: absolute;
+    font-weight: 500;
+    top: calc(100% + 5px);
+    left: 50%;
+    text-align: center;
+    transform: translate(-50%, 0);
+    font-size: 14px;
+    line-height: 1;
+  }
+}
+
+[class*="table-window-"] {
+  z-index: 1;
+  margin: 0;
+  margin-bottom: 25px;
+  width: 50px;
+  height: 50px;
+  border: 3px solid transparent;
+
+  & > div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+  }
+}
+
+
+custom-plan {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+.plan-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  margin-top: 2px;
+  height: calc(100vh - 62px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .plan-canvas-content {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    height: 100%;
+  }
+
+  .img-box {
+    border: 2px solid red;
+    max-height: 100%;
+    height: fit-content;
+    position: relative;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+@media only screen and (min-width: 900px) {
+  .plan-canvas {
+    align-items: initial;
+    .img-box {
+      height: auto;
+    }
+  }
+}
+
+.loading {
+  position: absolute;
+  top: 40vh;
+  left: 52vw;
+  transform: translate(-50%, -50%);
+}

@@ -1,0 +1,72 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <div class="container-fluid">
+        <a class="navbar-brand" style="height: 45px;" href="{{ path('home') }}">
+            <img class="h-100" src="/logo-2.jpeg" alt="logo" />
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav m-auto mb-2 mb-lg-0">
+            {% if app.request.get('_route') != 'home' %}
+                <li class="nav-item mx-2">
+                    <a href="{{ path('home') }}" class="btn btn-outline-primary">Accès au plan</a>
+                </li>
+            {% endif %}
+                <li class="nav-item mx-2">
+                    <a href="{{ path('table_new') }}" class="btn btn-outline-primary">Créer une table</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a href="{{ path('personne_new') }}" class="btn btn-outline-primary">Créer une personne</a>
+                </li>
+                <li class="nav-item mx-2">
+                    <a href="{{ path('personne_index') }}" class="btn btn-outline-primary">Liste des personnes</a>
+                </li>
+                <li class="nav-item mx-5">
+                    <custom-searchbar></custom-searchbar>
+                </li>
+            </ul>
+        </div>
+        <div class="ml-auto btn-group dropstart">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear-fill"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <div class="d-flex align-items-center flex-column">
+                        <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
+                        <form  action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <input type="hidden" name="current_url" value="{{ app.request.requesturi }}" />
+                                <label for="import_importFile" class="form-label required">Import file</label>
+                                <input type="file" id="import_importFile" name="import[importFile]" required="required" class="form-control">
+                            </div>
+                        </form>
+                        <a class="m-2 dropdown-item" href="{{ path('export') }}">Exporter</a>
+                        {# <a class="m-2 dropdown-item" href="/pdf/plan">Imprimer le plan de salle</a> #}
+                        <hr class="w-100">
+                        <button type="button" class="m-2 btn btn-danger" data-bs-toggle="modal" data-bs-target="#reinitialisationEventModal">Réinitialiser</button>
+                        <a class="m-2 dropdown-item" href="/logout">Déconnexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="modal fade" id="reinitialisationEventModal" tabindex="-1" aria-labelledby="reinitialisationEventModalLabel" aria-hidden="true" >
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Réinitialiser l'évènement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center justify-content-around">
+            <a class="btn btn-outline-primary" href="{{ path('reset_simple')}}">Garder la salle</a>
+            <a class="btn btn-outline-primary" href="{{ path('reset_all')}}">Tout réinitialiser</a>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

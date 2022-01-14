@@ -1,0 +1,82 @@
+{{ form_start(form) }}
+    <div class="row">
+        <div class="col-6">
+            <div class="row">
+                <div class="col-3">
+                    {{ form_row(form.civilite) }}
+                </div>
+                <div class="col-auto">
+                    {{ form_row(form.prenom) }}
+                </div>
+                <div class="col-auto">
+                    {{ form_row(form.nom) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    {{ form_row(form.email) }}
+                </div>
+                <div class="col-6">
+                    {{ form_row(form.telephone) }}
+                </div>
+            </div>
+        {{ form_row(form.adresse) }}
+            <div class="row">
+                <div class="col-6">
+                    {{ form_row(form.codePostal) }}
+                </div>
+                <div class="col-6">
+                    {{ form_row(form.ville) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="row">
+                <div class="col-6">
+                    {{ form_row(form.montantBillet) }}
+                </div>
+                <div class="col-6">
+                    {{ form_row(form.montantPaye) }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    {{ form_row(form.dateReglement) }}
+                </div>
+                <div class="col-6">
+                    {{ form_row(form.moyenPaiement) }}
+                </div>
+            </div>
+            {% if (personne.conjoint is defined) and (personne.conjoint != null)  %}
+                <div class="mb-3">
+                    <label class="form-label">Conjoint</label>
+                    <input disabled class="form-control" value="{{personne.conjoint.prenom}} {{personne.conjoint.nom}}" />
+                </div>
+            {% elseif (update == true) and (personne.conjoint == false) %}
+                <div class="mb-3 d-flex flex-column">
+                    <label class="form-label">Conjoint</label>
+                    <a class="btn btn-primary form-control w-50" href="{{ path('conjoint_new', {'id': personne.id}) }}" >Créer le conjoint</a>
+                </div>
+            {% endif %}
+            <div class="row">
+                <div class="col-6">
+                {{ form_row(form.categorie) }}
+                </div>
+                <div class="col-6">
+                {{ form_row(form.table) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-8 m-auto">
+        {{ form_row(form.commentaire) }}
+    </div>
+
+    <div class="d-flex align-items-center justify-content-center mt-4">
+        <input class="btn btn-primary mx-3" type="submit" name="action" value="{{conjoint is defined ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint'}}" />
+        {% if (update == false) and (conjoint == false) %}
+            <input class="btn btn-primary mx-3" type="submit" name="action" value="Créer avec un conjoint" />
+        {% endif %}
+    </div>
+{{ form_end(form) }}

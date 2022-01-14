@@ -1,3 +1,61 @@
+@import "libs/index";
+@import "~bootstrap/scss/bootstrap";
+@import "pdf.scss";
+
 body {
-  background: burlywood;
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+td {
+    position: relative;
+}
+
+
+.bubble {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+
+    &.bubble-list {
+        position: absolute;
+        top: 50%;
+        left: 30%;
+        transform: translate(-50%, -50%);
+    }
+}
+
+a.no-style {
+    color: inherit;
+    text-decoration: none;
+}
+
+.notif-message {
+    position: absolute;
+    right: 0;
+    z-index: 999;
+    color: white;
+    padding: 15px;
+    margin: 15px;
+    border-radius: 7px;
+    opacity: 1;
+    display: block;
+    animation: remove 7s ease-in-out forwards;
+}
+
+@keyframes remove {
+    from {
+        display: block;
+        opacity: 1;
+    }
+    75% {
+        display: block;
+        opacity: 0;}
+    to {
+        opacity: 0;
+        display: none;
+    }
 }
