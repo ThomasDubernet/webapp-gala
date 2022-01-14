@@ -11,7 +11,9 @@
         {% endblock %}
     </head>
     <body>
-        {% include "components/navigation.html.twig" %}
+        {% if hotesse is not defined %}
+            {% include "components/navigation.html.twig" %}
+        {% endif %}
         {% if message is defined %}
             <p class="notif-message bg-{{message.type}}">{{message.text}}</p>
         {% endif %}

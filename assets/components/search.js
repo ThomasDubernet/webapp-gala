@@ -13,7 +13,6 @@ export const Personne = ({personne, children}) => {
     ville,
     email,
     ticket: {
-      id: ticketId,
       fichier: filename
     },
     table,
@@ -61,7 +60,7 @@ export const Personne = ({personne, children}) => {
   )
 }
 
-const PersonneProvider = ({personne, load}) => {
+export const PersonneProvider = ({personne, load}) => {
 
   const handleChange = () => {
     const checked = personne.present ? true : false
@@ -82,15 +81,15 @@ const PersonneProvider = ({personne, load}) => {
 
   return (
     <Personne personne={personne}>
-      <div style={{marginTop: "15px"}} className="d-flex align-items-center">
-        <p>Présent ?</p>
+      <div style={{marginTop: "0"}} className="d-flex align-items-center">
+        <p className="m-0">Présent ?</p>
         <input style={{marginLeft: "10px"}} type="checkbox" name="presence" checked={personne.present ? true : false} onChange={handleChange} />
       </div>
     </Personne>
   )
 }
 
-const  Search = () => {
+const Search = () => {
   const { items: personnes, load } = useGetMany('personnes')
   const [ filteredStudents, setFilteredStudents ] = useState([])
   const [ activeModal, setActiveModal] = useState(false)

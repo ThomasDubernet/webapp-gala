@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Civilite;
 use App\Entity\Personne;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -18,10 +17,26 @@ class ImportController extends AbstractController
      * @var EntityManagerInterface
      */
     private $em;
+
+    /**
+     * @var PdfController
+     */
+    private $pdfController;
+
+    /**
+     * @var MailerController
+     */
+    private $mailerController;
     
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(
+        EntityManagerInterface $em,
+        PdfController $pdfController,
+        MailerController $mailerController
+    )
     {
         $this->em = $em;
+        $this->pdfController = $pdfController;
+        $this->mailerController = $mailerController;
     }
 
     /**
@@ -84,18 +99,18 @@ class ImportController extends AbstractController
                 ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
                 ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()));
 
-
             $this->em->persist($personne);
-        }
+            $this->em->flush();
 
-        $this->em->flush();
+            $this->pdfController->createTicket($personne);
+            $this->mailerController->sendTicket($personne);
+        }
     }
 
     public function checkRichText($value) {
         if ($value instanceof RichText) {
             return $value->getRichTextElements()[0]->getText();
         }
-
         return $value;
     }
 }
