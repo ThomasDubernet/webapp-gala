@@ -35,9 +35,6 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <div class="d-flex align-items-center flex-column">
                         <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
-                        {# {{ form_start(form_import, {'attr': {'id': 'form_import'}}) }}
-                            {{ form_row(form_import.importFile) }}
-                        {{ form_end(form_import) }} #}
                         <form  action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <input type="hidden" name="current_url" value="{{ app.request.requesturi }}" />

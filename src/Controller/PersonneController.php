@@ -3,12 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Civilite;
-use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
-use App\Form\EventType;
 use App\Form\PersonneType;
-use App\Form\TableType;
 use App\Repository\PersonneRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

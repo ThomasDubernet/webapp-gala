@@ -34,6 +34,21 @@ custom-searchbar {
     }
   }
 }
+
+
+.grid-personnes {
+  display: grid;
+  gap: 15px;
+  margin-top: 80px;
+  grid-template-columns: repeat(4, 1fr);
+  height: calc(100vh - 60px);
+  overflow: scroll;
+
+  .card-personne {
+    max-height: 250px !important;
+  }
+}
+
 .card-personne {
   padding: 20px;
   border: 2px solid black;

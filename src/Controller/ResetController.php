@@ -95,8 +95,9 @@ class ResetController extends AbstractController
                 $this->em->persist($personne);
                 $this->em->persist($conjoint);
                 $this->em->flush();
-                $this->em->remove($personne);
             }
+            $this->em->remove($personne);
+            $this->em->flush();
         }
         foreach ($tables as $table) {
             $this->em->remove($table);
