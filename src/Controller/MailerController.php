@@ -53,6 +53,10 @@ class MailerController extends AbstractController
         ->attachFromPath($uploadDir . "/" . $file);
 
         $this->mailer->send($message);
+        $personne->setMailEnvoye(true);
+        $this->em->persist($personne);
+        $this->em->flush();
+        
         return $this->redirectToRoute('home');
     }
 }

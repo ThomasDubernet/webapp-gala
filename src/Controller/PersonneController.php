@@ -165,6 +165,14 @@ class PersonneController extends AbstractController
             $montantPaye = $personne->getMontantPaye();
             $conjoint = $personne->getConjoint();
 
+            if ($personne->getMailEnvoye() !== true) {
+                $this->mailerController->sendTicket($personne);
+                
+                if ($conjoint !== null && $conjoint->getMailEnvoye() !== true) {
+                    $this->mailerController->sendTicket($conjoint);
+                }
+            }
+
             if ($conjoint !== null && $montantBillet !== null && $montantBillet == $montantPaye) {
                 $conjoint
                     ->setMontantBillet(0)
