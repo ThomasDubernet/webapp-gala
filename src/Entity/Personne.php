@@ -144,6 +144,11 @@ class Personne
      */
     private $idCerfa;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $mailEnvoye;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -378,6 +383,18 @@ class Personne
     public function setIdCerfa(?string $idCerfa): self
     {
         $this->idCerfa = $idCerfa;
+
+        return $this;
+    }
+
+    public function getMailEnvoye(): ?bool
+    {
+        return $this->mailEnvoye;
+    }
+
+    public function setMailEnvoye(?bool $mailEnvoye): self
+    {
+        $this->mailEnvoye = $mailEnvoye;
 
         return $this;
     }

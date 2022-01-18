@@ -88,22 +88,23 @@ class ImportController extends AbstractController
                 'nom' => $civiliteFile
             ]);
 
-            $personne
-                ->setIdCerfa($this->checkRichText($spreadsheet->getActiveSheet()->getCell('A'.$row)->getValue()))
-                ->setCivilite($civilite)
-                ->setNom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()))
-                ->setPrenom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('D'.$row)->getValue()))
-                ->setTelephone($this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue()))
-                ->setEmail($this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue()))
-                ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G'.$row)->getValue()))
-                ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
-                ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()));
-
-            $this->em->persist($personne);
-            $this->em->flush();
-
-            $this->pdfController->createTicket($personne);
-            $this->mailerController->sendTicket($personne);
+            if ($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== null && $this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== "") {
+                $personne
+                    ->setIdCerfa($this->checkRichText($spreadsheet->getActiveSheet()->getCell('A'.$row)->getValue()))
+                    ->setCivilite($civilite)
+                    ->setNom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()))
+                    ->setPrenom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('D'.$row)->getValue()))
+                    ->setTelephone($this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue()))
+                    ->setEmail($this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue()))
+                    ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G'.$row)->getValue()))
+                    ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
+                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()));
+    
+                $this->em->persist($personne);
+                $this->em->flush();
+    
+                $this->pdfController->createTicket($personne);
+            }
         }
     }
 
