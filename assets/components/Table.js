@@ -127,11 +127,12 @@ const Table = ({table, load, plan}) => {
 
     }
     const percentToPx = (percent, type) => {
-        const planX = planRef.clientWidth
-        const planY = planRef.clientHeight
+        const planX = window.innerWidth
+        const planY = window.innerHeight
 
         switch (type) {
             case 'width':
+                console.log('plan width', planX)
                 return percent * planX / 100
             case 'height':
                 return percent * planY / 100
