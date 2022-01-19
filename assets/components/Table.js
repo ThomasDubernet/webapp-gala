@@ -18,8 +18,7 @@ const CustomMenuItem = styled(MenuItem)`
     margin-bottom: .5rem;
 `
 
-const Table = ({table, load, plan}) => {
-    const submenu = useRef(null)
+const Table = ({table, load}) => {
     const {
         id,
         nom,
@@ -34,39 +33,32 @@ const Table = ({table, load, plan}) => {
         },
         personnes
     } = table
+    const submenu = useRef(null)
     
-    const [ contextMenu, setContextMenu] = useState(null)
-    const [ loading, setLoading] = useState(true)
-    const [ planRef, setPlanRef] = useState(null)
+    const [ loading, setLoading] = useState(false)
+    const { items: allPersonnes, load: loadPersonnes } = useGetMany(`personnes?exists[table]=false`)
+    const [ filteredStudents, setFilteredStudents ] = useState([])
     const [ percentPresent, setPercentPresent] = useState(null)
 
-    const [height, setHeight] = useState(null)
+    /** Positions and sizes's States */
+    const [ planSize, setPlanSize ] = useState({ width: null, height: null })
+    const [ height, setHeight ] = useState(null)
+    const [ positionPx, setPositionPx ] = useState({ x: null, y: null })
+    const [ positionPercent, setPositionPercent ] = useState({ x: posX, y: posY })
 
-    const [ positionPx, setPositionPx ] = useState({
-        x: null,
-        y: null
-    })
-    const [ positionPercent, setPositionPercent ] = useState({
-        x: posX,
-        y: posY
-    })
-
-    const [open, setOpen] = useState(false)
-    const [openSubMenu, setOpenSubMenu] = useState(false)
-
-    const handleOpen = () => setOpen(true)
-    const handleClose = () => setOpen(false)
-    const handleSubMenuOpen = () => setOpenSubMenu(true)
+    /** Menus's States */
+    const [ open, setOpen ] = useState(false)
+    const [ contextMenu, setContextMenu ] = useState(null)
+    const [ openSubMenu, setOpenSubMenu ] = useState(false)
     
+    /** Menus's Functions */
+    const handleOpen = () => setOpen(true)
+    const handleSubMenuOpen = () => setOpenSubMenu(true)
+    const handleClose = () => setOpen(false)
     const handleMenuClose = () => {
         setOpenSubMenu(false)
         setContextMenu(null)
     }
-    
-    const [ filteredStudents, setFilteredStudents ] = useState([])
-    
-    const { items: allPersonnes, load: loadPersonnes } = useGetMany(`personnes?exists[table]=false`)
-
     const handleContextMenu = (event) => {
         event.preventDefault()
         setContextMenu(
@@ -83,6 +75,8 @@ const Table = ({table, load, plan}) => {
         const result = allPersonnes.filter(personne => personne.fullname.toLowerCase().includes(value.toLowerCase()))
         setFilteredStudents(result)
     }
+
+    /** Api's functions */
     function handleDelete() {
         fetch('/api/tables/' + id, {
             method: 'DELETE'
@@ -116,33 +110,33 @@ const Table = ({table, load, plan}) => {
             })
         }
     }
-    const PxToPercent = ({ x, y }) => {
-        const planX = planRef.clientWidth
-        const planY = planRef.clientHeight
 
-        const percentX = parseFloat(x * 100 / planX).toPrecision(6)
-        const percentY = parseFloat(y * 100 / planY).toPrecision(6)
+    /** Positions and sizes's Functions */
+    const PxToPercent = ({ x, y }) => {
+        const percentX = parseFloat(x * 100 / planSize.width).toPrecision(6)
+        const percentY = parseFloat(y * 100 / planSize.height).toPrecision(6)
 
         return { percentX, percentY }
 
     }
     const percentToPx = (percent, type) => {
-        const planX = window.innerWidth
-        const planY = window.innerHeight
-
         switch (type) {
             case 'width':
-                console.log('plan width', planX)
-                return percent * planX / 100
+                return percent * planSize.width / 100
             case 'height':
-                return percent * planY / 100
+                return percent * planSize.height / 100
             default:
                 return
         }
     }
     const onWindowResize = () => {
         setLoading(true)
-        setHeight(planRef.clientHeight * 0.0776)
+        const planElement = document.getElementById('img-box')
+        setPlanSize({
+            width: planElement.clientWidth,
+            height: planElement.clientHeight
+        })
+        setHeight(planElement.clientHeight * 0.0776)
         setPositionPx({
             x: percentToPx(positionPercent.x, 'width'),
             y: percentToPx(positionPercent.y, 'height')
@@ -151,21 +145,20 @@ const Table = ({table, load, plan}) => {
     }
 
     useEffect(() => {
+        loadPersonnes()
         setPercentPresent(table.personnes.length * 100 / table.nombrePlacesMax)
 
-        loadPersonnes()
-        if ( plan.current !== null ) {
-            setPlanRef(plan.current)
-            setHeight(plan.current.clientHeight * 0.0776)
-        } else {
-            const planElement = document.getElementById('img-box')
-            setPlanRef(planElement)
-            setHeight(planElement.clientHeight * 0.0776)
-        }
+        const planElement = document.getElementById('img-box')
+        setPlanSize({
+            width: planElement.clientWidth,
+            height: planElement.clientHeight
+        })
+        setHeight(planElement.clientHeight * 0.0776)
     }, [])
 
     useEffect(() => {
-        if ( planRef !== null ) {
+        const {x: width, y: height} = positionPercent
+        if ( width !== null && height !== null ) {
             setPositionPx({
                 x: percentToPx(positionPercent.x, 'width'),
                 y: percentToPx(positionPercent.y, 'height')
@@ -174,7 +167,7 @@ const Table = ({table, load, plan}) => {
             setLoading(false)
         }
 
-    }, [positionPercent, planRef])
+    }, [positionPercent])
 
     useEffect(() => {
         allPersonnes.forEach(item => {
@@ -191,7 +184,7 @@ const Table = ({table, load, plan}) => {
                     y: positionPx.y
                 }}
                 bounds="parent"
-                offsetParent={planRef}
+                offsetParent={document.getElementById('img-box')}
                 onStop={handleStop}
             >
                     <div

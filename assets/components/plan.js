@@ -4,7 +4,6 @@ import { useGetMany } from '../hooks'
 import Table from './Table';
 
 const Plan = () => {
-    const planRef = useRef(null)
     const { items: tables, load, loading } = useGetMany('tables')
     const { items: events, load: loadEvents } = useGetMany('evenements')
 
@@ -17,11 +16,11 @@ const Plan = () => {
         <React.Fragment>
             <div className="plan-canvas">
                 {events.length > 0 && 
-                <div id="img-box" className="img-box" ref={planRef}>
+                <div id="img-box" className="img-box">
                     <img src={`${events[0].plan.contentUrl}`} alt="plan-image" />
                     {tables.length > 0
                         ? tables.map((table, index) => (
-                            <Table key={index} table={table} load={load} plan={planRef} />
+                            <Table key={index} table={table} load={load} />
                         ))
                         : <p>Aucune table n'a été créée.</p>
                     }
