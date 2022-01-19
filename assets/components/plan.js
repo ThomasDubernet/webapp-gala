@@ -1,5 +1,4 @@
 import React, { useEffect, useRef} from 'react'
-import { useState } from 'react';
 import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 import Table from './Table';
