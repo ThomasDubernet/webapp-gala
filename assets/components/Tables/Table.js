@@ -29,6 +29,7 @@ const Table = ({table, load, planSize, planRef}) => {
         },
         personnes
     } = table
+    const submenu = useRef(null)
     
     const [ loading, setLoading] = useState(true)
     
