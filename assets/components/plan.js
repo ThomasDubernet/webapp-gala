@@ -1,7 +1,8 @@
 import React, { useEffect, useRef} from 'react'
 import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
-import Table from './Table';
+import TableProvider from './Tables/provider';
+import Table from './Tables/Table';
 
 const Plan = () => {
     const planRef = useRef(null)
@@ -19,12 +20,13 @@ const Plan = () => {
                 {events.length > 0 && 
                 <div id="img-box" className="img-box" ref={planRef}>
                     <img src={`${events[0].plan.contentUrl}`} alt="plan-image" />
-                    {tables.length > 0
+                    <TableProvider tables={tables} plan={planRef} />
+                    {/* {tables.length > 0
                         ? tables.map((table, index) => (
                             <Table key={index} table={table} load={load} plan={planRef} />
                         ))
                         : <p>Aucune table n'a été créée.</p>
-                    }
+                    } */}
                 </div>
                 }
             </div>

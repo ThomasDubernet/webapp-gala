@@ -1,24 +1,19 @@
 import React, { useEffect, useRef, useState} from 'react'
-import { Personne as SearchPersonne } from './search'
+import { Personne as SearchPersonne } from '../search'
 import {
     Box,
     Menu,
-    MenuItem,
     Modal,
     Typography
 } from '@mui/material'
-import { styled } from '@mui/material/styles'
-import { useGetMany } from '../hooks'
+import { useGetMany } from '../../hooks'
 import Draggable from 'react-draggable'
 
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
+import { CustomMenuItem } from './tablesStyles'
 
-const CustomMenuItem = styled(MenuItem)`
-    font-size: 14px;
-    margin-bottom: .5rem;
-`
 
-const Table = ({table, load, plan}) => {
+const Table = ({table, load, planSize, planRef}) => {
     const submenu = useRef(null)
     const {
         id,
@@ -35,38 +30,22 @@ const Table = ({table, load, plan}) => {
         personnes
     } = table
     
-    const [ contextMenu, setContextMenu] = useState(null)
     const [ loading, setLoading] = useState(true)
-    const [ planRef, setPlanRef] = useState(null)
-    const [ percentPresent, setPercentPresent] = useState(null)
-
-    const [height, setHeight] = useState(null)
-
-    const [ positionPx, setPositionPx ] = useState({
-        x: null,
-        y: null
-    })
-    const [ positionPercent, setPositionPercent ] = useState({
-        x: posX,
-        y: posY
-    })
-
+    
+    /**
+     * Menus
+     */
+    const [ contextMenu, setContextMenu] = useState(null)
     const [open, setOpen] = useState(false)
     const [openSubMenu, setOpenSubMenu] = useState(false)
-
-    const handleOpen = () => setOpen(true)
-    const handleClose = () => setOpen(false)
-    const handleSubMenuOpen = () => setOpenSubMenu(true)
     
+    const handleOpen = () => setOpen(true)
+    const handleSubMenuOpen = () => setOpenSubMenu(true)
+    const handleClose = () => setOpen(false)
     const handleMenuClose = () => {
         setOpenSubMenu(false)
         setContextMenu(null)
     }
-    
-    const [ filteredStudents, setFilteredStudents ] = useState([])
-    
-    const { items: allPersonnes, load: loadPersonnes } = useGetMany(`personnes?exists[table]=false`)
-
     const handleContextMenu = (event) => {
         event.preventDefault()
         setContextMenu(
@@ -78,11 +57,57 @@ const Table = ({table, load, plan}) => {
             : null
         )
     }
+
+
+    /**
+     * Tailles & positions
+     */
+    const [height, setHeight] = useState(null)
+    const [ positionPx, setPositionPx ] = useState({x: null,y: null })
+    const [ positionPercent, setPositionPercent ] = useState({x: posX,y: posY})
+
+    /**
+     * Personnes
+     */
+    const { items: allPersonnes, load: loadPersonnes } = useGetMany(`personnes?exists[table]=false`)
+    const [ filteredPersonnes, setFilteredPersonnes ] = useState([])
+    const [ percentPresent, setPercentPresent] = useState(null)
+    
     const handleSearch = (event) => {
         const { value } = event.target
         const result = allPersonnes.filter(personne => personne.fullname.toLowerCase().includes(value.toLowerCase()))
-        setFilteredStudents(result)
+        setFilteredPersonnes(result)
     }
+    const pxToPercent = ({ x, y }) => {
+        const percentX = parseFloat(x * 100 / planSize.width).toPrecision(6)
+        const percentY = parseFloat(y * 100 / planSize.height).toPrecision(6)
+
+        return { percentX, percentY }
+
+    }
+    const percentToPx = (percent, type) => {
+        switch (type) {
+            case 'width':
+                return percent * planSize.width / 100
+            case 'height':
+                return percent * planSize.height / 100
+            default:
+                return
+        }
+    }
+    const onWindowResize = () => {
+        setLoading(true)
+        setHeight(planSize.height * 0.0776)
+        setPositionPx({
+            x: percentToPx(positionPercent.x, 'width'),
+            y: percentToPx(positionPercent.y, 'height')
+        })
+        setLoading(false)
+    }
+
+    /**
+     * API events
+     */
     function handleDelete() {
         fetch('/api/tables/' + id, {
             method: 'DELETE'
@@ -93,7 +118,7 @@ const Table = ({table, load, plan}) => {
     }
     const handleStop = async (event, data) => {
         event.preventDefault()
-        const { percentX, percentY } = PxToPercent({
+        const { percentX, percentY } = pxToPercent({
             x: data.x,
             y: data.y
         })
@@ -116,71 +141,28 @@ const Table = ({table, load, plan}) => {
             })
         }
     }
-    const PxToPercent = ({ x, y }) => {
-        const planX = planRef.clientWidth
-        const planY = planRef.clientHeight
 
-        const percentX = parseFloat(x * 100 / planX).toPrecision(6)
-        const percentY = parseFloat(y * 100 / planY).toPrecision(6)
+    useEffect(() => {
+        loadPersonnes()
+        setHeight(planSize.height * 0.0776)
+        setPercentPresent(table.personnes.length * 100 / table.nombrePlacesMax)
+    }, [])
 
-        return { percentX, percentY }
-
-    }
-    const percentToPx = (percent, type) => {
-        const planX = window.innerWidth
-        const planY = window.innerHeight
-
-        switch (type) {
-            case 'width':
-                console.log('plan width', planX)
-                return percent * planX / 100
-            case 'height':
-                return percent * planY / 100
-            default:
-                return
-        }
-    }
-    const onWindowResize = () => {
-        setLoading(true)
-        setHeight(planRef.clientHeight * 0.0776)
+    useEffect(() => {
         setPositionPx({
             x: percentToPx(positionPercent.x, 'width'),
             y: percentToPx(positionPercent.y, 'height')
         })
+        window.addEventListener('resize', onWindowResize)
         setLoading(false)
-    }
 
-    useEffect(() => {
-        setPercentPresent(table.personnes.length * 100 / table.nombrePlacesMax)
-
-        loadPersonnes()
-        if ( plan.current !== null ) {
-            setPlanRef(plan.current)
-            setHeight(plan.current.clientHeight * 0.0776)
-        } else {
-            const planElement = document.getElementById('img-box')
-            setPlanRef(planElement)
-            setHeight(planElement.clientHeight * 0.0776)
-        }
-    }, [])
-
-    useEffect(() => {
-        if ( planRef !== null ) {
-            setPositionPx({
-                x: percentToPx(positionPercent.x, 'width'),
-                y: percentToPx(positionPercent.y, 'height')
-            })
-            window.addEventListener('resize', onWindowResize)
-            setLoading(false)
-        }
-
-    }, [positionPercent, planRef])
+    }, [positionPercent])
 
     useEffect(() => {
         allPersonnes.forEach(item => {
         item.fullname = item.prenom + " " + item.nom
         })
-        setFilteredStudents(allPersonnes)
+        setFilteredPersonnes(allPersonnes)
     }, [allPersonnes])
     
     return !loading && (
@@ -191,7 +173,7 @@ const Table = ({table, load, plan}) => {
                     y: positionPx.y
                 }}
                 bounds="parent"
-                offsetParent={planRef}
+                offsetParent={planRef.current}
                 onStop={handleStop}
             >
                     <div
@@ -300,8 +282,8 @@ const Table = ({table, load, plan}) => {
 
                     </div>
                     <div className="mt-4 grid-search">
-                        {filteredStudents.length > 0
-                            ? filteredStudents.map((personne, index) => (
+                        {filteredPersonnes.length > 0
+                            ? filteredPersonnes.map((personne, index) => (
                                 <SearchPersonne key={index} personne={personne} >
                                     <a className="btn btn-sm btn-outline-primary btn-add" href={`/personne/${personne.id}/add_table/${id}`}>Ajouter</a>
                                 </SearchPersonne>
