@@ -8,7 +8,7 @@ import { useGetMany } from '../../hooks'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
 
-function Table({ table, load, planSize, planRef }) {
+function Table({ table, load, planSize: baseSize, planRef }) {
   const submenu = useRef(null)
   const {
     id,
@@ -55,6 +55,7 @@ function Table({ table, load, planSize, planRef }) {
   const [height, setHeight] = useState(null)
   const [positionPx, setPositionPx] = useState({ x: null, y: null })
   const [positionPercent, setPositionPercent] = useState({ x: posX, y: posY })
+  const [planSize, setPlanSize] = useState(baseSize)
 
   /**
    * Personnes
@@ -78,25 +79,41 @@ function Table({ table, load, planSize, planRef }) {
 
     return { percentX, percentY }
   }
-  const percentToPx = (percent, type) => {
+  const percentToPx = (percent, type, size = null) => {
     let number = 0
-    switch (type) {
-      case 'width':
-        number = (percent * planSize.width) / 100
-        break
-      case 'height':
-        number = (percent * planSize.height) / 100
-        break
-      default:
+    if (size == null) {
+      switch (type) {
+        case 'width':
+          number = (percent * planSize.width) / 100
+          break
+        case 'height':
+          number = (percent * planSize.height) / 100
+          break
+        default:
+      }
+    } else {
+      switch (type) {
+        case 'width':
+          number = (percent * size.width) / 100
+          break
+        case 'height':
+          number = (percent * size.height) / 100
+          break
+        default:
+      }
     }
     return number
   }
   const onWindowResize = () => {
     setLoading(true)
-    setHeight(planSize.height * 0.0776)
+    setHeight(planRef.current.clientHeight * 0.0776)
+    const size = {
+      width: planRef.current.clientWidth,
+      height: planRef.current.clientHeight,
+    }
     setPositionPx({
-      x: percentToPx(positionPercent.x, 'width'),
-      y: percentToPx(positionPercent.y, 'height'),
+      x: percentToPx(positionPercent.x, 'width', size),
+      y: percentToPx(positionPercent.y, 'height', size),
     })
     setLoading(false)
   }

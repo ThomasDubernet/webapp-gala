@@ -5,6 +5,7 @@ import TableProvider from './Tables/provider'
 import Table from './Tables/Table'
 
 function Plan() {
+  const planRef = useRef(null)
   const { items: tables, load, loading } = useGetMany('tables')
   const { items: events, load: loadEvents } = useGetMany('evenements')
 
@@ -16,8 +17,8 @@ function Plan() {
   return !loading ? (
     <div className="plan-canvas">
       {events.length > 0 && (
-        <div id="img-box" className="img-box">
-          <img src={`${events[0].plan.contentUrl}`} alt="plan-image" />
+        <div id="img-box" className="img-box" ref={planRef}>
+          <img src={`${events[0].plan.contentUrl}`} alt="plan" />
           <TableProvider tables={tables} plan={planRef} />
         </div>
       )}

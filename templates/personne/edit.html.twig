@@ -3,12 +3,12 @@
 {% block title %}Reservation BERTH - Edition d'une personne{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <div class="d-flex align-items-center justify-content-between">
-            <h1>Edition d'une personne</h1>
-            {{ include('personne/_delete_form.html.twig') }}
-        </div>
-        
-        {{ include('personne/_form.html.twig', {'button_label': 'Mettre à jour', 'update': true}) }}
+  <div class="container p-0">
+    <div class="d-flex align-items-center justify-content-between">
+      <h1>Edition d'une personne</h1>
+      {{ include('personne/_delete_form.html.twig') }}
     </div>
+
+    {{ include('personne/_form.html.twig', {'button_label': 'Mettre à jour', 'update': true}) }}
+  </div>
 {% endblock %}
