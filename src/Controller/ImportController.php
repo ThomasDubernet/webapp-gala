@@ -98,7 +98,8 @@ class ImportController extends AbstractController
                     ->setEmail($this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue()))
                     ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G'.$row)->getValue()))
                     ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
-                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()));
+                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()))
+                    ->setMailEnvoye(null);
     
                 $this->em->persist($personne);
                 $this->em->flush();

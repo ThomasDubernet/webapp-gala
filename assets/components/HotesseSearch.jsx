@@ -41,7 +41,7 @@ function HotessePage() {
     <>
       <nav
         className="navbar navbar-expand-lg navbar-light bg-light border-bottom position-fixed w-100"
-        style={{ top: 0 }}
+        style={{ top: 0, zIndex: 999 }}
       >
         <div className="container h-100 d-flex">
           <img className="h-100" src="/logo-2.jpeg" alt="logo" />
@@ -55,7 +55,7 @@ function HotessePage() {
           />
         </div>
       </nav>
-      <div className="grid-personnes">
+      <div className="grid-personnes px-4">
         {filteredPersonnes.length > 0
           ? filteredPersonnes.map((personne) => (
               <PersonneProvider
