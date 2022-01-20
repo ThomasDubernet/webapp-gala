@@ -6,29 +6,28 @@
  */
 
 // any CSS you import will output into a single css file (app.css in this case)
-import './styles/app.scss';
+import './styles/app.scss'
 
 // start the Stimulus application
-import './bootstrap';
+import './bootstrap'
 
+// eslint-disable-next-line no-unused-vars
 import { Tooltip, Toast, Popover } from 'bootstrap'
 
-import "bootstrap-icons/font/bootstrap-icons.css";
+import 'bootstrap-icons/font/bootstrap-icons.css'
 
-import "./components/search.js"
-import "./components/plan.js"
-import "./components/hotesseSearch.js"
+import './components/Search'
+import './components/Plan'
+import './components/HotesseSearch'
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    const formImport = document.getElementById('form_import')
-    const inputImport = document.getElementById('import_importFile')
+  const formImport = document.getElementById('form_import')
+  const inputImport = document.getElementById('import_importFile')
 
-    if (inputImport) {
-        inputImport.addEventListener('change', (e) => {
-            e.preventDefault()
-            formImport.submit()
-        })
-    }
-
+  if (inputImport) {
+    inputImport.addEventListener('change', (e) => {
+      e.preventDefault()
+      formImport.submit()
+    })
+  }
 })

@@ -1,6 +1,8 @@
-import { useCallback, useState } from "react"
-const apiUrl = "/api/"
+import { useCallback, useState } from 'react'
 
+const apiUrl = '/api/'
+
+// eslint-disable-next-line import/prefer-default-export
 export const useGetMany = (path) => {
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState([])
@@ -8,25 +10,22 @@ export const useGetMany = (path) => {
     setLoading(true)
     const response = await fetch(apiUrl + path, {
       headers: {
-        'Accept': 'application/json'
-      }
+        Accept: 'application/json',
+      },
     })
 
     const responseData = await response.json()
 
-    if(response.ok) {
+    if (response.ok) {
       setItems(responseData)
-    } else {
-      console.error(response)
     }
 
     setLoading(false)
   }, [path])
 
-
   return {
     loading,
     load,
-    items
+    items,
   }
 }
