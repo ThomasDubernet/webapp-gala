@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { render } from 'react-dom'
 import { useGetMany } from '../hooks'
 import TableProvider from './Tables/provider'
-import Table from './Tables/Table'
 
 function Plan() {
   const planRef = useRef(null)

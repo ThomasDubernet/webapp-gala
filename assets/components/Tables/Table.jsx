@@ -61,7 +61,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
    * Personnes
    */
   const { items: allPersonnes, load: loadPersonnes } = useGetMany(
-    `personnes?exists[table]=false`
+    `personnes?exists[table]=false&exists[]`
   )
   const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [percentPresent, setPercentPresent] = useState(null)
@@ -158,7 +158,14 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   useEffect(() => {
     loadPersonnes()
     setHeight(planSize.height * 0.0776)
-    setPercentPresent((table.personnes.length * 100) / table.nombrePlacesMax)
+
+    let personnesPresentes = 0
+    table.personnes.forEach((personne) => {
+      if (personne.present) {
+        personnesPresentes += 1
+      }
+    })
+    setPercentPresent((personnesPresentes * 100) / table.nombrePlacesMax)
   }, [])
 
   useEffect(() => {
@@ -175,6 +182,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       // eslint-disable-next-line no-param-reassign
       item.fullname = `${item.prenom} ${item.nom}`
     })
+    console.log(allPersonnes)
     setFilteredPersonnes(allPersonnes)
   }, [allPersonnes])
 
@@ -270,6 +278,11 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                 }
               : null
           }
+          PaperProps={{
+            style: {
+              minWidth: '200px',
+            },
+          }}
         >
           <CustomMenuItem
             disabled={personnes.length >= nbMax}
@@ -287,14 +300,20 @@ function Table({ table, load, planSize: baseSize, planRef }) {
             )}
           </CustomMenuItem>
           <hr />
-          <CustomMenuItem className="no-hover scrollable">
+          <CustomMenuItem
+            className="no-hover scrollable"
+            style={{
+              height:
+                personnes.length > 0 ? `${personnes.length * 25.5}px` : '50px',
+            }}
+          >
             <div className="list-personne-scrollable">
               {personnes.length > 0 ? (
                 personnes.map((personne, index) => (
                   <Personne key={index} personne={personne} />
                 ))
               ) : (
-                <p style={{ padding: '5px 10px' }}>Aucune personne</p>
+                <p style={{ padding: '.25rem .5rem' }}>Aucune personne</p>
               )}
             </div>
           </CustomMenuItem>
@@ -342,7 +361,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
 
 function Personne({ personne: { prenom, nom, id, present } }) {
   return (
-    <div className="d-flex align-items-center justify-content-between w-100 my-3 mx-0">
+    <div className="d-flex align-items-center justify-content-between w-100 my-1 mx-0">
       <p className="m-0" style={{ color: present ? '#008000' : '#000000' }}>
         {prenom !== null ? prenom : null} {nom}
       </p>
