@@ -1,10 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservation BERTH - Edition d'une personne{% endblock %}
+{% block title %}Reservations - Edition d'une personne{% endblock %}
 
 {% block body %}
-    <div class="container">
-        <h1>Edition d'une table</h1>
-        {{ include('table/_form.html.twig', {'button_label': 'Mettre à jour', 'update': true}) }}
-    </div>
+  <div class="container">
+    <h1>Edition d'une table</h1>
+    {{ include('table/_form.html.twig', {'button_label': 'Mettre à jour', 'update': true}) }}
+  </div>
 {% endblock %}

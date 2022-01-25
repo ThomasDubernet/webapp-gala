@@ -25,7 +25,7 @@ class ExportController extends AbstractController
         $filename = str_replace(' ', '_', $eventName) . '.xlsx';
 
         $letters = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'
         ];
 
         $categories = [
@@ -44,6 +44,7 @@ class ExportController extends AbstractController
             'Montant payé',
             'Date de règlement',
             'Moyen de paiement',
+            'Commentaire',
             'Table'
         ];
 
@@ -59,7 +60,7 @@ class ExportController extends AbstractController
         $sheet->getRowDimension("1")->setRowHeight(25, 'pt');
         $sheet->getStyle("1")->getFont()->setBold(true);
         $sheet->getStyle("1")->getAlignment()->setVertical('center');
-        $sheet->getStyle('A:P')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A:Q')->getAlignment()->setHorizontal('center');
 
         $startLineNumber = 2;
 
@@ -86,7 +87,8 @@ class ExportController extends AbstractController
             $sheet->setCellValue('M' . $startLineNumber, $personne->getMontantPaye() !== null ? $personne->getMontantPaye() : null);
             $sheet->setCellValue('N' . $startLineNumber, $personne->getDateReglement() !== null ? $personne->getDateReglement()->format('d/m/Y') : null);
             $sheet->setCellValue('O' . $startLineNumber, $personne->getMoyenPaiement() !== null ? $personne->getMoyenPaiement() : null);
-            $sheet->setCellValue('P' . $startLineNumber, $personne->getTable() !== null ? "T" . $personne->getTable()->getNumero() . " | " . $personne->getTable()->getNom() : null);;
+            $sheet->setCellValue('P' . $startLineNumber, $personne->getCommentaire() !== null ? $personne->getCommentaire() : null);;
+            $sheet->setCellValue('Q' . $startLineNumber, $personne->getTable() !== null ? "T" . $personne->getTable()->getNumero() . " | " . $personne->getTable()->getNom() : null);;
 
             $sheet->getRowDimension("$startLineNumber")->setRowHeight(25, 'pt');
             $sheet->getStyle("$startLineNumber")->getAlignment()->setVertical('center');
