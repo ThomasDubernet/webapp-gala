@@ -123,6 +123,15 @@
     "friendsofphp/proxy-manager-lts": {
         "version": "v1.0.5"
     },
+    "guzzlehttp/guzzle": {
+        "version": "7.4.1"
+    },
+    "guzzlehttp/promises": {
+        "version": "1.5.1"
+    },
+    "guzzlehttp/psr7": {
+        "version": "2.1.0"
+    },
     "jms/metadata": {
         "version": "2.6.1"
     },
@@ -164,6 +173,9 @@
     },
     "nikic/php-parser": {
         "version": "v4.13.1"
+    },
+    "ovh/ovh": {
+        "version": "v3.0.0"
     },
     "paragonie/random_compat": {
         "version": "v9.99.100"
@@ -244,6 +256,9 @@
     },
     "psr/simple-cache": {
         "version": "1.0.1"
+    },
+    "ralouphie/getallheaders": {
+        "version": "3.0.3"
     },
     "sasedev/mpdf-bundle": {
         "version": "2.0.0"

@@ -33,15 +33,22 @@ class PersonneController extends AbstractController
      */
     private $mailerController;
 
+    /**
+     * @var SmsController
+     */
+    private $smsController;
+
     public function __construct(
         EntityManagerInterface $em,
         PdfController $pdfController,
-        MailerController $mailerController
+        MailerController $mailerController,
+        SmsController $smsController
     )
     {
         $this->em = $em;
         $this->pdfController = $pdfController;
         $this->mailerController = $mailerController;
+        $this->smsController = $smsController;
     }
 
     /**
@@ -160,7 +167,9 @@ class PersonneController extends AbstractController
     {
         $form = $this->createForm(PersonneType::class, $personne);
         $form->handleRequest($request);
+        $previousPresent = $form->get('previousPresent')->getData();
         if ($form->isSubmitted() && $form->isValid()) {
+            $oldValue = $previousPresent == "1" ? true : false;
             $montantBillet = $personne->getMontantBillet();
             $montantPaye = $personne->getMontantPaye();
             $conjoint = $personne->getConjoint();
@@ -183,6 +192,11 @@ class PersonneController extends AbstractController
                 $this->em->persist($conjoint);
             }
 
+            if ($oldValue !== $personne->getPresent() && $personne->getPresent() == true) {
+                $numero_table = $personne->getTable()->getNumero();
+                $telephone = $personne->getTelephone();
+                $this->smsController->sendSms($numero_table, $telephone);
+            }
             $this->em->persist($personne);
             $this->em->flush();
 

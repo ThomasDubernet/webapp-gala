@@ -98,6 +98,9 @@ export function PersonneProvider({ personne, load }) {
     }).then((response) => {
       if (response.ok) {
         load()
+        if (!checked === true) {
+          fetch(`/api/personnes/${personne.id}/sms`)
+        }
       }
     })
   }

@@ -12,6 +12,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -39,8 +40,15 @@ class PersonneType extends AbstractType
         $catPers = $options['data']->getCategorie() !== null
             ? $options['data']->getCategorie()
             : null;
+        $previousPresent = $options['data']->getPresent() !== null
+            ? $options['data']->getPresent()
+            : null;
 
         $builder
+            ->add('previousPresent', HiddenType::class, [
+                'data' => $previousPresent,
+                'mapped' => false
+            ])
             ->add('civilite', EntityType::class, [
                 'class' => Civilite::class,
                 'label' => 'Civilité',
@@ -138,6 +146,7 @@ class PersonneType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Personne::class,
+            'previousPresent' => null
         ]);
     }
 }

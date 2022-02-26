@@ -15,7 +15,15 @@ use App\Validator\Constraints as MyContraints;;
  * @ApiResource(
  *  normalizationContext={"groups"={"admin", "personne"}},
  *  collectionOperations={"get"},
- *  itemOperations={"get", "put"}
+ *  itemOperations={
+ *      "get",
+ *      "put",
+ *      "send_sms"={
+ *          "method"="GET",
+ *          "path"="/personnes/{id}/sms",
+ *          "controller"=App\Controller\SmsController::class
+ *      }
+ *  }
  * )
  * @ApiFilter(ExistsFilter::class, properties={"table"})
  */
