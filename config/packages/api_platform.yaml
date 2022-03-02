@@ -1,16 +1,18 @@
 api_platform:
-    show_webby: false
-    mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
-    formats:
-        json:
-            mime_types: ['application/json']
-        jsonld:
-            mime_types: ['application/ld+json']
-        html:
-            mime_types: ['text/html']
-    patch_formats:
-        json: ['application/merge-patch+json']
-    swagger:
-        versions: [3]
-    allow_plain_identifiers: true
+  show_webby: false
+  mapping:
+    paths: ['%kernel.project_dir%/src/Entity']
+  formats:
+    json:
+      mime_types: ['application/json']
+    jsonld:
+      mime_types: ['application/ld+json']
+    html:
+      mime_types: ['text/html']
+  patch_formats:
+    json: ['application/merge-patch+json']
+  swagger:
+    versions: [3]
+  allow_plain_identifiers: true
+  defaults:
+    pagination_enabled: false

@@ -45,8 +45,8 @@ class SmsController extends AbstractController
             "validityPeriod"=> 2880
         );
 
-        $resultPostJob = $smsApi->post('/sms/' . $smsServices[0] . '/jobs', $content);
-        $smsJobs = $smsApi->get('/sms/' . $smsServices[0] . '/jobs');
+        $resultPostJob = $smsApi->post('/sms/' . $smsServices[2] . '/jobs', $content);
+        $smsJobs = $smsApi->get('/sms/' . $smsServices[2] . '/jobs');
 
         return;
     }

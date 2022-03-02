@@ -68,10 +68,14 @@ function Table({ table, load, planSize: baseSize, planRef }) {
 
   const handleSearch = (event) => {
     const { value } = event.target
-    const result = allPersonnes.filter((personne) =>
-      personne.fullname.toLowerCase().includes(value.toLowerCase())
-    )
-    setFilteredPersonnes(result)
+    if (value.length > 2) {
+      const result = allPersonnes.filter((personne) =>
+        personne.fullname.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredPersonnes(result)
+    } else {
+      setFilteredPersonnes([])
+    }
   }
   const pxToPercent = ({ x, y }) => {
     const percentX = parseFloat((x * 100) / planSize.width).toPrecision(6)
@@ -182,8 +186,6 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       // eslint-disable-next-line no-param-reassign
       item.fullname = `${item.prenom} ${item.nom}`
     })
-    console.log(allPersonnes)
-    setFilteredPersonnes(allPersonnes)
   }, [allPersonnes])
 
   return (

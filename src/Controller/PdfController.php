@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Civilite;
 use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
@@ -75,6 +76,40 @@ class PdfController extends AbstractController
             ]));
 
             $mPdf->Output($uploadDir . '/' . $filename, 'F');
+        }
+    }
+
+    public function createMassTickets(array $personnes, Evenement $event, string $uploadDir)
+    {
+        for ($i = 0; $i < count($personnes); $i++) { 
+            $mPdf = $this->MpdfFactory->createMpdfObject([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'margin_header' => 5,
+                'margin_footer' => 5,
+                'orientation' => 'P'
+            ]);
+            $uniqId = uniqid();
+            $filename = "ticket$uniqId.pdf";
+            if ($event->getImageTicket() !== null) {
+                $imageTicketPath = $uploadDir . "/" . $event->getImageTicket()->filePath;
+                $ticket = $this->ticketController->create($filename, $personnes[$i], false);
+                
+                $stylesheet = file_get_contents($this->getParameter('kernel.project_dir') . '/public/pdf_ticket.css');
+                $mPdf->WriteHtml($stylesheet, 1);
+                $mPdf->WriteHtml($this->renderView('pdf/ticket.html.twig', [
+                    'numero_ticket' => $ticket->getNumero(),
+                    'civilite' => $personnes[$i]->getCivilite()->getNom(),
+                    'prenom' => $personnes[$i]->getPrenom(),
+                    'nom' => $personnes[$i]->getNom(),
+                    'rue' => $personnes[$i]->getAdresse(),
+                    'code_postal' => $personnes[$i]->getCodePostal(),
+                    'ville' => $personnes[$i]->getVille(),
+                    'image_ticket_path' => $imageTicketPath,
+                ]));
+
+                $mPdf->Output($uploadDir . '/' . $filename, 'F');
+            }
         }
     }
 

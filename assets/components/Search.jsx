@@ -136,23 +136,27 @@ function Search() {
       item.fullname = `${item.prenom} ${item.nom}`
     })
 
-    if (stringToSearch !== '') {
+    if (stringToSearch !== '' && stringToSearch.length > 2) {
       const result = personnes.filter((personne) =>
         personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
       )
       setFilteredStudents(result)
     } else {
-      setFilteredStudents(personnes)
+      setFilteredStudents([])
     }
   }, [personnes])
 
   const handleSearch = (event) => {
     const { value } = event.target
     setStringToSearch(value)
-    const result = personnes.filter((personne) =>
-      personne.fullname.toLowerCase().includes(value.toLowerCase())
-    )
-    setFilteredStudents(result)
+    if (value.length > 2) {
+      const result = personnes.filter((personne) =>
+        personne.fullname.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredStudents(result)
+    } else {
+      setFilteredStudents([])
+    }
   }
 
   const handleClose = () => {

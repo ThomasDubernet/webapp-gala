@@ -56,8 +56,13 @@ class PersonneController extends AbstractController
      */
     public function index(PersonneRepository $repo): Response
     {
+        $all = $repo->findBy([], ['nom' => 'ASC']);
+        $personnes = [];
+        foreach ($all as $personne) {
+            $personne->getTable() !== null && array_push($personnes, $personne);
+        }
         return $this->render('personne/index.html.twig', [
-            'personnes' => $repo->findBy([], ['nom' => 'ASC'])
+            'personnes' => $personnes
         ]);
     }
 

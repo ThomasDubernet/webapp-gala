@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Civilite;
+use App\Entity\Evenement;
 use App\Entity\Personne;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
@@ -80,6 +81,13 @@ class ImportController extends AbstractController
         $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader($inputFileType);
         $spreadsheet = $reader->load($inputFileName);
         $maxCellValue = $spreadsheet->getActiveSheet()->getHighestDataRow();
+        $batchSize = 25;
+
+        $events = $this->em->getRepository(Evenement::class)->findAll();
+        $event = $events[0];
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
+
+        $importPersonnes = [];
 
         for ($row = 2; $row <= $maxCellValue; $row++) {
             $personne = new Personne();
@@ -98,24 +106,35 @@ class ImportController extends AbstractController
                     ->setTelephone(
                         $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue()) !== null
                             ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue())
-                            : "0123456789"
+                            : ""
                     )
                     ->setEmail(
                         $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue()) !== null
                             ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue())
-                            : "xxx@xxx.fr"
+                            : ""
                     )
                     ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G'.$row)->getValue()))
                     ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
                     ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()))
                     ->setMailEnvoye(null);
-    
-                $this->em->persist($personne);
+
+                array_push($importPersonnes, $personne);
+            }
+
+            if (($row % $batchSize) === 0) {
+                $this->pdfController->createMassTickets($importPersonnes, $event, $uploadDir);
                 $this->em->flush();
-    
-                $this->pdfController->createTicket($personne);
+                $this->em->clear();
+                $importPersonnes = [];
             }
         }
+        $this->pdfController->createMassTickets($importPersonnes, $event, $uploadDir);
+        $this->em->flush();
+        $this->em->clear();
+
+
+        $this->addFlash('success', "Importation terminée !");
+        return;
     }
 
     public function checkRichText($value) {

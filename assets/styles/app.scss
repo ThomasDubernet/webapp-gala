@@ -46,16 +46,33 @@ a.no-style {
     animation: remove 7s ease-in-out forwards;
 }
 
+.alert {
+    animation: remove 7s ease-in-out forwards;
+}
+
 @keyframes remove {
     from {
         display: block;
         opacity: 1;
+        height: auto;
+        width: auto;
+        padding: 1rem 1rem;
+        margin-bottom: 1rem;
     }
     75% {
         display: block;
-        opacity: 0;}
+        opacity: 0;
+        height: auto;
+        width: auto;
+        padding: 1rem 1rem;
+        margin-bottom: 1rem;
+    }
     to {
         opacity: 0;
         display: none;
+        height: 0;
+        width: 0;
+        padding: 0;
+        margin-bottom: 10;
     }
 }

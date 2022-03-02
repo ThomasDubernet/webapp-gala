@@ -23,7 +23,7 @@ class TicketController extends AbstractController
         $this->em = $em;
     }
 
-    public function create(string $filename, Personne $personne): Ticket
+    public function create(string $filename, Personne $personne, $flush = true): Ticket
     {
         $allTickets = $this->em->getRepository(Ticket::class)->findAllByNumero();
         if (count($allTickets) > 0) {
@@ -31,19 +31,21 @@ class TicketController extends AbstractController
         } else {
             $newNumero = 1;
         }
-
+        
         $ticket = new Ticket();
-        $ticket->setFichier($filename)
-                ->setNumero($newNumero)
-                ->setPersonne($personne);
-
-        $this->em->persist($ticket);
-
+        $ticket
+            ->setFichier($filename)
+            ->setNumero($newNumero)
+            ->setPersonne($personne)
+        ;
         $personne->setTicket($ticket);
+        
+        $this->em->persist($ticket);
         $this->em->persist($personne);
-
-        $this->em->flush();
-
+        
+        if ($flush) {
+            $this->em->flush();
+        }
         return $ticket;
     }
 }
