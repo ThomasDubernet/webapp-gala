@@ -32,7 +32,14 @@ class SmsController extends AbstractController
         $number = substr($telephone, 1);
 
         $smsServices = $smsApi->get('/sms');
-        
+        $service = "";
+
+        foreach ($smsServices as $value) {
+           if (str_contains($value, "-3")) {
+               $service = $value;
+           }
+        }
+
         $content = (object) array(
             "charset"=> "UTF-8",
             "class"=> "phoneDisplay",
@@ -45,8 +52,8 @@ class SmsController extends AbstractController
             "validityPeriod"=> 2880
         );
 
-        $resultPostJob = $smsApi->post('/sms/' . $smsServices[2] . '/jobs', $content);
-        $smsJobs = $smsApi->get('/sms/' . $smsServices[2] . '/jobs');
+        $resultPostJob = $smsApi->post('/sms/' . $service . '/jobs', $content);
+        $smsJobs = $smsApi->get('/sms/' . $service . '/jobs');
 
         return;
     }

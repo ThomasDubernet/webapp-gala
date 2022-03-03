@@ -18,23 +18,27 @@ function HotessePage() {
       item.fullname = `${item.prenom} ${item.nom}`
     })
 
-    if (stringToSearch !== '') {
+    if (stringToSearch !== '' && stringToSearch > 2) {
       const result = items.filter((personne) =>
         personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
       )
       setFilteredPersonnes(result)
     } else {
-      setFilteredPersonnes(items)
+      setFilteredPersonnes([])
     }
   }, [items])
 
   const handleSearch = (event) => {
     const { value } = event.target
     setStringToSearch(value)
-    const result = items.filter((personne) =>
-      personne.fullname.toLowerCase().includes(value.toLowerCase())
-    )
-    setFilteredPersonnes(result)
+    if (value.length > 2) {
+      const result = items.filter((personne) =>
+        personne.fullname.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredPersonnes(result)
+    } else {
+      setFilteredPersonnes([])
+    }
   }
 
   return (

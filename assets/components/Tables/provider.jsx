@@ -1,5 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useEffect, useState } from 'react'
+import { useGetMany } from '../../hooks'
 import Table from './Table'
 
 function TableProvider(props) {
@@ -7,6 +8,13 @@ function TableProvider(props) {
   const [planElement, setPlanElement] = useState(null)
   const [planSize, setPlanSize] = useState(null)
   const [loading, setLoading] = useState(true)
+  const { items: allPersonnes, load: loadPersonnes } = useGetMany(
+    `personnes?exists[table]=false`
+  )
+
+  useEffect(() => {
+    loadPersonnes()
+  }, [])
 
   useEffect(() => {
     if (plan.current !== null) {
@@ -16,6 +24,14 @@ function TableProvider(props) {
       }, 100)
     }
   }, [props])
+
+  useEffect(() => {
+    allPersonnes.forEach((item) => {
+      // eslint-disable-next-line no-param-reassign
+      item.fullname = `${item.prenom} ${item.nom}`
+    })
+  }, [allPersonnes])
+
   useEffect(() => {
     if (
       planElement !== null &&
@@ -40,6 +56,7 @@ function TableProvider(props) {
               load={load}
               planSize={planSize}
               planRef={plan}
+              allPersonnes={allPersonnes}
             />
           ))
         ) : (

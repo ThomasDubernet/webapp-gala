@@ -8,7 +8,7 @@ import { useGetMany } from '../../hooks'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
 
-function Table({ table, load, planSize: baseSize, planRef }) {
+function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
   const submenu = useRef(null)
   const {
     id,
@@ -60,9 +60,9 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   /**
    * Personnes
    */
-  const { items: allPersonnes, load: loadPersonnes } = useGetMany(
-    `personnes?exists[table]=false&exists[]`
-  )
+  // const { items: allPersonnes, load: loadPersonnes } = useGetMany(
+  //   `personnes?exists[table]=false`
+  // )
   const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [percentPresent, setPercentPresent] = useState(null)
 
@@ -160,7 +160,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   }
 
   useEffect(() => {
-    loadPersonnes()
+    // loadPersonnes()
     setHeight(planSize.height * 0.0776)
 
     let personnesPresentes = 0
@@ -181,12 +181,12 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     setLoading(false)
   }, [positionPercent])
 
-  useEffect(() => {
-    allPersonnes.forEach((item) => {
-      // eslint-disable-next-line no-param-reassign
-      item.fullname = `${item.prenom} ${item.nom}`
-    })
-  }, [allPersonnes])
+  // useEffect(() => {
+  //   allPersonnes.forEach((item) => {
+  //     // eslint-disable-next-line no-param-reassign
+  //     item.fullname = `${item.prenom} ${item.nom}`
+  //   })
+  // }, [allPersonnes])
 
   return (
     !loading && (

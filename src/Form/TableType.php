@@ -19,7 +19,8 @@ class TableType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom de la table',
-                'required' => false
+                'required' => false,
+                'empty_data' => ''
             ])
             ->add('numero', NumberType::class, [
                 'label' => 'Numéro'
