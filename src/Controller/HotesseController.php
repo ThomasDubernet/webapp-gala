@@ -19,5 +19,4 @@ class HotesseController extends AbstractController
             'hotesse' => true
         ]);
     }
-
 }

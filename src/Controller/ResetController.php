@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @Route("/reset")
@@ -79,7 +80,7 @@ class ResetController extends AbstractController
         return $this->redirectToRoute('home');
     }
     
-    public function simpleCleanDatabase()
+    public function simpleCleanDatabase($personnesArray = null, $ticketsArray = null)
     {
         $personnes = $this->em->getRepository(Personne::class)->findAll();
         $tables = $this->em->getRepository(Table::class)->findAll();
@@ -107,5 +108,38 @@ class ResetController extends AbstractController
         }
     
         $this->em->flush();
+    }
+    
+    /**
+     * @Route("/personnes", name="reset_personnes")
+     */
+    public function cleanPersonnesWithoutTable(): Response
+    {
+        $personnes = $this->em->getRepository(Personne::class)->findBy(['table' => null]);
+        $tickets = [];
+        $fs = new Filesystem();
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
+        foreach ($personnes as $personne) {
+            $tickets[] = $personne->getTicket();
+            if ($personne->getConjoint() !== null) {
+                $conjoint = $personne->getConjoint();
+                $conjoint->setConjoint(null);
+                $personne->setConjoint(null);
+                $this->em->persist($personne);
+                $this->em->persist($conjoint);
+            }
+            $this->em->remove($personne);
+        }
+
+        foreach ($tickets as $ticket) {
+            $fichier = $ticket->getFichier();
+            $fs->remove($uploadDir . "/" . $fichier);
+            $this->em->remove($ticket);
+        }
+
+        $this->em->flush();
+        $this->addFlash('success', "Suppression terminée !");
+
+        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
     }
 }
