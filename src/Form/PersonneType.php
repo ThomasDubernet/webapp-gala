@@ -64,13 +64,16 @@ class PersonneType extends AbstractType
                 'required' => false
             ])
             ->add('adresse', TextType::class, [
-                'label' => 'Adresse postale'
+                'label' => 'Adresse postale',
+                'required' => false
             ])
             ->add('codePostal', TextType::class, [
-                'label' => 'Code postal'
+                'label' => 'Code postal',
+                'required' => false
             ])
             ->add('ville', TextType::class, [
-                'label' => 'Ville'
+                'label' => 'Ville',
+                'required' => false
             ])
             ->add('telephone', TextType::class, [
                 'label' => 'Numéro de téléphone'

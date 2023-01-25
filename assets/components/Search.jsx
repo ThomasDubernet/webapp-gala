@@ -12,14 +12,13 @@ export function Personne({ personne, children }) {
     codePostal,
     ville,
     email,
-    ticket: { fichier: filename },
     table,
     montantBillet,
     montantPaye,
   } = personne
 
   useEffect(() => {
-    if (montantBillet !== null && montantBillet == montantPaye) {
+    if (montantBillet !== null && montantBillet === montantPaye) {
       setPayed(true)
     }
   }, [personne])
@@ -51,7 +50,7 @@ export function Personne({ personne, children }) {
                 <a className="m-2 dropdown-item" href={`/personne/${id}/edit`}>
                   Editer la fiche
                 </a>
-                <a className="m-2 dropdown-item" href={`/email/${id}`}>
+                {/* <a className="m-2 dropdown-item" href={`/email/${id}`}>
                   Renvoyer le billet
                 </a>
                 <a
@@ -61,7 +60,7 @@ export function Personne({ personne, children }) {
                   rel="noreferrer"
                 >
                   Imprimer le billet
-                </a>
+                </a> */}
                 <hr className="w-100" />
                 <button type="button" className="m-2 btn btn-danger">
                   Supprimer

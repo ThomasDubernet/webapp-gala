@@ -60,12 +60,12 @@ class ResetController extends AbstractController
             if ($event->getImageTicket() !== null) {
                 $imagePath = $event->getImageTicket()->filePath;
                 $event->setImageTicket(null);
-                
+
                 $fs->remove($uploadDir . "/" . $imagePath);
                 $this->em->persist($event);
                 $this->em->flush();
             }
-            
+
             $this->em->remove($event);
         }
         foreach ($medias as $media) {
@@ -79,7 +79,7 @@ class ResetController extends AbstractController
 
         return $this->redirectToRoute('home');
     }
-    
+
     public function simpleCleanDatabase($personnesArray = null, $ticketsArray = null)
     {
         $personnes = $this->em->getRepository(Personne::class)->findAll();
@@ -87,7 +87,7 @@ class ResetController extends AbstractController
         $tickets = $this->em->getRepository(Ticket::class)->findAll();
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
-    
+
         foreach ($personnes as $personne) {
             if ($personne->getConjoint() !== null) {
                 $conjoint = $personne->getConjoint();
@@ -101,15 +101,17 @@ class ResetController extends AbstractController
         foreach ($tables as $table) {
             $this->em->remove($table);
         }
-        foreach ($tickets as $ticket) {
-            $fichier = $ticket->getFichier();
-            $fs->remove($uploadDir . "/" . $fichier);
-            $this->em->remove($ticket);
+        if (count($tickets) > 0) {
+            foreach ($tickets as $ticket) {
+                $fichier = $ticket->getFichier();
+                $fs->remove($uploadDir . "/" . $fichier);
+                $this->em->remove($ticket);
+            }
         }
-    
+
         $this->em->flush();
     }
-    
+
     /**
      * @Route("/personnes", name="reset_personnes")
      */
@@ -120,7 +122,9 @@ class ResetController extends AbstractController
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
         foreach ($personnes as $personne) {
-            $tickets[] = $personne->getTicket();
+            if ($personne->getTicket() !== null) {
+                $tickets[] = $personne->getTicket();
+            }
             if ($personne->getConjoint() !== null) {
                 $conjoint = $personne->getConjoint();
                 $conjoint->setConjoint(null);
@@ -131,10 +135,12 @@ class ResetController extends AbstractController
             $this->em->remove($personne);
         }
 
-        foreach ($tickets as $ticket) {
-            $fichier = $ticket->getFichier();
-            $fs->remove($uploadDir . "/" . $fichier);
-            $this->em->remove($ticket);
+        if (count($tickets) > 0) {
+            foreach ($tickets as $ticket) {
+                $fichier = $ticket->getFichier();
+                $fs->remove($uploadDir . "/" . $fichier);
+                $this->em->remove($ticket);
+            }
         }
 
         $this->em->flush();

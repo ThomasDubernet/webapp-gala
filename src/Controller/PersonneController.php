@@ -86,8 +86,8 @@ class PersonneController extends AbstractController
             if ($_POST['action'] == "Créer avec un conjoint") {
                 $this->em->persist($personne);
                 $this->em->flush();
-                $this->pdfController->createTicket($personne);
-                $this->mailerController->sendTicket($personne);
+                // $this->pdfController->createTicket($personne);
+                // $this->mailerController->sendTicket($personne);
 
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
@@ -96,8 +96,8 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            $this->pdfController->createTicket($personne);
-            $this->mailerController->sendTicket($personne);
+            // $this->pdfController->createTicket($personne);
+            // $this->mailerController->sendTicket($personne);
             return $this->redirectToRoute('home');
         }
 
@@ -155,8 +155,8 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            $this->pdfController->createTicket($conjoint);
-            $this->mailerController->sendTicket($conjoint);
+            // $this->pdfController->createTicket($conjoint);
+            // $this->mailerController->sendTicket($conjoint);
 
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
@@ -177,18 +177,18 @@ class PersonneController extends AbstractController
         $form->handleRequest($request);
         $previousPresent = $form->get('previousPresent')->getData();
         if ($form->isSubmitted() && $form->isValid()) {
-            $oldValue = $previousPresent == "1" ? true : false;
+            $oldValue = $previousPresent === "1" ? true : false;
             $montantBillet = $personne->getMontantBillet();
             $montantPaye = $personne->getMontantPaye();
             $conjoint = $personne->getConjoint();
 
-            if ($personne->getMailEnvoye() !== true) {
-                $this->mailerController->sendTicket($personne);
-                
-                if ($conjoint !== null && $conjoint->getMailEnvoye() !== true) {
-                    $this->mailerController->sendTicket($conjoint);
-                }
-            }
+            // if ($personne->getMailEnvoye() !== true) {
+            //     $this->mailerController->sendTicket($personne);
+
+            //     if ($conjoint !== null && $conjoint->getMailEnvoye() !== true) {
+            //         $this->mailerController->sendTicket($conjoint);
+            //     }
+            // }
 
             if ($conjoint !== null && $montantBillet !== null && $montantBillet == $montantPaye) {
                 $conjoint
@@ -196,7 +196,7 @@ class PersonneController extends AbstractController
                     ->setMontantPaye(0)
                     ->setDateReglement($personne->getDateReglement())
                     ->setMoyenPaiement($personne->getMoyenPaiement());
-                    
+
                 $this->em->persist($conjoint);
             }
 

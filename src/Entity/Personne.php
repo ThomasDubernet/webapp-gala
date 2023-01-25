@@ -8,7 +8,9 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
-use App\Validator\Constraints as MyContraints;;
+use App\Validator\Constraints as MyContraints;
+
+;
 
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
@@ -50,7 +52,7 @@ class Personne
     private $prenom;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      * @Groups({"personne", "ticket"})
      */
     private $adresse;
@@ -191,7 +193,7 @@ class Personne
         return $this->adresse;
     }
 
-    public function setAdresse(string $adresse): self
+    public function setAdresse(?string $adresse): self
     {
         $this->adresse = $adresse;
 
