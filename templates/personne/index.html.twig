@@ -4,7 +4,16 @@
 
 {% block body %}
   <div class="container">
-    <h1 class="mb-4">Liste des personnes ({{personnes|length}})</h1>
+    <div class="d-flex align-items-center justify-content-between">
+      <h1 class="mb-4">Liste des personnes</h1>
+      <div class="text-end">
+        <p class="mb-0">Personnes affectés à une table :
+          {{personnes|length}}</p>
+        <p class="mb-0">Personnes présentes et affectées à une table :
+          {{personnesPresent}}
+        </p>
+      </div>
+    </div>
 
     <table class="table table-striped table-hover">
       <thead>

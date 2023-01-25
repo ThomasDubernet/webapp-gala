@@ -43,8 +43,7 @@ class PersonneController extends AbstractController
         PdfController $pdfController,
         MailerController $mailerController,
         SmsController $smsController
-    )
-    {
+    ) {
         $this->em = $em;
         $this->pdfController = $pdfController;
         $this->mailerController = $mailerController;
@@ -61,8 +60,12 @@ class PersonneController extends AbstractController
         foreach ($all as $personne) {
             $personne->getTable() !== null && array_push($personnes, $personne);
         }
+        $personnesPresent = count(array_filter($personnes, function ($n) {
+            return $n->getPresent();
+        }));
         return $this->render('personne/index.html.twig', [
-            'personnes' => $personnes
+            'personnes' => $personnes,
+            'personnesPresent' => $personnesPresent
         ]);
     }
 
@@ -117,7 +120,7 @@ class PersonneController extends AbstractController
 
         if ($personne->getCivilite()->getNom() == "M.") {
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'Mme']);
-        } else if ($personne->getCivilite()->getNom() == "Mme") {
+        } elseif ($personne->getCivilite()->getNom() == "Mme") {
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'M.']);
         }
         if ($personne->getMontantBillet() !== null && $personne->getMontantBillet() == $personne->getMontantPaye()) {

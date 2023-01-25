@@ -11,7 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Sasedev\MpdfBundle\Factory\MpdfFactory;
-use \Mpdf\Mpdf;
+use Mpdf\Mpdf;
 
 class PdfController extends AbstractController
 {
@@ -34,8 +34,7 @@ class PdfController extends AbstractController
         EntityManagerInterface $em,
         TicketController $ticketController,
         MpdfFactory $MpdfFactory
-    )
-    {
+    ) {
         $this->em = $em;
         $this->MpdfFactory = $MpdfFactory;
         $this->ticketController = $ticketController;
@@ -81,7 +80,7 @@ class PdfController extends AbstractController
 
     public function createMassTickets(array $personnes, Evenement $event, string $uploadDir)
     {
-        for ($i = 0; $i < count($personnes); $i++) { 
+        for ($i = 0; $i < count($personnes); $i++) {
             $mPdf = $this->MpdfFactory->createMpdfObject([
                 'mode' => 'utf-8',
                 'format' => 'A4',
@@ -94,7 +93,7 @@ class PdfController extends AbstractController
             if ($event->getImageTicket() !== null) {
                 $imageTicketPath = $uploadDir . "/" . $event->getImageTicket()->filePath;
                 $ticket = $this->ticketController->create($filename, $personnes[$i], false);
-                
+
                 $stylesheet = file_get_contents($this->getParameter('kernel.project_dir') . '/public/pdf_ticket.css');
                 $mPdf->WriteHtml($stylesheet, 1);
                 $mPdf->WriteHtml($this->renderView('pdf/ticket.html.twig', [
