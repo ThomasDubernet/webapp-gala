@@ -64,7 +64,7 @@ class PersonneController extends AbstractController
             return $n->getPresent();
         }));
         return $this->render('personne/index.html.twig', [
-            'personnes' => $all,
+            'personnes' => $personnes,
             'personnesPresent' => $personnesPresent
         ]);
     }
