@@ -28,13 +28,12 @@ class ImportController extends AbstractController
      * @var MailerController
      */
     private $mailerController;
-    
+
     public function __construct(
         EntityManagerInterface $em,
         PdfController $pdfController,
         MailerController $mailerController
-    )
-    {
+    ) {
         $this->em = $em;
         $this->pdfController = $pdfController;
         $this->mailerController = $mailerController;
@@ -67,7 +66,7 @@ class ImportController extends AbstractController
 
         $ext = explode('.', $filename)[1];
 
-        if ( $ext !== "xlsx" ) {
+        if ($ext !== "xlsx") {
             return false;
         }
 
@@ -91,13 +90,16 @@ class ImportController extends AbstractController
 
         for ($row = 2; $row <= $maxCellValue; $row++) {
             $personne = new Personne();
-            $civiliteFile = $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue());
+            $civiliteFile = in_array($this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()), ["M.", "Mme", "Mlle"])
+                ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue())
+                : 'M.'
+            ;
+
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy([
                 'nom' => $civiliteFile
             ]);
 
             if ($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== null && $this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== "") {
-                
                 $personne
                     ->setIdCerfa($this->checkRichText($spreadsheet->getActiveSheet()->getCell('A'.$row)->getValue()))
                     ->setCivilite($civilite)
@@ -137,7 +139,8 @@ class ImportController extends AbstractController
         return;
     }
 
-    public function checkRichText($value) {
+    public function checkRichText($value)
+    {
         if ($value instanceof RichText) {
             return $value->getRichTextElements()[0]->getText();
         }

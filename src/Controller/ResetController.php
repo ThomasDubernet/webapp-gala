@@ -48,39 +48,46 @@ class ResetController extends AbstractController
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
 
-        foreach ($events as $event) {
-            if ($event->getPlan() !== null) {
-                $planPath = $event->getPlan()->filePath;
-                $event->setPlan(null);
 
-                $fs->remove($uploadDir . "/" . $planPath);
-                $this->em->persist($event);
-                $this->em->flush();
+        $this->em->beginTransaction();
+        try {
+            foreach ($events as $event) {
+                if ($event->getPlan() !== null) {
+                    $planPath = $event->getPlan()->filePath;
+                    $event->setPlan(null);
+
+                    $fs->remove($uploadDir . "/" . $planPath);
+                    $this->em->persist($event);
+                    $this->em->flush();
+                }
+                if ($event->getImageTicket() !== null) {
+                    $imagePath = $event->getImageTicket()->filePath;
+                    $event->setImageTicket(null);
+
+                    $fs->remove($uploadDir . "/" . $imagePath);
+                    $this->em->persist($event);
+                    $this->em->flush();
+                }
+
+                $this->em->remove($event);
             }
-            if ($event->getImageTicket() !== null) {
-                $imagePath = $event->getImageTicket()->filePath;
-                $event->setImageTicket(null);
-
-                $fs->remove($uploadDir . "/" . $imagePath);
-                $this->em->persist($event);
-                $this->em->flush();
+            foreach ($medias as $media) {
+                $this->em->remove($media);
             }
 
-            $this->em->remove($event);
-        }
-        foreach ($medias as $media) {
-            $this->em->remove($media);
-        }
+            $newEvent = new Evenement();
+            $this->em->persist($newEvent);
 
-        $newEvent = new Evenement();
-        $this->em->persist($newEvent);
-
-        $this->simpleCleanDatabase();
+            $this->simpleCleanDatabase();
+        } catch (\Exception $exception) {
+            $this->em->getConnection()->rollback();
+            throw $exception;
+        }
 
         return $this->redirectToRoute('home');
     }
 
-    public function simpleCleanDatabase($personnesArray = null, $ticketsArray = null)
+    public function simpleCleanDatabase()
     {
         $personnes = $this->em->getRepository(Personne::class)->findAll();
         $tables = $this->em->getRepository(Table::class)->findAll();
@@ -88,28 +95,38 @@ class ResetController extends AbstractController
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
 
-        foreach ($personnes as $personne) {
-            if ($personne->getConjoint() !== null) {
-                $conjoint = $personne->getConjoint();
-                $conjoint->setConjoint(null);
-                $personne->setConjoint(null);
-                $this->em->persist($personne);
-                $this->em->persist($conjoint);
-            }
-            $this->em->remove($personne);
-        }
-        foreach ($tables as $table) {
-            $this->em->remove($table);
-        }
-        if (count($tickets) > 0) {
-            foreach ($tickets as $ticket) {
-                $fichier = $ticket->getFichier();
-                $fs->remove($uploadDir . "/" . $fichier);
-                $this->em->remove($ticket);
-            }
-        }
+        $this->em->getConnection()->beginTransaction();
 
-        $this->em->flush();
+        try {
+            foreach ($personnes as $personne) {
+                if ($personne->getConjoint() !== null) {
+                    $conjoint = $personne->getConjoint();
+                    $conjoint->setConjoint(null);
+                    $personne->setConjoint(null);
+                    $this->em->persist($personne);
+                    $this->em->persist($conjoint);
+                    $this->em->flush();
+                }
+                $this->em->remove($personne);
+            }
+            foreach ($tables as $table) {
+                $this->em->remove($table);
+            }
+            if (count($tickets) > 0) {
+                foreach ($tickets as $ticket) {
+                    $fichier = $ticket->getFichier();
+                    $fs->remove($uploadDir . "/" . $fichier);
+                    $this->em->remove($ticket);
+                }
+            }
+
+            $this->em->flush();
+            $this->em->getConnection()->commit();
+            $this->addFlash('success', "Suppression terminée !");
+        } catch (\Exception $exception) {
+            $this->em->getConnection()->rollback();
+            throw $exception;
+        }
     }
 
     /**
@@ -119,32 +136,69 @@ class ResetController extends AbstractController
     {
         $personnes = $this->em->getRepository(Personne::class)->findBy(['table' => null]);
         $tickets = [];
-        $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
-        foreach ($personnes as $personne) {
-            if ($personne->getTicket() !== null) {
-                $tickets[] = $personne->getTicket();
+        $fs = new Filesystem();
+
+        $this->em->getConnection()->beginTransaction();
+
+        try {
+            foreach ($personnes as $personne) {
+                if ($personne->getTicket() !== null) {
+                    $tickets[] = $personne->getTicket();
+                }
+                if ($personne->getConjoint() !== null) {
+                    $conjoint = $personne->getConjoint();
+                    $personne->setConjoint(null);
+                    $conjoint->setConjoint(null);
+                    $this->em->persist($personne);
+                    $this->em->persist($conjoint);
+                    $this->em->flush();
+                }
+                $this->em->remove($personne);
             }
-            if ($personne->getConjoint() !== null) {
-                $conjoint = $personne->getConjoint();
-                $conjoint->setConjoint(null);
-                $personne->setConjoint(null);
-                $this->em->persist($personne);
-                $this->em->persist($conjoint);
+            if (count($tickets) > 0) {
+                foreach ($tickets as $ticket) {
+                    $fichier = $ticket->getFichier();
+                    $fs->remove($uploadDir . "/" . $fichier);
+                    $this->em->remove($ticket);
+                }
             }
-            $this->em->remove($personne);
+            $this->em->flush();
+            $this->em->getConnection()->commit();
+            $this->addFlash('success', "Suppression terminée !");
+        } catch (\Exception $exception) {
+            $this->em->getConnection()->rollback();
+            throw $exception;
         }
 
-        if (count($tickets) > 0) {
-            foreach ($tickets as $ticket) {
-                $fichier = $ticket->getFichier();
-                $fs->remove($uploadDir . "/" . $fichier);
-                $this->em->remove($ticket);
-            }
-        }
 
-        $this->em->flush();
-        $this->addFlash('success', "Suppression terminée !");
+        // foreach ($personnes as $personne) {
+        //     if ($personne->getTicket() !== null) {
+        //         $tickets[] = $personne->getTicket();
+        //     }
+        //     if ($personne->getConjoint() !== null) {
+        //         $conjoint = $personne->getConjoint();
+        //         $personne->setConjoint(null);
+        //         $conjoint->setConjoint(null);
+        //         $this->em->persist($personne);
+        //         $this->em->persist($conjoint);
+        //         $this->em->flush();
+        //     }
+        //     $this->em->remove($personne);
+        // }
+
+        // if (count($tickets) > 0) {
+        //     foreach ($tickets as $ticket) {
+        //         $fichier = $ticket->getFichier();
+        //         $fs->remove($uploadDir . "/" . $fichier);
+        //         $this->em->remove($ticket);
+        //     }
+        // }
+
+        // $this->em->flush();
+        // $this->addFlash('success', "Suppression terminée !");
+
+        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
 
         return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
     }
