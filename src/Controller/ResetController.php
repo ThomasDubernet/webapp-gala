@@ -68,8 +68,8 @@ class ResetController extends AbstractController
                     $this->em->persist($event);
                     $this->em->flush();
                 }
-
                 $this->em->remove($event);
+                $this->em->flush();
             }
             foreach ($medias as $media) {
                 $this->em->remove($media);
@@ -81,6 +81,7 @@ class ResetController extends AbstractController
             $this->simpleCleanDatabase();
         } catch (\Exception $exception) {
             $this->em->getConnection()->rollback();
+            dd('error');
             throw $exception;
         }
 
@@ -122,7 +123,7 @@ class ResetController extends AbstractController
 
             $this->em->flush();
             $this->em->getConnection()->commit();
-            $this->addFlash('success', "Suppression terminée !");
+            $this->addFlash('success', "Suppression des personnes terminée !");
         } catch (\Exception $exception) {
             $this->em->getConnection()->rollback();
             throw $exception;

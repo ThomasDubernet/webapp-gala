@@ -90,10 +90,7 @@ class ImportController extends AbstractController
 
         for ($row = 2; $row <= $maxCellValue; $row++) {
             $personne = new Personne();
-            $civiliteFile = in_array($this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()), ["M.", "Mme", "Mlle"])
-                ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue())
-                : 'M.'
-            ;
+            $civiliteFile = in_array($this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()), ["M.", "Mme", "Mlle"]) ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()) : 'M.';
 
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy([
                 'nom' => $civiliteFile
