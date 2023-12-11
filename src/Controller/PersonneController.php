@@ -3,11 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Civilite;
+use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
 use App\Form\PersonneType;
 use App\Repository\PersonneRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +22,8 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class PersonneController extends AbstractController
 {
+    public const BILLET_WEB_API_URL = 'https://www.billetweb.fr';
+
     /**
      * @var EntityManagerInterface
      */
@@ -71,6 +77,7 @@ class PersonneController extends AbstractController
 
     /**
      * @Route("/new", name="personne_new", methods={"GET", "POST"})
+     * @throws GuzzleException
      */
     public function new(Request $request): Response
     {
@@ -95,6 +102,48 @@ class PersonneController extends AbstractController
             }
             $this->em->persist($personne);
             $this->em->flush();
+
+
+            $httpClient = new Client([
+                'base_uri' => self::BILLET_WEB_API_URL,
+            ]);
+            $currentEvent = $this->em->getRepository(Evenement::class)->findAll()[0] ?? null;
+
+            if($currentEvent === null) {
+                return $this->json([
+                    'error' => 'ERROR_CREATE_PERSONNE_BILLET_WEB_001',
+                    'status' => 'error',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $billetWebId = $currentEvent->getBilletwebId();
+
+            $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
+                'headers' => [
+                    'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
+                ],
+                'json' => [
+                    'data' => [
+                        [
+                            'name' => $personne->getNom(),
+                            'firstname' => $personne->getPrenom(),
+                            'email' => $personne->getEmail(),
+                            'session' => '0', // TODO check à quoi ça correspond
+                            'payment_type' => 'other',
+                            'products' => [
+                                [
+                                    'ticket' => 'Import Appli BR',
+                                    'name' => $personne->getNom(),
+                                    'firstname' => $personne->getPrenom(),
+                                    'email' => $personne->getEmail(),
+                                    'price' => $personne->getMontantPaye(),
+                                    'used' => 0
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
 
             // $this->pdfController->createTicket($personne);
             // $this->mailerController->sendTicket($personne);
@@ -154,6 +203,65 @@ class PersonneController extends AbstractController
             $this->em->persist($conjoint);
             $this->em->persist($personne);
             $this->em->flush();
+
+
+            $httpClient = new Client([
+                'base_uri' => self::BILLET_WEB_API_URL,
+            ]);
+            $currentEvent = $this->em->getRepository(Evenement::class)->findAll()[0] ?? null;
+
+            if($currentEvent === null) {
+                return $this->json([
+                    'error' => 'ERROR_CREATE_PERSONNE_BILLET_WEB_001',
+                    'status' => 'error',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $billetWebId = $currentEvent->getBilletwebId();
+
+            $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
+                'headers' => [
+                    'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
+                ],
+                'json' => [
+                    'data' => [
+                        [
+                            'name' => $personne->getNom(),
+                            'firstname' => $personne->getPrenom(),
+                            'email' => $personne->getEmail(),
+                            'session' => '0',
+                            'payment_type' => 'other',
+                            'products' => [
+                                [
+                                    'ticket' => 'Import Appli BR',
+                                    'name' => $personne->getNom(),
+                                    'firstname' => $personne->getPrenom(),
+                                    'email' => $personne->getEmail(),
+                                    'price' => $personne->getMontantPaye(),
+                                    'used' => 0
+                                ]
+                            ]
+                        ],
+                        [
+                            'name' => $personne->getNom(),
+                            'firstname' => $personne->getPrenom(),
+                            'email' => $personne->getEmail(),
+                            'session' => '0',
+                            'payment_type' => 'other',
+                            'products' => [
+                                [
+                                    'ticket' => 'Import Appli BR',
+                                    'name' => $conjoint->getNom(),
+                                    'firstname' => $conjoint->getPrenom(),
+                                    'email' => $conjoint->getEmail(),
+                                    'price' => $conjoint->getMontantPaye(),
+                                    'used' => 0
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
 
             // $this->pdfController->createTicket($conjoint);
             // $this->mailerController->sendTicket($conjoint);

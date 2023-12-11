@@ -74,6 +74,16 @@ class Evenement
      */
     private $textEmail;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $billetwebId;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $lastUpdateBilletWeb;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -183,6 +193,30 @@ class Evenement
     public function setTextEmail(?string $textEmail): self
     {
         $this->textEmail = $textEmail;
+
+        return $this;
+    }
+
+    public function getBilletwebId(): ?string
+    {
+        return $this->billetwebId;
+    }
+
+    public function setBilletwebId(?string $billetwebId): self
+    {
+        $this->billetwebId = $billetwebId;
+
+        return $this;
+    }
+
+    public function getLastUpdateBilletWeb(): ?\DateTimeInterface
+    {
+        return $this->lastUpdateBilletWeb;
+    }
+
+    public function setLastUpdateBilletWeb(?\DateTimeInterface $lastUpdateBilletWeb): self
+    {
+        $this->lastUpdateBilletWeb = $lastUpdateBilletWeb;
 
         return $this;
     }

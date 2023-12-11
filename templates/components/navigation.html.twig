@@ -37,16 +37,17 @@
         <button class="btn btn-outline-secondary" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-gear-fill"></i>
         </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="width:275px;">
           <div class="d-flex align-items-center flex-column">
             <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
             <form action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">
-              <div class="mb-3">
+              <div class="mb-3 px-3">
                 <input type="hidden" name="current_url" value="{{ app.request.requesturi }}"/>
                 <label for="import_importFile" class="form-label required">Import file</label>
                 <input type="file" id="import_importFile" name="import[importFile]" required="required" class="form-control">
               </div>
             </form>
+            <a id="billet_web_sync_btn" class="mx-2 dropdown-item" href="#">Sync avec BilletWeb</a>
             <a class="m-2 dropdown-item" href="{{ path('export') }}">Exporter</a>
             {# <a class="m-2 dropdown-item" href="/pdf/plan">Imprimer le plan de salle</a> #}
             <hr class="w-100">
@@ -58,6 +59,14 @@
     </div>
   </div>
 </nav>
+
+
+<div id="billet_web_sync_popup" class="popup-sync-billet-web">
+  <div class="loader-wrapper">
+    <div class="title">Synchronisation avec BilletWeb</div>
+    <div class="loader"></div>
+  </div>
+</div>
 
 <div class="modal fade" id="reinitialisationEventModal" tabindex="-1" aria-labelledby="reinitialisationEventModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">

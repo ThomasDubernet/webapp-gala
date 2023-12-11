@@ -20,6 +20,31 @@ import './components/Search'
 import './components/Plan'
 import './components/HotesseSearch'
 
+const syncBilletWebData = async () => {
+  const popup = document.getElementById('billet_web_sync_popup')
+  popup.classList.add('show')
+
+  try {
+    const response = await fetch('/api/billet-web/sync', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.status === 200) {
+      const data = await response.json()
+      // eslint-disable-next-line no-console
+      console.log(data)
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error(e)
+  } finally {
+    popup.classList.remove('show')
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const formImport = document.getElementById('form_import')
   const inputImport = document.getElementById('import_importFile')
@@ -30,4 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
       formImport.submit()
     })
   }
+
+  const syncBtn = document.getElementById('billet_web_sync_btn')
+
+  syncBtn.addEventListener('click', (e) => {
+    console.log('click')
+    e.preventDefault()
+    syncBilletWebData()
+  })
 })

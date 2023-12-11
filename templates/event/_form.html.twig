@@ -47,5 +47,10 @@
             </div>
         {% endif %}
     </div>
+    <div class="row">
+        <div class="col-4">
+            {{ form_row(form.billetwebId) }}
+        </div>
+    </div>
     <button class="btn btn-primary">{{ button_label|default('Créer') }}</button>
 {{ form_end(form) }}

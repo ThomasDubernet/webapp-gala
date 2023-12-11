@@ -33,7 +33,8 @@ class EventType extends AbstractType
                 'label' => 'Nom de la salle',
             ])
             ->add('date', DateTimeType::class, [
-                'label' => 'Date de l\'évènement'
+                'label' => 'Date de l\'évènement',
+                'data' => new \DateTime('now'),
             ])
             ->add('adresse', TextType::class, [
                 'label' => 'Adresse de l\'évènement ',
@@ -56,6 +57,9 @@ class EventType extends AbstractType
                 'label' => 'Image de fond du ticket',
                 'mapped' => false,
                 'required' => false
+            ])
+            ->add('billetwebId', TextType::class, [
+                'label' => 'ID de l\'évènement sur Billetweb',
             ])
         ;
     }
