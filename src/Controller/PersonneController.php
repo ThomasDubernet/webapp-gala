@@ -137,7 +137,13 @@ class PersonneController extends AbstractController
                                     'firstname' => $personne->getPrenom(),
                                     'email' => $personne->getEmail(),
                                     'price' => $personne->getMontantPaye(),
-                                    'used' => 0
+                                    'used' => 0,
+                                    'custom' => [
+                                        'Portable' => '+33'.$personne->getTelephone(),
+                                        'Adresse' => $personne->getAdresse(),
+                                        'Code Postal' => $personne->getCodePostal(),
+                                        'Ville' => $personne->getVille(),
+                                    ]
                                 ]
                             ]
                         ]
@@ -238,7 +244,13 @@ class PersonneController extends AbstractController
                                     'firstname' => $personne->getPrenom(),
                                     'email' => $personne->getEmail(),
                                     'price' => $personne->getMontantPaye(),
-                                    'used' => 0
+                                    'used' => 0,
+                                    'custom' => [
+                                        'Portable' => '+33'.$personne->getTelephone(),
+                                        'Adresse' => $personne->getAdresse(),
+                                        'Code Postal' => $personne->getCodePostal(),
+                                        'Ville' => $personne->getVille(),
+                                    ]
                                 ]
                             ]
                         ],
@@ -255,7 +267,13 @@ class PersonneController extends AbstractController
                                     'firstname' => $conjoint->getPrenom(),
                                     'email' => $conjoint->getEmail(),
                                     'price' => $conjoint->getMontantPaye(),
-                                    'used' => 0
+                                    'used' => 0,
+                                    'custom' => [
+                                        'Portable' => '+33'.$personne->getTelephone(),
+                                        'Adresse' => $personne->getAdresse(),
+                                        'Code Postal' => $personne->getCodePostal(),
+                                        'Ville' => $personne->getVille(),
+                                    ]
                                 ]
                             ]
                         ]
