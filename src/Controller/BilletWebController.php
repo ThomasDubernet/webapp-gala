@@ -87,6 +87,8 @@ class BilletWebController extends AbstractController
                 // Trouver le client principal
                 $principalCustomer = null;
 
+
+
                 foreach($customers as $customer) {
                     if($customer['firstname'] === $customer['order_firstname']) {
                         $principalCustomer = $customer;
@@ -94,29 +96,28 @@ class BilletWebController extends AbstractController
                     }
                 }
 
-                // On chercher le client principal si il existe
+                if ($principalCustomer === null) {
+                    $principalCustomer = $customers[0];
+                }
+                // On cherche le client principal si il existe
                 $principal = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email']]);
                 if(!$principal instanceof Personne) {
-                    try {
-                        $principal = new Personne();
-                        $principal
-                            ->setEmail($principalCustomer['email'])
-                            ->setNom($principalCustomer['name'])
-                            ->setPrenom($principalCustomer['firstname'])
-                            ->setMontantPaye($principalCustomer['price'])
-                            ->setMontantBillet($principalCustomer['price'])
-                            ->setDateReglement(new \DateTime($principalCustomer['order_date']))
-                            ->setTelephone($principalCustomer['custom']['Portable'])
-                            ->setAdresse($principalCustomer['custom_order']['Adresse'])
-                            ->setVille($principalCustomer['custom_order']['Ville'])
-                            ->setCodePostal($principalCustomer['custom_order']['Code postal'])
-                        ;
+                    $principal = new Personne();
+                    $principal
+                        ->setEmail($principalCustomer['email'])
+                        ->setNom($principalCustomer['name'])
+                        ->setPrenom($principalCustomer['firstname'])
+                        ->setMontantPaye($principalCustomer['price'])
+                        ->setMontantBillet($principalCustomer['price'])
+                        ->setDateReglement(new \DateTime($principalCustomer['order_date']))
+                        ->setTelephone($principalCustomer['custom']['Portable'])
+                        ->setAdresse($principalCustomer['custom_order']['Adresse'])
+                        ->setVille($principalCustomer['custom_order']['Ville'])
+                        ->setCodePostal($principalCustomer['custom_order']['Code postal'])
+                    ;
 
-                        $this->em->persist($principal);
-                        ++$count;
-                    } catch (\Exception $e) {
-                        dd($e);
-                    }
+                    $this->em->persist($principal);
+                    ++$count;
                 }
 
                 // Trouver le conjoint
@@ -129,31 +130,27 @@ class BilletWebController extends AbstractController
                 }
 
                 if($conjoint) {
-                    // On chercher le client principal si il existe
-                    $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email']]);
+                    // On chercher le conjoint si il existe
+                    $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email']]);
                     if(!$second instanceof Personne) {
-                        try {
-                            $second = new Personne();
-                            $second
-                                ->setEmail($conjoint['email'])
-                                ->setNom($conjoint['name'])
-                                ->setPrenom($conjoint['firstname'])
-                                ->setMontantPaye($conjoint['price'])
-                                ->setMontantBillet($conjoint['price'])
-                                ->setDateReglement(new \DateTime($conjoint['order_date']))
-                                ->setTelephone($conjoint['custom']['Portable'])
-                                ->setAdresse($conjoint['custom_order']['Adresse'])
-                                ->setVille($conjoint['custom_order']['Ville'])
-                                ->setCodePostal($conjoint['custom_order']['Code postal'])
-                            ;
+                        $second = new Personne();
+                        $second
+                            ->setEmail($conjoint['email'])
+                            ->setNom($conjoint['name'])
+                            ->setPrenom($conjoint['firstname'])
+                            ->setMontantPaye($conjoint['price'])
+                            ->setMontantBillet($conjoint['price'])
+                            ->setDateReglement(new \DateTime($conjoint['order_date']))
+                            ->setTelephone($conjoint['custom']['Portable'])
+                            ->setAdresse($conjoint['custom_order']['Adresse'])
+                            ->setVille($conjoint['custom_order']['Ville'])
+                            ->setCodePostal($conjoint['custom_order']['Code postal'])
+                        ;
 
-                            $principal->setConjoint($second);
+                        $principal->setConjoint($second);
 
-                            $this->em->persist($second);
-                            ++$count;
-                        } catch (\Exception $e) {
-                            dd($e);
-                        }
+                        $this->em->persist($second);
+                        ++$count;
                     }
                 }
 
@@ -166,7 +163,7 @@ class BilletWebController extends AbstractController
 
             return $this->json([
                 'message' => $count.' participant(s) ont été synchronisé(s) avec billet web',
-                'lastSyncDate' => $lastSyncDate->format('Y-m-d H:i:s') ?? null,
+                'lastSyncDate' => $lastSyncDate instanceof \DateTime ? $lastSyncDate->format('Y-m-d H:i:s') : null,
                 'newLastSyncDate' => $newLastSyncDate->format('Y-m-d H:i:s'),
             ], Response::HTTP_OK);
         } catch (\Exception|GuzzleException $e) {
