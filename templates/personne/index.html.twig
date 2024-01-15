@@ -7,8 +7,10 @@
     <div class="d-flex align-items-center justify-content-between">
       <h1 class="mb-4">Liste des personnes</h1>
       <div class="text-end">
-        <p class="mb-0">Personnes affectés à une table :
+        <p class="mb-0">Personnes :
           {{personnes|length}}</p>
+        <p class="mb-0">Personnes affectées à une table :
+          {{personnesHasTable}}</p>
         <p class="mb-0">Personnes présentes et affectées à une table :
           {{personnesPresent}}
         </p>
@@ -22,6 +24,7 @@
           <th>Nom</th>
           <th>Prénom</th>
           <th>Email</th>
+          <th>Table</th>
           <th>Mail Envoyé</th>
           <th>A payé</th>
           <th>Actions</th>
@@ -35,6 +38,12 @@
             <td>{{ personne.prenom }}</td>
             <td>{{ personne.email }}</td>
             <td>
+              {% if personne.table == null %}
+                 -
+              {% else %}
+                 T{{ personne.table.numero }} ({{ personne.table.nom }})
+              {% endif %}
+            </td><td>
               {% if personne.mailEnvoye == true %}
                 Oui
               {% else %}
