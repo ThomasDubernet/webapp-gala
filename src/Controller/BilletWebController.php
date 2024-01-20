@@ -43,8 +43,6 @@ class BilletWebController extends AbstractController
         $billetWebId = $currentEvent->getBilletwebId();
         $lastSyncDate = $currentEvent->getLastUpdateBilletWeb();
 
-
-
         if($billetWebId === null) {
             return $this->json([
                 'error' => 'ERROR_SYNC_BILLET_WEB_002',
@@ -86,8 +84,6 @@ class BilletWebController extends AbstractController
             foreach($names as $name => $customers) {
                 // Trouver le client principal
                 $principalCustomer = null;
-
-
 
                 foreach($customers as $customer) {
                     if($customer['firstname'] === $customer['order_firstname']) {
