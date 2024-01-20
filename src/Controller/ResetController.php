@@ -83,8 +83,7 @@ class ResetController extends AbstractController
             $this->simpleCleanDatabase();
         } catch (\Exception $exception) {
             $this->em->rollback();
-            dd('error');
-            throw $exception;
+            $this->addFlash('error', "Une erreur est survenue lors de la suppression des données.");
         }
 
         return $this->redirectToRoute('home');
@@ -128,7 +127,7 @@ class ResetController extends AbstractController
             $this->addFlash('success', "Suppression des personnes terminée !");
         } catch (\Exception $exception) {
             $this->em->rollback();
-            throw $exception;
+            $this->addFlash('error', "Une erreur est survenue lors de la suppression des données.");
         }
     }
 
@@ -142,7 +141,7 @@ class ResetController extends AbstractController
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
         $fs = new Filesystem();
 
-        $this->em->getConnection()->beginTransaction();
+        $this->em->beginTransaction();
 
         try {
             foreach ($personnes as $personne) {
@@ -167,41 +166,12 @@ class ResetController extends AbstractController
                 }
             }
             $this->em->flush();
-            $this->em->getConnection()->commit();
+            $this->em->commit();
             $this->addFlash('success', "Suppression terminée !");
         } catch (\Exception $exception) {
-            $this->em->getConnection()->rollback();
-            throw $exception;
+            $this->em->rollback();
+            $this->addFlash('error', "Une erreur est survenue lors de la suppression des données.");
         }
-
-
-        // foreach ($personnes as $personne) {
-        //     if ($personne->getTicket() !== null) {
-        //         $tickets[] = $personne->getTicket();
-        //     }
-        //     if ($personne->getConjoint() !== null) {
-        //         $conjoint = $personne->getConjoint();
-        //         $personne->setConjoint(null);
-        //         $conjoint->setConjoint(null);
-        //         $this->em->persist($personne);
-        //         $this->em->persist($conjoint);
-        //         $this->em->flush();
-        //     }
-        //     $this->em->remove($personne);
-        // }
-
-        // if (count($tickets) > 0) {
-        //     foreach ($tickets as $ticket) {
-        //         $fichier = $ticket->getFichier();
-        //         $fs->remove($uploadDir . "/" . $fichier);
-        //         $this->em->remove($ticket);
-        //     }
-        // }
-
-        // $this->em->flush();
-        // $this->addFlash('success', "Suppression terminée !");
-
-        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
 
         return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
     }
