@@ -77,10 +77,12 @@ class ResetController extends AbstractController
 
             $newEvent = new Evenement();
             $this->em->persist($newEvent);
+            $this->em->flush();
+            $this->em->commit();
 
             $this->simpleCleanDatabase();
         } catch (\Exception $exception) {
-            $this->em->getConnection()->rollback();
+            $this->em->rollback();
             dd('error');
             throw $exception;
         }
@@ -96,7 +98,7 @@ class ResetController extends AbstractController
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
 
-        $this->em->getConnection()->beginTransaction();
+        $this->em->beginTransaction();
 
         try {
             foreach ($personnes as $personne) {
@@ -122,10 +124,10 @@ class ResetController extends AbstractController
             }
 
             $this->em->flush();
-            $this->em->getConnection()->commit();
+            $this->em->commit();
             $this->addFlash('success', "Suppression des personnes terminée !");
         } catch (\Exception $exception) {
-            $this->em->getConnection()->rollback();
+            $this->em->rollback();
             throw $exception;
         }
     }
