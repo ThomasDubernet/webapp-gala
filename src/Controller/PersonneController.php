@@ -91,9 +91,9 @@ class PersonneController extends AbstractController
 
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->em->persist($personne);
+            $this->em->flush();
             if ($_POST['action'] == "Créer avec un conjoint") {
-                $this->em->persist($personne);
-                $this->em->flush();
                 // $this->pdfController->createTicket($personne);
                 // $this->mailerController->sendTicket($personne);
 
@@ -101,9 +101,6 @@ class PersonneController extends AbstractController
                     'id' => $personne->getId()
                 ]);
             }
-            $this->em->persist($personne);
-            $this->em->flush();
-
 
             $httpClient = new Client([
                 'base_uri' => self::BILLET_WEB_API_URL,
@@ -364,17 +361,27 @@ class PersonneController extends AbstractController
     public function delete(Request $request, Personne $personne): Response
     {
         if ($this->isCsrfTokenValid('delete' . $personne->getId(), $request->request->get('_token'))) {
-            if ($personne->getConjoint() !== null) {
-                $conjoint = $personne->getConjoint();
+            $conjoint = $personne->getConjoint();
+            $principal = $this->em->getRepository(Personne::class)->findOneBy(['conjoint' => $personne]);
+
+            if ($conjoint instanceof Personne) {
                 $conjoint->setConjoint(null);
                 $personne->setConjoint(null);
 
                 $this->em->persist($conjoint);
+            } elseif ($principal instanceof Personne){
+                $principal->setConjoint(null);
+                $personne->setConjoint(null);
+
+                $this->em->persist($principal);
             }
+
             $this->em->remove($personne);
             $this->em->flush();
         }
 
-        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+        $this->addFlash('success', 'Personne supprimée');
+
+        return $this->redirect($request->headers->get('referer'));
     }
 }
