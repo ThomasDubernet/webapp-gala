@@ -31,7 +31,7 @@ class ResetController extends AbstractController
     /**
      * @Route("/simple", name="reset_simple")
      */
-    public function resetBase()
+    public function resetBase(): Response
     {
         $this->simpleCleanDatabase();
 
@@ -41,7 +41,7 @@ class ResetController extends AbstractController
     /**
      * @Route("/all", name="reset_all")
      */
-    public function resetAll()
+    public function resetAll(): Response
     {
         $events = $this->em->getRepository(Evenement::class)->findAll();
         $medias = $this->em->getRepository(MediaObject::class)->findAll();
@@ -54,7 +54,10 @@ class ResetController extends AbstractController
             foreach ($events as $event) {
                 if ($event->getPlan() !== null) {
                     $planPath = $event->getPlan()->filePath;
-                    $event->setPlan(null);
+                    $event
+                        ->setPlan(null)
+                        ->setBilletwebId(null)
+                        ->setLastUpdateBilletWeb(null);
 
                     $fs->remove($uploadDir . "/" . $planPath);
                     $this->em->persist($event);
@@ -100,6 +103,13 @@ class ResetController extends AbstractController
         $this->em->beginTransaction();
 
         try {
+            $events = $this->em->getRepository(Evenement::class)->findAll();
+
+            foreach ($events as $event) {
+                $event->setLastUpdateBilletWeb(null);
+                $this->em->persist($event);
+            }
+
             foreach ($personnes as $personne) {
                 if ($personne->getConjoint() !== null) {
                     $conjoint = $personne->getConjoint();
