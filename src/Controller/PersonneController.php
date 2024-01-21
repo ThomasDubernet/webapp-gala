@@ -13,6 +13,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -57,9 +59,9 @@ class PersonneController extends AbstractController
     }
 
     /**
-     * @Route("/", name="personne_index", methods={"GET"})
+     * @Route("/", name="personne_index", methods={"GET", "POST"})
      */
-    public function index(PersonneRepository $repo): Response
+    public function index(PersonneRepository $repo, Request $request): Response
     {
         $personnes = $repo->findBy([], ['nom' => 'ASC']);
         $personnesHasTable = 0;
@@ -69,7 +71,25 @@ class PersonneController extends AbstractController
         $personnesPresent = count(array_filter($personnes, function ($n) {
             return $n->getPresent();
         }));
+
+        $filterForm = $this->createFormBuilder()
+            ->add('table', CheckboxType::class, [
+                'label'    => 'Montrer les personnes sans table',
+                'required' => false,
+            ])
+            ->getForm();
+
+        $filterForm->handleRequest($request);
+
+        if ($filterForm->isSubmitted() && $filterForm->isValid()) {
+            $data = $filterForm->getData();
+            if ($data['table'] === true) {
+                $personnes =$repo->findBy(['table' => null], ['nom' => 'ASC']);
+            }
+        }
+
         return $this->render('personne/index.html.twig', [
+            'filterForm' => $filterForm->createView(),
             'personnes' => $personnes,
             'personnesHasTable' => $personnesHasTable,
             'personnesPresent' => $personnesPresent
