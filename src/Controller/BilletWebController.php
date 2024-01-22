@@ -23,7 +23,6 @@ class BilletWebController extends AbstractController
         $this->em = $em;
     }
 
-
     /**
      * @Route("/api/billet-web/sync", name="billet_web_sync_post", methods={"POST"})
      */
@@ -71,6 +70,14 @@ class BilletWebController extends AbstractController
 
             $responseContent = json_decode($response->getBody()->getContents(), true);
 
+            if (isset($responseContent['error'])) {
+                return $this->json([
+                    'error' => 'ERROR_SYNC_BILLET_WEB_003 - '.$responseContent['error'],
+                    'status' => 'error',
+                    'message' => $responseContent['description']
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
             // Créer un tableau des orderName
             $names = [];
             foreach($responseContent as $customer) {
@@ -79,96 +86,129 @@ class BilletWebController extends AbstractController
                 $names[$orderName][] = $customer;
             }
 
-            $count = 0;
+            $count       = 0;
 
             foreach($names as $name => $customers) {
-                // Trouver le client principal
-                $principalCustomer = null;
+                if(count($customers) === 2) {
+                    // Trouver le client principal
+                    $principalCustomer = null;
 
-                foreach($customers as $customer) {
-                    if($customer['firstname'] === $customer['order_firstname']) {
-                        $principalCustomer = $customer;
-                        break;
+                    foreach($customers as $customer) {
+                        if($customer['firstname'] === $customer['order_firstname']) {
+                            $principalCustomer = $customer;
+                            break;
+                        }
                     }
-                }
 
-                if ($principalCustomer === null) {
-                    $principalCustomer = $customers[0];
-                }
-                // On cherche le client principal si il existe
-                $principal = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email'], 'nom' => $principalCustomer['name'], 'prenom' => $principalCustomer['firstname']]);
-                if(!$principal instanceof Personne) {
-                    $principal = new Personne();
-                    $principal
-                        ->setEmail($principalCustomer['email'])
-                        ->setNom($principalCustomer['name'])
-                        ->setPrenom($principalCustomer['firstname'])
-                        ->setMontantPaye($principalCustomer['price'])
-                        ->setMontantBillet($principalCustomer['price'])
-                        ->setDateReglement(new \DateTime($principalCustomer['order_date']))
-                        ->setTelephone($principalCustomer['custom']['Portable'])
-                        ->setAdresse($principalCustomer['custom_order']['Adresse'])
-                        ->setVille($principalCustomer['custom_order']['Ville'])
-                        ->setCodePostal($principalCustomer['custom_order']['Code postal'])
-                    ;
-
-                    ++$count;
-                } else {
-                    // On écrase les valeurs de la personne
-                    $principal
-                        ->setMontantPaye($principalCustomer['price'])
-                        ->setMontantBillet($principalCustomer['price'])
-                        ->setDateReglement(new \DateTime($principalCustomer['order_date']))
-                        ->setTelephone($principalCustomer['custom']['Portable'])
-                        ->setAdresse($principalCustomer['custom_order']['Adresse'])
-                        ->setVille($principalCustomer['custom_order']['Ville'])
-                        ->setCodePostal($principalCustomer['custom_order']['Code postal']);
-                }
-
-                $this->em->persist($principal);
-
-                // Trouver le conjoint
-                $conjoint = null;
-                foreach($customers as $customer) {
-                    if($customer['firstname'] !== $customer['order_firstname']) {
-                        $conjoint = $customer;
-                        break;
+                    if ($principalCustomer === null) {
+                        $principalCustomer = $customers[0];
                     }
-                }
-
-                if($conjoint) {
-                    // On chercher le conjoint si il existe
-                    $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email'], 'nom' => $conjoint['name'], 'prenom' => $conjoint['firstname']]);
-                    if(!$second instanceof Personne) {
-                        $second = new Personne();
-                        $second
-                            ->setEmail($conjoint['email'])
-                            ->setNom($conjoint['name'])
-                            ->setPrenom($conjoint['firstname'])
-                            ->setMontantPaye($conjoint['price'])
-                            ->setMontantBillet($conjoint['price'])
-                            ->setDateReglement(new \DateTime($conjoint['order_date']))
-                            ->setTelephone($conjoint['custom']['Portable'])
-                            ->setAdresse($conjoint['custom_order']['Adresse'])
-                            ->setVille($conjoint['custom_order']['Ville'])
-                            ->setCodePostal($conjoint['custom_order']['Code postal'])
+                    // On cherche le client principal si il existe
+                    $principal = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email'], 'nom' => $principalCustomer['name'], 'prenom' => $principalCustomer['firstname']]);
+                    if(!$principal instanceof Personne) {
+                        $principal = new Personne();
+                        $principal
+                            ->setEmail($principalCustomer['email'])
+                            ->setNom($principalCustomer['name'])
+                            ->setPrenom($principalCustomer['firstname'])
+                            ->setMontantPaye($principalCustomer['price'])
+                            ->setMontantBillet($principalCustomer['price'])
+                            ->setDateReglement(new \DateTime($principalCustomer['order_date']))
+                            ->setTelephone($principalCustomer['custom']['Portable'])
+                            ->setAdresse($principalCustomer['custom_order']['Adresse'])
+                            ->setVille($principalCustomer['custom_order']['Ville'])
+                            ->setCodePostal($principalCustomer['custom_order']['Code postal'])
                         ;
-
-                        $principal->setConjoint($second);
 
                         ++$count;
                     } else {
-                        // On écrase les valeurs du conjoint
-                        $second
-                            ->setMontantPaye($conjoint['price'])
-                            ->setMontantBillet($conjoint['price'])
-                            ->setDateReglement(new \DateTime($conjoint['order_date']))
-                            ->setTelephone($conjoint['custom']['Portable'])
-                            ->setAdresse($conjoint['custom_order']['Adresse'])
-                            ->setVille($conjoint['custom_order']['Ville'])
-                            ->setCodePostal($conjoint['custom_order']['Code postal']);
+                        // On écrase les valeurs de la personne
+                        $principal
+                            ->setMontantPaye($principalCustomer['price'])
+                            ->setMontantBillet($principalCustomer['price'])
+                            ->setDateReglement(new \DateTime($principalCustomer['order_date']))
+                            ->setTelephone($principalCustomer['custom']['Portable'])
+                            ->setAdresse($principalCustomer['custom_order']['Adresse'])
+                            ->setVille($principalCustomer['custom_order']['Ville'])
+                            ->setCodePostal($principalCustomer['custom_order']['Code postal']);
                     }
-                    $this->em->persist($second);
+
+                    $this->em->persist($principal);
+
+                    // Trouver le conjoint
+                    $conjoint = null;
+                    foreach($customers as $customer) {
+                        if($customer['firstname'] !== $customer['order_firstname']) {
+                            $conjoint = $customer;
+                            break;
+                        }
+                    }
+
+                    if($conjoint) {
+                        // On chercher le conjoint si il existe
+                        $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email'], 'nom' => $conjoint['name'], 'prenom' => $conjoint['firstname']]);
+                        if(!$second instanceof Personne) {
+                            $second = new Personne();
+                            $second
+                                ->setEmail($conjoint['email'])
+                                ->setNom($conjoint['name'])
+                                ->setPrenom($conjoint['firstname'])
+                                ->setMontantPaye($conjoint['price'])
+                                ->setMontantBillet($conjoint['price'])
+                                ->setDateReglement(new \DateTime($conjoint['order_date']))
+                                ->setTelephone($conjoint['custom']['Portable'])
+                                ->setAdresse($conjoint['custom_order']['Adresse'])
+                                ->setVille($conjoint['custom_order']['Ville'])
+                                ->setCodePostal($conjoint['custom_order']['Code postal'])
+                            ;
+
+                            $principal->setConjoint($second);
+
+                            ++$count;
+                        } else {
+                            // On écrase les valeurs du conjoint
+                            $second
+                                ->setMontantPaye($conjoint['price'])
+                                ->setMontantBillet($conjoint['price'])
+                                ->setDateReglement(new \DateTime($conjoint['order_date']))
+                                ->setTelephone($conjoint['custom']['Portable'])
+                                ->setAdresse($conjoint['custom_order']['Adresse'])
+                                ->setVille($conjoint['custom_order']['Ville'])
+                                ->setCodePostal($conjoint['custom_order']['Code postal']);
+                        }
+                        $this->em->persist($second);
+                    }
+                } else {
+                    foreach ($customers as $customer) {
+                        $personne = $this->em->getRepository(Personne::class)->findOneBy(['email' => $customer['email'], 'nom' => $customer['name'], 'prenom' => $customer['firstname']]);
+
+                        if (!$personne instanceof Personne) {
+                            $personne = new Personne();
+                            $personne
+                                 ->setEmail($customer['email'])
+                                 ->setNom($customer['name'])
+                                 ->setPrenom($customer['firstname'])
+                                 ->setMontantPaye($customer['price'])
+                                 ->setMontantBillet($customer['price'])
+                                 ->setDateReglement(new \DateTime($customer['order_date']))
+                                 ->setTelephone($customer['custom']['Portable'])
+                                 ->setAdresse($customer['custom_order']['Adresse'])
+                                 ->setVille($customer['custom_order']['Ville'])
+                                 ->setCodePostal($customer['custom_order']['Code postal']);
+                        } else {
+
+                            $personne
+                                ->setMontantPaye($customer['price'])
+                                ->setMontantBillet($customer['price'])
+                                ->setDateReglement(new \DateTime($customer['order_date']))
+                                ->setTelephone($customer['custom']['Portable'])
+                                ->setAdresse($customer['custom_order']['Adresse'])
+                                ->setVille($customer['custom_order']['Ville'])
+                                ->setCodePostal($customer['custom_order']['Code postal']);
+
+                        }
+                        $this->em->persist($personne);
+                    }
                 }
 
                 $this->em->flush();
