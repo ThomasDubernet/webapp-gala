@@ -96,7 +96,7 @@ class BilletWebController extends AbstractController
                     $principalCustomer = $customers[0];
                 }
                 // On cherche le client principal si il existe
-                $principal = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email']]);
+                $principal = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principalCustomer['email'], 'nom' => $principalCustomer['name'], 'prenom' => $principalCustomer['firstname']]);
                 if(!$principal instanceof Personne) {
                     $principal = new Personne();
                     $principal
@@ -116,8 +116,6 @@ class BilletWebController extends AbstractController
                 } else {
                     // On écrase les valeurs de la personne
                     $principal
-                        ->setNom($principalCustomer['name'])
-                        ->setPrenom($principalCustomer['firstname'])
                         ->setMontantPaye($principalCustomer['price'])
                         ->setMontantBillet($principalCustomer['price'])
                         ->setDateReglement(new \DateTime($principalCustomer['order_date']))
@@ -140,7 +138,7 @@ class BilletWebController extends AbstractController
 
                 if($conjoint) {
                     // On chercher le conjoint si il existe
-                    $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email']]);
+                    $second = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email'], 'nom' => $conjoint['name'], 'prenom' => $conjoint['firstname']]);
                     if(!$second instanceof Personne) {
                         $second = new Personne();
                         $second
@@ -162,8 +160,6 @@ class BilletWebController extends AbstractController
                     } else {
                         // On écrase les valeurs du conjoint
                         $second
-                            ->setNom($conjoint['name'])
-                            ->setPrenom($conjoint['firstname'])
                             ->setMontantPaye($conjoint['price'])
                             ->setMontantBillet($conjoint['price'])
                             ->setDateReglement(new \DateTime($conjoint['order_date']))
