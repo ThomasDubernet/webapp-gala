@@ -112,9 +112,22 @@ class BilletWebController extends AbstractController
                         ->setCodePostal($principalCustomer['custom_order']['Code postal'])
                     ;
 
-                    $this->em->persist($principal);
                     ++$count;
+                } else {
+                    // On écrase les valeurs de la personne
+                    $principal
+                        ->setNom($principalCustomer['name'])
+                        ->setPrenom($principalCustomer['firstname'])
+                        ->setMontantPaye($principalCustomer['price'])
+                        ->setMontantBillet($principalCustomer['price'])
+                        ->setDateReglement(new \DateTime($principalCustomer['order_date']))
+                        ->setTelephone($principalCustomer['custom']['Portable'])
+                        ->setAdresse($principalCustomer['custom_order']['Adresse'])
+                        ->setVille($principalCustomer['custom_order']['Ville'])
+                        ->setCodePostal($principalCustomer['custom_order']['Code postal']);
                 }
+
+                $this->em->persist($principal);
 
                 // Trouver le conjoint
                 $conjoint = null;
@@ -145,9 +158,21 @@ class BilletWebController extends AbstractController
 
                         $principal->setConjoint($second);
 
-                        $this->em->persist($second);
                         ++$count;
+                    } else {
+                        // On écrase les valeurs du conjoint
+                        $second
+                            ->setNom($conjoint['name'])
+                            ->setPrenom($conjoint['firstname'])
+                            ->setMontantPaye($conjoint['price'])
+                            ->setMontantBillet($conjoint['price'])
+                            ->setDateReglement(new \DateTime($conjoint['order_date']))
+                            ->setTelephone($conjoint['custom']['Portable'])
+                            ->setAdresse($conjoint['custom_order']['Adresse'])
+                            ->setVille($conjoint['custom_order']['Ville'])
+                            ->setCodePostal($conjoint['custom_order']['Code postal']);
                     }
+                    $this->em->persist($second);
                 }
 
                 $this->em->flush();
