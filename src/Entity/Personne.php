@@ -159,6 +159,11 @@ class Personne
      */
     private $mailEnvoye;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $billetWebTicketId;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -405,6 +410,18 @@ class Personne
     public function setMailEnvoye(?bool $mailEnvoye): self
     {
         $this->mailEnvoye = $mailEnvoye;
+
+        return $this;
+    }
+
+    public function getBilletWebTicketId(): ?string
+    {
+        return $this->billetWebTicketId;
+    }
+
+    public function setBilletWebTicketId(?string $billetWebTicketId): self
+    {
+        $this->billetWebTicketId = $billetWebTicketId;
 
         return $this;
     }

@@ -19,6 +19,19 @@ class PersonneRepository extends ServiceEntityRepository
         parent::__construct($registry, Personne::class);
     }
 
+    public function getAllPaymentMethods(): array
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        $qb->select('p.moyenPaiement')
+            ->distinct()
+            ->where('p.moyenPaiement IS NOT NULL');
+
+        $query = $qb->getQuery();
+
+        return array_column($query->getResult(), 'moyenPaiement');
+    }
+
     // /**
     //  * @return Personne[] Returns an array of Personne objects
     //  */

@@ -44,6 +44,29 @@ class PersonneType extends AbstractType
             ? $options['data']->getPresent()
             : null;
 
+        $paymentMethods = [
+            'Chèque' => 'cheque',
+            'Virement' => 'virement',
+            'Espèces' => 'especes',
+            'Carte Bancaire' => 'carte_bancaire',
+            'Paiement en ligne' => 'paiement_en_ligne',
+            'Retenue sur salaire' => 'retenue_sur_salaire'
+        ];
+
+        $dbPaymentMethods = $this->em->getRepository(Personne::class)->getAllPaymentMethods();
+
+        // Récupérer les valeurs du premier tableau
+        $firstArrayValues = array_values($paymentMethods);
+
+        // Supprimer les valeurs du deuxième tableau qui existent dans le premier tableau
+        $secondArray = array_diff($dbPaymentMethods, $firstArrayValues);
+
+        foreach ($secondArray as $value) {
+            // Mettre la première lettre en majuscule
+            $newKey = ucfirst($value);
+            $paymentMethods[$newKey] = $value;
+        }
+
         $builder
             ->add('previousPresent', HiddenType::class, [
                 'data' => $previousPresent,
@@ -105,14 +128,7 @@ class PersonneType extends AbstractType
                 'label' => 'Moyen de paiement',
                 'placeholder' => 'Choisir un moyen de paiement',
                 'required' => false,
-                'choices' => [
-                    'Chèque' => 'cheque',
-                    'Virement' => 'virement',
-                    'Espèces' => 'especes',
-                    'Carte Bancaire' => 'carte_bancaire',
-                    'Paiement en ligne' => 'paiement_en_ligne',
-                    'Retenue sur salaire' => 'retenue_sur_salaire'
-                ]
+                'choices' => $paymentMethods
             ])
             ->add('commentaire', TextareaType::class, [
                 'label' => 'Zone de commentaire',
