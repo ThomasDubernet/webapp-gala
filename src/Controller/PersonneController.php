@@ -321,7 +321,7 @@ class PersonneController extends AbstractController
         $form->handleRequest($request);
         $previousPresent = $form->get('previousPresent')->getData();
         if ($form->isSubmitted() && $form->isValid()) {
-            $oldValue = $previousPresent === "1" ? true : false;
+            $oldValue = $previousPresent === "1";
             $montantBillet = $personne->getMontantBillet();
             $montantPaye = $personne->getMontantPaye();
             $conjoint = $personne->getConjoint();
@@ -344,7 +344,7 @@ class PersonneController extends AbstractController
                 $this->em->persist($conjoint);
             }
 
-            if ($oldValue !== $personne->getPresent() && $personne->getPresent() == true) {
+            if ($oldValue !== $personne->getPresent() && $personne->getPresent()) {
                 $numero_table = $personne->getTable()->getNumero();
                 $telephone = $personne->getTelephone();
                 $this->smsController->sendSms($numero_table, $telephone);

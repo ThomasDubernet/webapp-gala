@@ -23,38 +23,56 @@ class SmsController extends AbstractController
      */
     public function sendSms($numero_table, $telephone): void
     {
+        $smsService = null;
+
         $smsApi = new Api(
             $_ENV['OVH_APP_KEY'],
             $_ENV['OVH_APP_SECRET'],
             'ovh-eu',
             $_ENV['OVH_CONSUMER_KEY']
         );
-        $number = substr($telephone, 1);
 
-        $smsServices = $smsApi->get('/sms');
-        $service = "";
+        // On trouve le service SMS
+        try {
+            $smsServices = $smsApi->get('/sms');
 
-        foreach ($smsServices as $value) {
-           if (str_contains($value, "-3")) {
-               $service = $value;
-           }
+            foreach ($smsServices as $value) {
+                if (str_contains($value, "-3")) {
+                    $smsService = $value;
+                }
+            }
+        } catch (Exception $e) {
+            dd($e->getMessage());
         }
 
-        $content = (object) array(
-            "charset"=> "UTF-8",
-            "class"=> "phoneDisplay",
-            "coding"=> "7bit",
-            "message"=> "Bienvenue au Gala des Institutions Beth Rivkah. Vous êtes à la table $numero_table. Bonne soirée",
-            "noStopClause"=> false,
-            "priority"=> "high",
-            "receivers"=> [ "+33$number" ],
-            "senderForResponse"=> true,
-            "validityPeriod"=> 2880
-        );
+        if($smsService !== null) {
+            $formattedNumber = "";
+            if (str_contains($telephone, "+33")) {
+                $formattedNumber = $telephone;
+            } else if (str_starts_with($telephone, "0")) {
+                $formattedNumber = "+33" . substr($telephone, 1);
+            } else {
+                $formattedNumber = "+33" . $telephone;
+            }
 
-        $resultPostJob = $smsApi->post('/sms/' . $service . '/jobs', $content);
-        $smsJobs = $smsApi->get('/sms/' . $service . '/jobs');
+            $content = (object) array(
+                "charset"=> "UTF-8",
+                "class"=> "phoneDisplay",
+                "coding"=> "7bit",
+                "message"=> "Bienvenue au Gala des Institutions Beth Rivkah. Vous êtes à la table $numero_table. Bonne soirée",
+                "noStopClause"=> false,
+                "priority"=> "high",
+                "receivers"=> [ $formattedNumber ],
+                "senderForResponse"=> true,
+                "validityPeriod"=> 2880
+            );
 
-        return;
+            try {
+                $resultPostJob = $smsApi->post('/sms/' . $smsService . '/jobs', $content);
+                $smsJobs = $smsApi->get('/sms/' . $smsService . '/jobs');
+            } catch (Exception $e) {
+                dd($e->getMessage());
+            }
+        }
     }
 }
