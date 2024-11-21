@@ -24,7 +24,8 @@ function HotessePage() {
       )
       setFilteredPersonnes(result)
     } else {
-      setFilteredPersonnes([])
+      // setFilteredPersonnes([])
+      setFilteredPersonnes(items)
     }
   }, [items])
 
@@ -42,15 +43,12 @@ function HotessePage() {
   }
 
   return (
-    <>
-      <nav
-        className="navbar navbar-expand-lg navbar-light bg-light border-bottom position-fixed w-100"
-        style={{ top: 0, zIndex: 999 }}
-      >
-        <div className="container h-100 d-flex">
-          <img className="h-100" src="/logo-2.jpeg" alt="logo" />
+    <div id="hotesse-search">
+      <nav className="navbar-custom">
+        <div className="container-custom">
+          <img className="logo" src="/logo-2.jpeg" alt="logo" />
           <input
-            className="form-control me-2 w-50 ml-auto"
+            className="form-control"
             type="search"
             placeholder="Rechercher"
             aria-label="Rechercher"
@@ -61,16 +59,33 @@ function HotessePage() {
       </nav>
       <div className="grid-personnes px-4">
         {filteredPersonnes.length > 0
+          ? filteredPersonnes.map((personne, index) =>
+              index < 3 ? (
+                <PersonneProvider
+                  key={personne.id}
+                  personne={personne}
+                  load={load}
+                  isHotesse
+                />
+              ) : null
+            )
+          : `Aucune personne ne correspond à votre recherches ${
+              window.innerWidth ?? '0000'
+            }px`}
+        {filteredPersonnes.length > 0
           ? filteredPersonnes.map((personne) => (
               <PersonneProvider
                 key={personne.id}
                 personne={personne}
                 load={load}
+                isHotesse
               />
             ))
-          : 'Aucune personne ne correspond à votre recherche'}
+          : `Aucune personne ne correspond à votre recherches ${
+              window.innerWidth ?? '0000'
+            }px`}
       </div>
-    </>
+    </div>
   )
 }
 
