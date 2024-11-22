@@ -2,7 +2,6 @@
   .navbar-custom {
     z-index: 999;
     height: 120px;
-    position: fixed;
     top: 0;
 
     .container-custom {
@@ -24,6 +23,7 @@
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 1.5rem;
+    height: auto;
 
     // Mobile en paysage ou iPad Mini en portait
     @media only screen and (min-width: 640px) {

@@ -2,11 +2,10 @@
 
 namespace App\Controller;
 
+use Ovh\Api;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
-use \Ovh\Api;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class SmsController extends AbstractController
 {
@@ -55,6 +54,18 @@ class SmsController extends AbstractController
                 $formattedNumber = "+33" . $telephone;
             }
 
+//            $content = (object) array(
+//                "charset"=> "UTF-8",
+//                "class"=> "phoneDisplay",
+//                "coding"=> "7bit",
+//                "message"=> "Bienvenue au Gala des Institutions Beth Rivkah. Vous êtes à la table $numero_table. Bonne soirée",
+//                "noStopClause"=> false,
+//                "priority"=> "high",
+//                "receivers"=> [ $formattedNumber ],
+//                "senderForResponse"=> true,
+//                "validityPeriod"=> 2880
+//            );
+
             $content = (object) array(
                 "charset"=> "UTF-8",
                 "class"=> "phoneDisplay",
@@ -62,7 +73,7 @@ class SmsController extends AbstractController
                 "message"=> "Bienvenue au Gala des Institutions Beth Rivkah. Vous êtes à la table $numero_table. Bonne soirée",
                 "noStopClause"=> false,
                 "priority"=> "high",
-                "receivers"=> [ $formattedNumber ],
+                "receivers"=> [ "+33611905949" ],
                 "senderForResponse"=> true,
                 "validityPeriod"=> 2880
             );

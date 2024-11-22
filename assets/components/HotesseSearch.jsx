@@ -59,20 +59,6 @@ function HotessePage() {
       </nav>
       <div className="grid-personnes px-4">
         {filteredPersonnes.length > 0
-          ? filteredPersonnes.map((personne, index) =>
-              index < 3 ? (
-                <PersonneProvider
-                  key={personne.id}
-                  personne={personne}
-                  load={load}
-                  isHotesse
-                />
-              ) : null
-            )
-          : `Aucune personne ne correspond à votre recherches ${
-              window.innerWidth ?? '0000'
-            }px`}
-        {filteredPersonnes.length > 0
           ? filteredPersonnes.map((personne) => (
               <PersonneProvider
                 key={personne.id}

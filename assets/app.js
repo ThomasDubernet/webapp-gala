@@ -12,7 +12,6 @@ import './styles/app.scss'
 import './bootstrap'
 
 // eslint-disable-next-line no-unused-vars
-import { Tooltip, Toast, Popover } from 'bootstrap'
 
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
@@ -58,9 +57,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const syncBtn = document.getElementById('billet_web_sync_btn')
 
-  syncBtn.addEventListener('click', (e) => {
-    console.log('click')
-    e.preventDefault()
-    syncBilletWebData()
-  })
+  if (syncBtn) {
+    syncBtn.addEventListener('click', (e) => {
+      console.log('click')
+      e.preventDefault()
+      syncBilletWebData()
+    })
+  }
 })

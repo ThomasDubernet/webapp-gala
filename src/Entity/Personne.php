@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\PersonneRepository;
-use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
+use App\Repository\PersonneRepository;
 use App\Validator\Constraints as MyContraints;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 ;
 
@@ -20,6 +20,11 @@ use App\Validator\Constraints as MyContraints;
  *  itemOperations={
  *      "get",
  *      "put",
+ *      "update_presence"={
+ *          "method"="PUT",
+ *          "path"="/personnes/{id}/update-presence",
+ *          "controller"=App\Controller\UpdatePresenceController::class
+ *      },
  *      "send_sms"={
  *          "method"="GET",
  *          "path"="/personnes/{id}/sms",
@@ -163,6 +168,11 @@ class Personne
      * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $billetWebTicketId;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $smsSended = false;
 
     public function getId(): ?int
     {
@@ -422,6 +432,18 @@ class Personne
     public function setBilletWebTicketId(?string $billetWebTicketId): self
     {
         $this->billetWebTicketId = $billetWebTicketId;
+
+        return $this;
+    }
+
+    public function getSmsSended(): ?bool
+    {
+        return $this->smsSended;
+    }
+
+    public function setSmsSended(bool $smsSended): self
+    {
+        $this->smsSended = $smsSended;
 
         return $this;
     }

@@ -14,6 +14,7 @@ export function Personne({ isHotesse = false, personne, children }) {
     table,
     montantBillet,
     montantPaye,
+    present: isPresent,
   } = personne
 
   const isPayed = useMemo(
@@ -21,20 +22,49 @@ export function Personne({ isHotesse = false, personne, children }) {
     [montantBillet, montantPaye]
   )
 
+  const handleCheckboxChange = async (event) => {
+    try {
+      await fetch(`/api/personnes/${id}/update-presence`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          present: event.target.checked,
+        }),
+      })
+    } catch (error) {
+      console.warn('ERROR_PRESENT_CHANGE_01', error)
+    }
+
+    // const checked = !!personne.present
+    // fetch(`/api/personnes/${personne.id}`, {
+    //   method: 'PUT',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({
+    //     present: !checked,
+    //   }),
+    // }).then((response) => {
+    //   if (response.ok) {
+    //     load()
+    //     if (!checked === true) {
+    //       fetch(`/api/personnes/${personne.id}/sms`)
+    //     }
+    //   }
+    // })
+  }
+
   return isHotesse ? (
     <div className="grid-item-personne">
       <div className="grid-item-header">
-        {/* <div className={`bubble bg-${isPayed ? 'success' : 'danger'}`} /> */}
         <div>
           <h5>{prenom}</h5>
           <h5>{nom}</h5>
         </div>
-        {/* {isPayed ? ( */}
-        {/*  <div className="success-badge">Payé</div> */}
-        {/* ) : ( */}
-        {/*  <div className="error-badge">Non payé</div> */}
-        {/* )} */}
-        {Math.random() > 0.5 ? (
+        {isPayed ? (
           <div className="success-badge">Payé</div>
         ) : (
           <div className="error-badge">Non payé</div>
@@ -68,7 +98,11 @@ export function Personne({ isHotesse = false, personne, children }) {
           <div>
             <dt>Présent ?</dt>
             <dd>
-              <input type="checkbox" />
+              <input
+                type="checkbox"
+                defaultChecked={isPresent}
+                onChange={handleCheckboxChange}
+              />
             </dd>
           </div>
         </dl>
