@@ -37,7 +37,7 @@
         <button class="btn btn-outline-secondary" type="button" id="dropdownMenuNavbar" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-gear-fill"></i>
         </button>
-        <div role="menu" class="dropdown-menu" aria-labelledby="dropdownMenuNavbar" style="width:275px;z-index:9999;">
+        <div role="menu" class="dropdown-menu" aria-labelledby="dropdownMenuNavbar" style="width:275px;">
           <div class="d-flex align-items-center flex-column">
             <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
             <form action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">
