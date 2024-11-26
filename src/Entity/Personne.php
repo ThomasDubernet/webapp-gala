@@ -6,11 +6,10 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
 use App\Repository\PersonneRepository;
+use App\Service\UtilsService;
 use App\Validator\Constraints as MyContraints;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
-;
 
 /**
  * @ORM\Entity(repositoryClass=PersonneRepository::class)
@@ -186,7 +185,8 @@ class Personne
 
     public function setNom(string $nom): self
     {
-        $this->nom = $nom;
+        $formattedNom = UtilsService::capitalizeFirstLetters($nom);
+        $this->nom = $formattedNom;
 
         return $this;
     }
@@ -198,7 +198,8 @@ class Personne
 
     public function setPrenom(?string $prenom): self
     {
-        $this->prenom = $prenom;
+        $formattedPrenom = UtilsService::capitalizeFirstLetters($prenom);
+        $this->prenom = $formattedPrenom;
 
         return $this;
     }
@@ -234,7 +235,8 @@ class Personne
 
     public function setEmail(string $email): self
     {
-        $this->email = $email;
+        $formattedEmail = UtilsService::formatEmail($email);
+        $this->email = $formattedEmail;
 
         return $this;
     }

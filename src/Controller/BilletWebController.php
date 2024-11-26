@@ -9,7 +9,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -223,7 +222,6 @@ class BilletWebController extends AbstractController
 
                     $this->em->persist($principalCustomer);
                     $this->em->persist($conjointCustomer);
-                    $this->em->flush();
                 } else {
                     $principal = $customers[0];
 
@@ -283,8 +281,8 @@ class BilletWebController extends AbstractController
                     }
 
                     $this->em->persist($principalCustomer);
-                    $this->em->flush();
                 }
+                $this->em->flush();
             }
 
 //            $currentEvent->setLastUpdateBilletWeb($newLastSyncDate);
