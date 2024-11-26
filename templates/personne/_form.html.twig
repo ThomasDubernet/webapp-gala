@@ -48,9 +48,14 @@
       </div>
     </div>
     {% if (personne.conjoint is defined) and (personne.conjoint != null) %}
-      <div class="mb-3">
+      <div class="mb-3 d-flex flex-column">
         <label class="form-label">Conjoint</label>
-        <input disabled="disabled" class="form-control" value="{{personne.conjoint.prenom}} {{personne.conjoint.nom}}"/>
+        <a class="d-flex gap-2 link-secondary fw-bolder align-items-center" href="{{ path('personne_edit', {'id': personne.conjoint.id}) }}">
+          <span>
+            {{personne.conjoint.prenom}} {{personne.conjoint.nom}}
+          </span>
+          <i class="bi bi-box-arrow-up-right" style="font-size: 12px;"></i>
+        </a>
       </div>
     {% elseif (update == true) and (personne.conjoint == false) %}
       <div class="mb-3 d-flex flex-column">

@@ -3,18 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Civilite;
-use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
 use App\Form\PersonneType;
 use App\Repository\PersonneRepository;
+use App\Service\BilletWebService;
+use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\RequestOptions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,38 +21,18 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class PersonneController extends AbstractController
 {
-    public const BILLET_WEB_API_URL = 'https://www.billetweb.fr';
-
-    /**
-     * @var EntityManagerInterface
-     */
     private $em;
-
-    /**
-     * @var PdfController
-     */
-    private $pdfController;
-
-    /**
-     * @var MailerController
-     */
-    private $mailerController;
-
-    /**
-     * @var SmsController
-     */
-    private $smsController;
+    private $billetWebService;
+    private $smsService;
 
     public function __construct(
         EntityManagerInterface $em,
-        PdfController $pdfController,
-        MailerController $mailerController,
-        SmsController $smsController
+        BilletWebService $billetWebService,
+        SmsService $smsService
     ) {
         $this->em = $em;
-        $this->pdfController = $pdfController;
-        $this->mailerController = $mailerController;
-        $this->smsController = $smsController;
+        $this->billetWebService = $billetWebService;
+        $this->smsService = $smsService;
     }
 
     /**
@@ -98,7 +75,6 @@ class PersonneController extends AbstractController
 
     /**
      * @Route("/new", name="personne_new", methods={"GET", "POST"})
-     * @throws GuzzleException
      */
     public function new(Request $request): Response
     {
@@ -109,68 +85,20 @@ class PersonneController extends AbstractController
 
         $form->handleRequest($request);
 
-
         if ($form->isSubmitted() && $form->isValid()) {
             $this->em->persist($personne);
             $this->em->flush();
+
+
             if ($_POST['action'] == "Créer avec un conjoint") {
-                // $this->pdfController->createTicket($personne);
-                // $this->mailerController->sendTicket($personne);
 
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
                 ]);
             }
 
-            $httpClient = new Client([
-                'base_uri' => self::BILLET_WEB_API_URL,
-            ]);
-            $currentEvent = $this->em->getRepository(Evenement::class)->findAll()[0] ?? null;
+            $this->billetWebService->createPerson($personne);
 
-            if($currentEvent === null) {
-                return $this->json([
-                    'error' => 'ERROR_CREATE_PERSONNE_BILLET_WEB_001',
-                    'status' => 'error',
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
-            $billetWebId = $currentEvent->getBilletwebId();
-
-            $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
-                'headers' => [
-                    'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
-                ],
-                'json' => [
-                    'data' => [
-                        [
-                            'name' => $personne->getNom(),
-                            'firstname' => $personne->getPrenom(),
-                            'email' => $personne->getEmail(),
-                            'session' => '0', // TODO check à quoi ça correspond
-                            'payment_type' => 'other',
-                            'products' => [
-                                [
-                                    'ticket' => 'Import Appli BR',
-                                    'name' => $personne->getNom(),
-                                    'firstname' => $personne->getPrenom(),
-                                    'email' => $personne->getEmail(),
-                                    'price' => $personne->getMontantPaye(),
-                                    'used' => 0,
-                                    'custom' => [
-                                        'Portable' => '+33'.$personne->getTelephone(),
-                                        'Adresse' => $personne->getAdresse(),
-                                        'Code Postal' => $personne->getCodePostal(),
-                                        'Ville' => $personne->getVille(),
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]);
-
-            // $this->pdfController->createTicket($personne);
-            // $this->mailerController->sendTicket($personne);
             return $this->redirectToRoute('home');
         }
 
@@ -183,7 +111,7 @@ class PersonneController extends AbstractController
     /**
      * @Route("/{id}/new_conjoint", name="conjoint_new", methods={"GET", "POST"})
      */
-    public function newConjoint($id, Request $request): Response
+    public function newConjoint(string $id, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
         $civilite = null;
@@ -228,79 +156,7 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-
-            $httpClient = new Client([
-                'base_uri' => self::BILLET_WEB_API_URL,
-            ]);
-            $currentEvent = $this->em->getRepository(Evenement::class)->findAll()[0] ?? null;
-
-            if($currentEvent === null) {
-                return $this->json([
-                    'error' => 'ERROR_CREATE_PERSONNE_BILLET_WEB_001',
-                    'status' => 'error',
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
-            $billetWebId = $currentEvent->getBilletwebId();
-
-            $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
-                'headers' => [
-                    'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
-                ],
-                'json' => [
-                    'data' => [
-                        [
-                            'name' => $personne->getNom(),
-                            'firstname' => $personne->getPrenom(),
-                            'email' => $personne->getEmail(),
-                            'session' => '0',
-                            'payment_type' => 'other',
-                            'products' => [
-                                [
-                                    'ticket' => 'Import Appli BR',
-                                    'name' => $personne->getNom(),
-                                    'firstname' => $personne->getPrenom(),
-                                    'email' => $personne->getEmail(),
-                                    'price' => $personne->getMontantPaye(),
-                                    'used' => 0,
-                                    'custom' => [
-                                        'Portable' => '+33'.$personne->getTelephone(),
-                                        'Adresse' => $personne->getAdresse(),
-                                        'Code Postal' => $personne->getCodePostal(),
-                                        'Ville' => $personne->getVille(),
-                                    ]
-                                ]
-                            ]
-                        ],
-                        [
-                            'name' => $personne->getNom(),
-                            'firstname' => $personne->getPrenom(),
-                            'email' => $personne->getEmail(),
-                            'session' => '0',
-                            'payment_type' => 'other',
-                            'products' => [
-                                [
-                                    'ticket' => 'Import Appli BR',
-                                    'name' => $conjoint->getNom(),
-                                    'firstname' => $conjoint->getPrenom(),
-                                    'email' => $conjoint->getEmail(),
-                                    'price' => $conjoint->getMontantPaye(),
-                                    'used' => 0,
-                                    'custom' => [
-                                        'Portable' => '+33'.$personne->getTelephone(),
-                                        'Adresse' => $personne->getAdresse(),
-                                        'Code Postal' => $personne->getCodePostal(),
-                                        'Ville' => $personne->getVille(),
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]);
-
-            // $this->pdfController->createTicket($conjoint);
-            // $this->mailerController->sendTicket($conjoint);
+            $this->billetWebService->createCouple($personne, $conjoint);
 
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
@@ -326,14 +182,6 @@ class PersonneController extends AbstractController
             $montantPaye = $personne->getMontantPaye();
             $conjoint = $personne->getConjoint();
 
-            // if ($personne->getMailEnvoye() !== true) {
-            //     $this->mailerController->sendTicket($personne);
-
-            //     if ($conjoint !== null && $conjoint->getMailEnvoye() !== true) {
-            //         $this->mailerController->sendTicket($conjoint);
-            //     }
-            // }
-
             if ($conjoint !== null && $montantBillet !== null && $montantBillet == $montantPaye) {
                 $conjoint
                     ->setMontantBillet(0)
@@ -344,13 +192,18 @@ class PersonneController extends AbstractController
                 $this->em->persist($conjoint);
             }
 
+            $doSendSms = false;
+
             if ($oldValue !== $personne->getPresent() && $personne->getPresent()) {
-                $numero_table = $personne->getTable()->getNumero();
-                $telephone = $personne->getTelephone();
-                $this->smsController->sendSms($numero_table, $telephone);
+                $doSendSms = true;
             }
+
             $this->em->persist($personne);
             $this->em->flush();
+
+            if ($doSendSms) {
+                $this->smsService->sendSms($personne);
+            }
 
             return $this->redirectToRoute('home');
         }
@@ -372,7 +225,7 @@ class PersonneController extends AbstractController
         $this->em->persist($personne);
         $this->em->flush();
 
-        return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('home');
     }
 
     /**

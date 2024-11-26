@@ -14,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -144,7 +143,7 @@ class PersonneType extends AbstractType
                 'placeholder' => 'Choisir une catégorie',
                 'label' => 'Catégorie',
                 'required' => false,
-                'data' => $catPers ? $catPers : null
+                'data' => $catPers ?: null
             ])
             ->add('table', EntityType::class, [
                 'class' => Table::class,
