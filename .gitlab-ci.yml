@@ -1,44 +1,49 @@
-image: jakzal/phpqa:php7.4
-
-before_script:
-  - composer install
-
-cache:
-  paths:
-    - vendor/
-
 stages:
-  - SecurityChecker
-  - CodingStandards
-  - UnitTests
+  - build
+  - deploy
 
-security-checker:
-  stage: SecurityChecker
+build_project:
+  stage: build
+  image: php:7.4-cli
   script:
-    - local-php-security-checker --path=./composer.lock
-  allow_failure: true
+    - echo "Téléchargement de Composer 1.x..."
+    - curl -sS https://getcomposer.org/installer | php -- --version=1.10.22
+    - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+    - echo "Préparation des fichiers pour le déploiement..."
+    - tar -czf project.tar.gz . --exclude-vcs --exclude=.gitlab-ci.yml
+  artifacts:
+    paths:
+      - project.tar.gz
 
-phpcs:
-  stage: CodingStandards
+deploy_to_server:
+  stage: deploy
+  only:
+    - main
+  dependencies:
+    - build_project
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    # Gestion de la passphrase de la clé SSH
+    - echo -e '#!/usr/bin/env bash\necho "$SSH_PASSPHRASE"' > ssh_askpass.sh
+    - chmod +x ssh_askpass.sh
+    - export SSH_ASKPASS="$CI_PROJECT_DIR/ssh_askpass.sh"
+    - setsid ssh-add < /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts
   script:
-    - phpcs -v --standard=PSR12 --ignore=./src/Kernel.php ./src
-  allow_failure: true
+    - echo "Déploiement sur le serveur..."
+    - scp -P $SSH_PORT project.tar.gz $SSH_USER@$SSH_HOST:~/public_html/
+    - ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "
+      cd ~/public_html &&
+      tar -xzf project.tar.gz &&
+      rm project.tar.gz &&
+      php bin/console doctrine:migrations:migrate -n &&
+      php bin/console cache:clear
+      "
+  environment:
+    name: production
+    url: https://reservation.bethrivkah.fr
 
-phpstan:
-  stage: CodingStandards
-  script:
-    - phpstan analyse ./src
-  allow_failure: true
-
-twig-lint:
-  stage: CodingStandards
-  script:
-    - twig-lint lint ./templates
-  allow_failure: true
-
-phpunit:
-  stage: UnitTests
-  script:
-    - php bin/phpunit
-  allow_failure: true
 
