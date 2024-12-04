@@ -12,13 +12,13 @@ build_project:
   stage: build
   image: node:14
   script:
+    - echo "Installation de Composer 1.x..."
+    - curl -sS https://getcomposer.org/installer | php -- --version=1.10.22
+    - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
     - echo "Installation des dépendances Node.js..."
     - npm install
     - echo "Construction des assets front-end..."
     - npm run build
-    - echo "Installation de Composer 1.x..."
-    - curl -sS https://getcomposer.org/installer | php -- --version=1.10.22
-    - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
   artifacts:
     paths:
       - .
