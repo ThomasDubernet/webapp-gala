@@ -2,11 +2,6 @@ stages:
   - build
   - deploy
 
-variables:
-  SSH_USER: "reservationbethr"
-  SSH_HOST: "146.88.234.238"
-  SSH_PORT: "2908"
-
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
@@ -60,11 +55,7 @@ deploy_to_server:
   script:
     - echo "Déploiement sur le serveur avec rsync..."
     - rsync -avz --delete --exclude-from='.rsyncignore' -e "ssh -p $SSH_PORT" ./ $SSH_USER@$SSH_HOST:~/public_html/
-    - sh -p $SSH_PORT $SSH_USER@$SSH_HOST "
-    - cd ~/public_html &&
-    - php bin/console doctrine:migrations:migrate -n &&
-    - php bin/console cache:clear
-    - "
+    - ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "cd ~/public_html && php bin/console doctrine:migrations:migrate -n && php bin/console cache:clear"
   environment:
     name: production
     url: https://reservation.bethrivkah.fr
