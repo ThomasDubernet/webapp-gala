@@ -1,38 +1,40 @@
 stages:
-  - build
+  - build_backend
+  - build_frontend
   - deploy
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - node_modules/
     - vendor/
+    - node_modules/
 
-build_project:
-  stage: build
-  image: node:14
+build_backend:
+  stage: build_backend
+  image: composer:1 # Utilise l'image avec Composer 1.x pré-installé
   script:
-    - echo "Installation de Composer 1.x..."
-    - curl -sS https://getcomposer.org/installer | php -- --version=1.10.22
-    - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
+    - echo "Installation des dépendances PHP avec Composer..."
+    - composer install --no-interaction --prefer-dist --optimize-autoloader
+  artifacts:
+    paths:
+      - vendor/
+      - composer.lock
+    expire_in: 1 hour
+
+
+build_frontend:
+  stage: build_frontend
+  image: node:14
+  dependencies:
+    - build_backend
+  script:
     - echo "Installation des dépendances Node.js..."
     - npm install
     - echo "Construction des assets front-end..."
     - npm run build
   artifacts:
     paths:
-      - .
-    exclude:
-      - .git/
-      - .gitlab-ci.yml
-      - tests/
-      - node_modules/
-      - vendor/bin/
-      - var/
-      - cache/
-      - logs/
-      - tmp/
-      - '!*'
+      - public/build/ # Chemin des assets générés par `npm run build`
     expire_in: 1 hour
 
 deploy_to_server:
@@ -40,7 +42,8 @@ deploy_to_server:
   only:
     - main
   dependencies:
-    - build_project
+    - build_backend
+    - build_frontend
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client rsync -y )'
     - eval $(ssh-agent -s)
@@ -53,8 +56,11 @@ deploy_to_server:
     - chmod 700 ~/.ssh
     - ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts
   script:
+    - echo "Préparation des fichiers pour le déploiement..."
+    - mkdir deploy
+    - rsync -av --exclude-from='.rsyncignore' . deploy/
     - echo "Déploiement sur le serveur avec rsync..."
-    - rsync -avz --delete --exclude-from='.rsyncignore' -e "ssh -p $SSH_PORT" ./ $SSH_USER@$SSH_HOST:~/public_html/
+    - rsync -avz --delete -e "ssh -p $SSH_PORT" deploy/ $SSH_USER@$SSH_HOST:~/public_html/
     - ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "cd ~/public_html && php bin/console doctrine:migrations:migrate -n && php bin/console cache:clear"
   environment:
     name: production
