@@ -2,18 +2,43 @@ stages:
   - build
   - deploy
 
+variables:
+  SSH_USER: "reservationbethr"
+  SSH_HOST: "146.88.234.238"
+  SSH_PORT: "2908"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - vendor/
+
 build_project:
   stage: build
-  image: php:7.4-cli
+  image: node:14
   script:
-    - echo "Téléchargement de Composer 1.x..."
+    - echo "Installation des dépendances Node.js..."
+    - npm install
+    - echo "Construction des assets front-end..."
+    - npm run build
+    - echo "Installation de Composer 1.x..."
     - curl -sS https://getcomposer.org/installer | php -- --version=1.10.22
     - php composer.phar install --no-interaction --prefer-dist --optimize-autoloader
-    - echo "Préparation des fichiers pour le déploiement..."
-    - tar -czf project.tar.gz . --exclude-vcs --exclude=.gitlab-ci.yml
   artifacts:
     paths:
-      - project.tar.gz
+      - .
+    exclude:
+      - .git/
+      - .gitlab-ci.yml
+      - tests/
+      - node_modules/
+      - vendor/bin/
+      - var/
+      - cache/
+      - logs/
+      - tmp/
+      - '!*'
+    expire_in: 1 hour
 
 deploy_to_server:
   stage: deploy
@@ -22,7 +47,7 @@ deploy_to_server:
   dependencies:
     - build_project
   before_script:
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client rsync -y )'
     - eval $(ssh-agent -s)
     # Gestion de la passphrase de la clé SSH
     - echo -e '#!/usr/bin/env bash\necho "$SSH_PASSPHRASE"' > ssh_askpass.sh
@@ -33,17 +58,13 @@ deploy_to_server:
     - chmod 700 ~/.ssh
     - ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts
   script:
-    - echo "Déploiement sur le serveur..."
-    - scp -P $SSH_PORT project.tar.gz $SSH_USER@$SSH_HOST:~/public_html/
-    - ssh -p $SSH_PORT $SSH_USER@$SSH_HOST "
-      cd ~/public_html &&
-      tar -xzf project.tar.gz &&
-      rm project.tar.gz &&
-      php bin/console doctrine:migrations:migrate -n &&
-      php bin/console cache:clear
-      "
+    - echo "Déploiement sur le serveur avec rsync..."
+    - rsync -avz --delete --exclude-from='.rsyncignore' -e "ssh -p $SSH_PORT" ./ $SSH_USER@$SSH_HOST:~/public_html/
+    - sh -p $SSH_PORT $SSH_USER@$SSH_HOST "
+    - cd ~/public_html &&
+    - php bin/console doctrine:migrations:migrate -n &&
+    - php bin/console cache:clear
+    - "
   environment:
     name: production
     url: https://reservation.bethrivkah.fr
-
-
