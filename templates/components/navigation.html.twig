@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
   <div class="container-fluid">
-    <a class="navbar-brand" style="height: 45px;" href="{{ path('home') }}">
+    <a class="navbar-brand" href="{{ path('home') }}">
       <img class="h-100" src="/logo-2.jpeg" alt="logo"/>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,15 +29,15 @@
     </div>
     <div class="ml-auto btn-group dropstart">
       <div class="mx-2">
-        <a href="{{ path('dahsboard_hotesse') }}" class="btn btn-outline-primary">
+        <a href="{{ path('dahsboard_hotesse') }}" class="btn btn-outline-primary hotesse-link">
           <i class="bi bi-person-circle"></i>
         </a>
       </div>
       <div class="dropdown mx-2">
-        <button class="btn btn-outline-secondary" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        <button class="btn btn-outline-secondary" type="button" id="dropdownMenuNavbar" data-bs-toggle="dropdown" aria-expanded="false">
           <i class="bi bi-gear-fill"></i>
         </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="width:275px;">
+        <div role="menu" class="dropdown-menu" aria-labelledby="dropdownMenuNavbar" style="width:275px;">
           <div class="d-flex align-items-center flex-column">
             <a class="m-2 dropdown-item" href="{{ path('event_edit', {'id': 1}) }}">Editer l'évènement</a>
             <form action="/import" name="import" method="post" id="form_import" enctype="multipart/form-data">

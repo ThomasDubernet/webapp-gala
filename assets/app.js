@@ -12,13 +12,15 @@ import './styles/app.scss'
 import './bootstrap'
 
 // eslint-disable-next-line no-unused-vars
-import { Tooltip, Toast, Popover } from 'bootstrap'
-
+import { Popover, Toast, Tooltip } from 'bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 import './components/Search'
 import './components/Plan'
 import './components/HotesseSearch'
+
+// Keep log for don't remove import
+console.log({ Tooltip, Toast, Popover })
 
 const syncBilletWebData = async () => {
   const popup = document.getElementById('billet_web_sync_popup')
@@ -58,9 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const syncBtn = document.getElementById('billet_web_sync_btn')
 
-  syncBtn.addEventListener('click', (e) => {
-    console.log('click')
-    e.preventDefault()
-    syncBilletWebData()
-  })
+  if (syncBtn) {
+    syncBtn.addEventListener('click', (e) => {
+      console.log('click')
+      e.preventDefault()
+      syncBilletWebData()
+    })
+  }
 })

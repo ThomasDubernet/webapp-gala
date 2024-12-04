@@ -1,0 +1,138 @@
+#hotesse-search {
+  .navbar-custom {
+    z-index: 999;
+    height: 120px;
+    top: 0;
+
+    .container-custom {
+      width: 100%;
+      padding: 10px 24px;
+      display: flex;
+      gap: 32px;
+      align-items: center;
+
+      .logo {
+        width: 25%;
+        flex-grow: 1;
+        height: 100%;
+      }
+    }
+  }
+
+  .grid-personnes {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1.5rem;
+    height: auto;
+
+    // Mobile en paysage ou iPad Mini en portait
+    @media only screen and (min-width: 640px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    // Desktop
+    @media only screen and (min-width: 1024px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-item-personne {
+      border-radius: 12px;
+      border: 1px solid rgb(229, 231, 235);
+
+      .grid-item-header {
+        position: relative;
+        padding: 14px;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        background: rgb(249, 250, 251);
+        border-bottom: 1px solid rgb(229, 231, 235);
+        display: flex;
+        align-items: flex-start;
+        column-gap: 12px;
+
+        .grid-item-edit-btn-wrapper {
+          margin-left: auto;
+          .grid-item-edit-link {
+            border: none;
+            background: none;
+            color: rgb(134, 136, 143);
+          }
+        }
+
+        .success-badge,.error-badge {
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          font-size: 12px;
+          font-weight: 500;
+          width: fit-content;
+        }
+        .success-badge {
+          background: rgb(240, 253, 244);
+          color: rgb(21, 128, 61);
+          box-shadow: rgb(255, 255, 255) 0 0 0 0 inset, rgba(22, 163, 74, 0.2) 0 0 0 1px inset, rgba(0, 0, 0, 0) 0 0 0 0;
+        }
+        .error-badge {
+          background: rgb(254, 242, 242);
+          color: rgb(185, 28, 28);
+          box-shadow: rgb(255, 255, 255) 0 0 0 0 inset, rgba(220, 38, 38, 0.1) 0 0 0 1px inset, rgba(0, 0, 0, 0) 0 0 0 0;
+        }
+      }
+
+      .grid-item-content {
+        padding: 14px;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+
+        dl {
+          margin: 0;
+
+          & > div {
+            padding: 0.75rem 0;
+            display: flex;
+            column-gap: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
+
+            font-size: 14px;
+            font-weight: normal;
+
+            border-bottom: 1px solid rgb(229, 231, 235);
+
+            &:first-child {
+              padding-top: 0;
+            }
+            &:last-child {
+              border-bottom: none;
+              padding-bottom: 0;
+            }
+
+
+            dt {
+              font-weight: 400;
+              color: rgb(107 114 128);
+              margin: 0;
+            }
+            dd {
+              color: rgb(55 65 81);
+              margin: 0;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  h5 {
+    font-size: 1rem;
+    line-height: 1.1;
+    margin: 0;
+
+    // Mobile en paysage ou iPad Mini en portait
+    @media only screen and (min-width: 640px) {
+      font-size: 1.1rem;
+    }
+
+    @media only screen and (min-width: 1024px) {
+      font-size: 1.2rem;
+    }
+  }
+}

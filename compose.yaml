@@ -1,0 +1,53 @@
+services:
+    database:
+        image: 'mysql:8.0'
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: main
+        ports:
+            - "3306:3306"
+        volumes:
+            - database_data:/var/lib/mysql:rw
+        networks:
+            - symfony
+
+    php:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - ./:/var/www/html
+        environment:
+            DATABASE_HOST: database
+        depends_on:
+            - database
+        networks:
+            - symfony
+
+    nginx:
+        image: nginx:latest
+        ports:
+            - "80:80"
+        volumes:
+            - ./:/var/www/html
+            - ./docker/nginx/conf.d:/etc/nginx/conf.d
+        depends_on:
+            - php
+        networks:
+            - symfony
+#    adminer:
+#        image: adminer
+#        ports:
+#            - "8080:8080"
+#        depends_on:
+#            - database
+    mailer:
+        image: schickling/mailcatcher
+        ports: ["1025", "1080"]
+
+volumes:
+    database_data:
+
+networks:
+    symfony:
+        driver: bridge

@@ -3,7 +3,6 @@
 namespace App\DataFixtures;
 
 use App\Entity\CategoriePersonne;
-use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -17,6 +16,8 @@ class CategoriePersonneFixtures extends Fixture
         $cat3 = new CategoriePersonne();
         $cat4 = new CategoriePersonne();
         $cat5 = new CategoriePersonne();
+        $cat6 = new CategoriePersonne();
+        $cat7 = new CategoriePersonne();
 
         $cat->setNom('Général ');
         $cat1->setNom('Parents d\'élèves');
@@ -24,6 +25,8 @@ class CategoriePersonneFixtures extends Fixture
         $cat3->setNom('Personnel');
         $cat4->setNom('Staff');
         $cat5->setNom('Invité');
+        $cat6->setNom('VIP');
+        $cat7->setNom('Invité');
 
         $manager->persist($cat);
         $manager->persist($cat1);
