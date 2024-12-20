@@ -36,9 +36,11 @@ class UpdatePresenceController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            if ($personne->getSmsSended() !== true) {
+//            if ($personne->getSmsSended() !== true) {
+            if ($content['present'] === true) {
                 $this->smsService->sendSms($personne);
             }
+//            }
 
             return new JsonResponse($personne);
         }
