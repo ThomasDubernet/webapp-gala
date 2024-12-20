@@ -73,7 +73,7 @@ class SmsController extends AbstractController
                 "message"=> "Bienvenue au Gala des Institutions Beth Rivkah. Vous êtes à la table $numero_table. Bonne soirée",
                 "noStopClause"=> false,
                 "priority"=> "high",
-                "receivers"=> [ "+33611905949" ],
+                "receivers"=> [ $formattedNumber ],
                 "senderForResponse"=> true,
                 "validityPeriod"=> 2880
             );
@@ -82,7 +82,7 @@ class SmsController extends AbstractController
                 $resultPostJob = $smsApi->post('/sms/' . $smsService . '/jobs', $content);
                 $smsJobs = $smsApi->get('/sms/' . $smsService . '/jobs');
             } catch (Exception $e) {
-                dd($e->getMessage());
+//                dd($e->getMessage());
             }
         }
     }
