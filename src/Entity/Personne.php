@@ -170,6 +170,7 @@ class Personne
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"personne", "table"})
      */
     private $smsSended = false;
 

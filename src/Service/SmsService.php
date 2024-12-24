@@ -63,8 +63,10 @@ class SmsService {
 
                     $this->em->persist($personne);
                     $this->em->flush();
+
                 }
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
     }
 }

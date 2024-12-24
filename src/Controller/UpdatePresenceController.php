@@ -9,15 +9,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class UpdatePresenceController extends AbstractController
 {
     private $em;
     private $smsService;
-    public function __construct(EntityManagerInterface $em, SmsService $smsService)
+    private $serializer;
+    public function __construct(EntityManagerInterface $em, SmsService $smsService, SerializerInterface $serializer)
     {
         $this->em = $em;
         $this->smsService = $smsService;
+        $this->serializer = $serializer;
     }
 
     public function __invoke(Request $request): Response
@@ -36,11 +39,15 @@ class UpdatePresenceController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-            if ($personne->getSmsSended() !== true) {
+            $forceSms = $content['withSms'] === true;
+
+            if ($personne->getSmsSended() !== true || $forceSms) {
                 $this->smsService->sendSms($personne);
             }
 
-            return new JsonResponse($personne);
+            $serializedPersonne = $this->serializer->serialize($personne, 'json');
+
+            return new JsonResponse(json_decode($serializedPersonne));
         }
     }
 }

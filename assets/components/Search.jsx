@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { render } from 'react-dom'
+import { Box, Button, Checkbox, Modal, Typography } from '@mui/material'
 import { useGetMany } from '../hooks'
 
 export function Personne({ isHotesse = false, personne, children }) {
+  const [person, setPerson] = useState(personne)
   const {
     id,
     prenom,
@@ -15,127 +17,193 @@ export function Personne({ isHotesse = false, personne, children }) {
     montantBillet,
     montantPaye,
     present: isPresent,
-  } = personne
+    smsSended,
+  } = useMemo(() => person, [person])
+
+  const [openModal, setOpenModal] = useState(false)
 
   const isPayed = useMemo(
     () => montantBillet !== null && montantBillet === montantPaye,
     [montantBillet, montantPaye]
   )
 
-  const handleCheckboxChange = async (event) => {
+  const updatePresence = async (presence, withSms) => {
     try {
-      await fetch(`/api/personnes/${id}/update-presence`, {
+      const response = await fetch(`/api/personnes/${id}/update-presence`, {
         method: 'PUT',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          present: event.target.checked,
+          present: presence,
+          withSms,
         }),
       })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPerson(data)
+      }
     } catch (error) {
       console.warn('ERROR_PRESENT_CHANGE_01', error)
     }
-
-    // const checked = !!personne.present
-    // fetch(`/api/personnes/${personne.id}`, {
-    //   method: 'PUT',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     present: !checked,
-    //   }),
-    // }).then((response) => {
-    //   if (response.ok) {
-    //     load()
-    //     if (!checked === true) {
-    //       fetch(`/api/personnes/${personne.id}/sms`)
-    //     }
-    //   }
-    // })
   }
 
-  return isHotesse ? (
-    <div className="grid-item-personne">
-      <div className="grid-item-header">
-        <div>
-          <h5>{prenom}</h5>
-          <h5>{nom}</h5>
-        </div>
-        {isPayed ? (
-          <div className="success-badge">Payé</div>
-        ) : (
-          <div className="error-badge">Non payé</div>
-        )}
-        <div className="grid-item-edit-btn-wrapper">
-          <a href={`/personne/${id}/edit`} className="grid-item-edit-link">
-            <i className="bi bi-pencil" />
-          </a>
-        </div>
-      </div>
-      <div className="grid-item-content">
-        <dl>
-          <div>
-            <dt>Table</dt>
-            <dd>
-              {table !== null ? `Table n°${table.numero}` : 'Non assignée'}
-            </dd>
-          </div>
-          <div>
-            <dt>Email</dt>
-            <dd>
-              <a href={`mailto:${email}`}>{email}</a>
-            </dd>
-          </div>
-          <div>
-            <dt>Adresse</dt>
-            <dd>
-              {adresse},<br /> {codePostal} {ville}
-            </dd>
-          </div>
-          <div>
-            <dt>Présent ?</dt>
-            <dd>
-              <input
-                type="checkbox"
-                defaultChecked={isPresent}
-                onChange={handleCheckboxChange}
-              />
-            </dd>
-          </div>
-        </dl>
-      </div>
-    </div>
-  ) : (
-    <div className="card-personne">
-      <div className={`bubble bg-${isPayed ? 'success' : 'danger'}`} />
-      <div className="header">
-        <div className="fullname">
-          <h5>{prenom}</h5>
-          <h5>{nom}</h5>
-        </div>
-        <div className="ml-auto btn-group dropstart">
-          <div className="dropdown">
-            <button
-              className="btn btn-sm btn-outline-secondary"
-              type="button"
-              id="dropdownPersonneButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+  const handleCheckboxChange = async (event) => {
+    const newCheckValue = event.target.checked
+
+    if (smsSended && newCheckValue) {
+      setOpenModal(true)
+    } else {
+      await updatePresence(newCheckValue, false)
+    }
+  }
+
+  return (
+    <>
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography id="modal-modal-title" variant="h6" component="h2" center>
+            SMS
+          </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            Voulez-vous envoyer le sms de confirmation ?
+          </Typography>
+
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 3,
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => {
+                setOpenModal(false)
+                updatePresence(true, false)
+              }}
             >
-              <i className="bi bi-three-dots" />
-            </button>
-            <div
-              className="dropdown-menu"
-              aria-labelledby="dropdownPersonneButton"
+              Non
+            </Button>
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={() => {
+                setOpenModal(false)
+                updatePresence(true, true)
+              }}
             >
-              <div className="d-flex align-items-center flex-column">
-                <a className="m-2 dropdown-item" href={`/personne/${id}/edit`}>
-                  Editer la fiche
-                </a>
-                {/* <a className="m-2 dropdown-item" href={`/email/${id}`}>
+              Oui
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
+      {isHotesse ? (
+        <div
+          className="grid-item-personne"
+          style={{ marginTop: '0 !important' }}
+        >
+          <div className="grid-item-header">
+            <div>
+              <h5>{prenom}</h5>
+              <h5>{nom}</h5>
+            </div>
+            {isPayed ? (
+              <div className="success-badge">Payé</div>
+            ) : (
+              <div className="error-badge">Non payé</div>
+            )}
+            <div className="grid-item-edit-btn-wrapper">
+              <a href={`/personne/${id}/edit`} className="grid-item-edit-link">
+                <i className="bi bi-pencil" />
+              </a>
+            </div>
+          </div>
+          <div className="grid-item-content">
+            <dl>
+              <div>
+                <dt>Table</dt>
+                <dd>
+                  {table !== null ? `Table n°${table.numero}` : 'Non assignée'}
+                </dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>
+                  <a href={`mailto:${email}`}>{email}</a>
+                </dd>
+              </div>
+              <div>
+                <dt>Adresse</dt>
+                <dd>
+                  {adresse},<br /> {codePostal} {ville}
+                </dd>
+              </div>
+              <div>
+                <dt>Présent ?</dt>
+                <dd>
+                  <Checkbox
+                    type="checkbox"
+                    defaultChecked={isPresent}
+                    onChange={handleCheckboxChange}
+                  />
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      ) : (
+        <div className="card-personne">
+          <div className={`bubble bg-${isPayed ? 'success' : 'danger'}`} />
+          <div className="header">
+            <div className="fullname">
+              <h5>{prenom}</h5>
+              <h5>{nom}</h5>
+            </div>
+            <div className="ml-auto btn-group dropstart">
+              <div className="dropdown">
+                <button
+                  className="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  id="dropdownPersonneButton"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i className="bi bi-three-dots" />
+                </button>
+                <div
+                  className="dropdown-menu"
+                  aria-labelledby="dropdownPersonneButton"
+                >
+                  <div className="d-flex align-items-center flex-column">
+                    <a
+                      className="m-2 dropdown-item"
+                      href={`/personne/${id}/edit`}
+                    >
+                      Editer la fiche
+                    </a>
+                    {/* <a className="m-2 dropdown-item" href={`/email/${id}`}>
                   Renvoyer le billet
                 </a>
                 <a
@@ -146,25 +214,27 @@ export function Personne({ isHotesse = false, personne, children }) {
                 >
                   Imprimer le billet
                 </a> */}
-                <hr className="w-100" />
-                <button type="button" className="m-2 btn btn-danger">
-                  Supprimer
-                </button>
+                    <hr className="w-100" />
+                    <button type="button" className="m-2 btn btn-danger">
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      {table !== null ? <p>Table n°{table.numero}</p> : <p>Pas de table</p>}
-      <a href={`mailto:${email}`}>{email}</a>
-      <p>
-        {adresse}
-        <br />
-        {codePostal} {ville}
-      </p>
+          {table !== null ? <p>Table n°{table.numero}</p> : <p>Pas de table</p>}
+          <a href={`mailto:${email}`}>{email}</a>
+          <p>
+            {adresse}
+            <br />
+            {codePostal} {ville}
+          </p>
 
-      {children}
-    </div>
+          {children}
+        </div>
+      )}
+    </>
   )
 }
 
