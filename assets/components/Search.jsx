@@ -5,6 +5,7 @@ import { useGetMany } from '../hooks'
 
 export function Personne({ isHotesse = false, personne, children }) {
   const [person, setPerson] = useState(personne)
+  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState(null)
   const {
     id,
     prenom,
@@ -36,7 +37,7 @@ export function Personne({ isHotesse = false, personne, children }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          present: presence,
+          present: presence ?? !isPresent,
           withSms,
         }),
       })
@@ -53,7 +54,8 @@ export function Personne({ isHotesse = false, personne, children }) {
   const handleCheckboxChange = async (event) => {
     const newCheckValue = event.target.checked
 
-    if (smsSended && newCheckValue) {
+    if (smsSended) {
+      setAwaitingCheckedValue(newCheckValue)
       setOpenModal(true)
     } else {
       await updatePresence(newCheckValue, false)
@@ -81,11 +83,8 @@ export function Personne({ isHotesse = false, personne, children }) {
             p: 4,
           }}
         >
-          <Typography id="modal-modal-title" variant="h6" component="h2" center>
-            SMS
-          </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            Voulez-vous envoyer le sms de confirmation ?
+            Confirmer cette action ?
           </Typography>
 
           <Box
@@ -100,8 +99,8 @@ export function Personne({ isHotesse = false, personne, children }) {
               variant="outlined"
               color="error"
               onClick={() => {
+                setAwaitingCheckedValue(null)
                 setOpenModal(false)
-                updatePresence(true, false)
               }}
             >
               Non
@@ -110,8 +109,8 @@ export function Personne({ isHotesse = false, personne, children }) {
               variant="outlined"
               color="success"
               onClick={() => {
+                updatePresence(awaitingCheckedValue, true)
                 setOpenModal(false)
-                updatePresence(true, true)
               }}
             >
               Oui
@@ -165,8 +164,12 @@ export function Personne({ isHotesse = false, personne, children }) {
                 <dd>
                   <Checkbox
                     type="checkbox"
-                    defaultChecked={isPresent}
+                    checked={isPresent || false}
                     onChange={handleCheckboxChange}
+                    sx={{
+                      padding: '5px',
+                      transform: 'scale(1.3)',
+                    }}
                   />
                 </dd>
               </div>
