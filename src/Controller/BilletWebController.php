@@ -9,28 +9,25 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class BilletWebController extends AbstractController
 {
     public const BILLET_WEB_API_URL = 'https://www.billetweb.fr';
 
-    private $em;
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
-    /**
-     * @Route("/api/billet-web/sync", name="billet_web_sync_post", methods={"POST"})
-     */
-    public function index(): Response
+    #[Route('/api/billet-web/sync', name: 'billet_web_sync_post', methods: ['POST'])]
+    public function index(): JsonResponse
     {
         $newLastSyncDate = new \DateTime();
         $currentEvent = $this->em->getRepository(Evenement::class)->findAll()[0] ?? null;
 
-        if($currentEvent === null) {
+        if ($currentEvent === null) {
             return $this->json([
                 'error' => 'ERROR_SYNC_BILLET_WEB_001',
                 'status' => 'error',
@@ -41,7 +38,7 @@ class BilletWebController extends AbstractController
         $billetWebId = $currentEvent->getBilletwebId();
         $lastSyncDate = $currentEvent->getLastUpdateBilletWeb();
 
-        if($billetWebId === null) {
+        if ($billetWebId === null) {
             return $this->json([
                 'error' => 'ERROR_SYNC_BILLET_WEB_002',
                 'status' => 'error',
@@ -49,11 +46,11 @@ class BilletWebController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $apiUrl = '/api/event/'.$billetWebId.'/attendees';
+        $apiUrl = '/api/event/' . $billetWebId . '/attendees';
 
-        if($lastSyncDate !== null) {
+        if ($lastSyncDate !== null) {
             $lastSyncTimestamp = $lastSyncDate->getTimestamp();
-            $apiUrl .= '?last_update='.$lastSyncTimestamp;
+            $apiUrl .= '?last_update=' . $lastSyncTimestamp;
         }
 
         try {
@@ -63,7 +60,7 @@ class BilletWebController extends AbstractController
 
             $response = $client->request('GET', $apiUrl, [
                 'headers' => [
-                    'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
+                    'Authorization' => "Basic " . $_ENV['BILLET_WEB_BASIC']
                 ]
             ]);
 
@@ -71,7 +68,7 @@ class BilletWebController extends AbstractController
 
             if (isset($responseContent['error'])) {
                 return $this->json([
-                    'error' => 'ERROR_SYNC_BILLET_WEB_003 - '.$responseContent['error'],
+                    'error' => 'ERROR_SYNC_BILLET_WEB_003 - ' . $responseContent['error'],
                     'status' => 'error',
                     'message' => $responseContent['description']
                 ], Response::HTTP_BAD_REQUEST);
@@ -79,9 +76,8 @@ class BilletWebController extends AbstractController
 
             // Créer un tableau des commandes
             $orders = [];
-            foreach($responseContent as $customer) {
+            foreach ($responseContent as $customer) {
                 $orderExtId = $customer['order_ext_id'];
-
                 $orders[$orderExtId][] = $customer;
             }
 
@@ -121,7 +117,7 @@ class BilletWebController extends AbstractController
 
                         // Récupération de la civilite
                         $civilite = null;
-                        if(isset($principal['custom']['Civilité'])) {
+                        if (isset($principal['custom']['Civilité'])) {
                             if (str_contains(strtolower($principal['custom']['Civilité']), 'mme')) {
                                 $civilite = $madameCivilite;
                             } else {
@@ -156,11 +152,10 @@ class BilletWebController extends AbstractController
                             ->setMontantPaye($price)
                             ->setDateReglement(new \DateTime($principal['order_date']))
                             ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($ticketExtId)
-                        ;
+                            ->setBilletWebTicketId($ticketExtId);
 
                         ++$count;
-                    } else if ($principalCustomer->getBilletWebTicketId() === null) {
+                    } elseif ($principalCustomer->getBilletWebTicketId() === null) {
                         $principalCustomer->setBilletWebTicketId($ticketExtId);
                     }
 
@@ -176,7 +171,7 @@ class BilletWebController extends AbstractController
 
                         // Récupération de la civilite
                         $civilite = null;
-                        if(isset($conjoint['custom']['Civilité'])) {
+                        if (isset($conjoint['custom']['Civilité'])) {
                             if (str_contains(strtolower($conjoint['custom']['Civilité']), 'mme')) {
                                 $civilite = $madameCivilite;
                             } else {
@@ -211,14 +206,12 @@ class BilletWebController extends AbstractController
                             ->setMontantPaye($price)
                             ->setDateReglement(new \DateTime($conjoint['order_date']))
                             ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($conjointTicketExtId)
-                        ;
+                            ->setBilletWebTicketId($conjointTicketExtId);
 
                         ++$count;
-                    } else if ($conjointCustomer->getBilletWebTicketId() === null) {
+                    } elseif ($conjointCustomer->getBilletWebTicketId() === null) {
                         $conjointCustomer->setBilletWebTicketId($conjointTicketExtId);
                     }
-
 
                     $this->em->persist($principalCustomer);
                     $this->em->persist($conjointCustomer);
@@ -237,7 +230,7 @@ class BilletWebController extends AbstractController
 
                         // Récupération de la civilite
                         $civilite = null;
-                        if(isset($principal['custom']['Civilité'])) {
+                        if (isset($principal['custom']['Civilité'])) {
                             if (str_contains(strtolower($principal['custom']['Civilité']), 'mme')) {
                                 $civilite = $madameCivilite;
                             } else {
@@ -272,11 +265,10 @@ class BilletWebController extends AbstractController
                             ->setMontantPaye($price)
                             ->setDateReglement(new \DateTime($principal['order_date']))
                             ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($ticketExtId)
-                        ;
+                            ->setBilletWebTicketId($ticketExtId);
 
                         ++$count;
-                    } else if ($principalCustomer->getBilletWebTicketId() === null) {
+                    } elseif ($principalCustomer->getBilletWebTicketId() === null) {
                         $principalCustomer->setBilletWebTicketId($ticketExtId);
                     }
 
@@ -285,12 +277,8 @@ class BilletWebController extends AbstractController
                 $this->em->flush();
             }
 
-//            $currentEvent->setLastUpdateBilletWeb($newLastSyncDate);
-//            $this->em->persist($currentEvent);
-//            $this->em->flush();
-
             return $this->json([
-                'message' => $count.' participant(s) ont été synchronisé(s) avec billet web',
+                'message' => $count . ' participant(s) ont été synchronisé(s) avec billet web',
                 'lastSyncDate' => $lastSyncDate instanceof \DateTime ? $lastSyncDate->format('Y-m-d H:i:s') : null,
                 'newLastSyncDate' => $newLastSyncDate->format('Y-m-d H:i:s'),
             ], Response::HTTP_OK);

@@ -1,18 +1,19 @@
 api_platform:
-  show_webby: false
-  mapping:
-    paths: ['%kernel.project_dir%/src/Entity']
-  formats:
-    json:
-      mime_types: ['application/json']
-    jsonld:
-      mime_types: ['application/ld+json']
-    html:
-      mime_types: ['text/html']
-  patch_formats:
-    json: ['application/merge-patch+json']
-  swagger:
-    versions: [3]
-  allow_plain_identifiers: true
-  defaults:
-    pagination_enabled: false
+    title: 'Reservation Berth API'
+    version: '1.0.0'
+    show_webby: false
+    mapping:
+        paths: ['%kernel.project_dir%/src/Entity']
+    formats:
+        jsonld:
+            mime_types: ['application/ld+json']
+        json:
+            mime_types: ['application/json']
+        html:
+            mime_types: ['text/html']
+    patch_formats:
+        json: ['application/merge-patch+json']
+    swagger:
+        versions: [3]
+    defaults:
+        pagination_enabled: false

@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:8.3-fpm
 
 # Installer les dépendances système
 RUN apt-get update && apt-get install -y \
@@ -11,14 +11,16 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
-    libwebp-dev
+    libwebp-dev \
+    libicu-dev
 
-# Installer les extensions PHP nécessaires pour Symfony
+# Installer les extensions PHP nécessaires pour Symfony 6.4
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
-    docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl xml gd
+    docker-php-ext-configure intl && \
+    docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl xml gd intl opcache
 
-# Installer Composer en version 1.xx
-COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
+# Installer Composer 2.x
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Configurer le répertoire de travail
 WORKDIR /var/www/html

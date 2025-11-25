@@ -8,29 +8,19 @@ use App\Entity\Personne;
 use App\Entity\Table;
 use App\Entity\Ticket;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/reset")
- */
+#[Route('/reset')]
 class ResetController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
-
-    /**
-     * @Route("/simple", name="reset_simple")
-     */
+    #[Route('/simple', name: 'reset_simple')]
     public function resetBase(): Response
     {
         $this->simpleCleanDatabase();
@@ -38,16 +28,13 @@ class ResetController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    /**
-     * @Route("/all", name="reset_all")
-     */
+    #[Route('/all', name: 'reset_all')]
     public function resetAll(): Response
     {
         $events = $this->em->getRepository(Evenement::class)->findAll();
         $medias = $this->em->getRepository(MediaObject::class)->findAll();
         $fs = new Filesystem();
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
-
 
         $this->em->beginTransaction();
         try {
@@ -92,7 +79,7 @@ class ResetController extends AbstractController
         return $this->redirectToRoute('home');
     }
 
-    public function simpleCleanDatabase()
+    public function simpleCleanDatabase(): void
     {
         $personnes = $this->em->getRepository(Personne::class)->findAll();
         $tables = $this->em->getRepository(Table::class)->findAll();
@@ -141,9 +128,7 @@ class ResetController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/personnes/reset/without-table", name="reset_personnes")
-     */
+    #[Route('/personnes/reset/without-table', name: 'reset_personnes')]
     public function cleanPersonnesWithoutTable(): Response
     {
         $personnes = $this->em->getRepository(Personne::class)->findBy(['table' => null]);
@@ -159,14 +144,14 @@ class ResetController extends AbstractController
                 }
 
                 $conjoint = $personne->getConjoint();
-                $primary  = $this->em->getRepository(Personne::class)->findOneBy(['conjoint' => $personne->getId()]);
+                $primary = $this->em->getRepository(Personne::class)->findOneBy(['conjoint' => $personne->getId()]);
 
-                if($conjoint instanceof Personne) {
+                if ($conjoint instanceof Personne) {
                     $conjoint->setConjoint(null);
                     $this->em->persist($conjoint);
                 }
 
-                if($primary instanceof Personne) {
+                if ($primary instanceof Personne) {
                     $primary->setConjoint(null);
                     $this->em->persist($primary);
                 }
@@ -176,7 +161,7 @@ class ResetController extends AbstractController
                 $this->em->flush();
 
                 // Récupération du ticket
-                if($personne->getTicket() !== null) {
+                if ($personne->getTicket() !== null) {
                     $tickets[] = $personne->getTicket();
                 }
 
@@ -198,7 +183,6 @@ class ResetController extends AbstractController
             $this->addFlash('error', "Une erreur est survenue lors de la suppression des données.");
         }
 
-        // return on current page
         return $this->redirectToRoute('home');
     }
 }

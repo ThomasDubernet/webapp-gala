@@ -2,14 +2,20 @@
 
 namespace App\Controller;
 
+use Exception;
 use Ovh\Api;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class SmsController extends AbstractController
 {
-    public function __invoke(Request $request)
+    public function __construct(
+        private ?LoggerInterface $logger = null
+    ) {}
+
+    public function __invoke(Request $request): void
     {
         $personne = $request->get('data');
         $numero_table = $personne->getTable()->getNumero();
@@ -17,9 +23,7 @@ class SmsController extends AbstractController
         $this->sendSms($numero_table, $telephone);
     }
 
-    /**
-     * @Route("/sendsms", name="send_sms")
-     */
+    #[Route('/sendsms', name: 'send_sms')]
     public function sendSms($numero_table, $telephone): void
     {
         $smsService = null;
@@ -41,7 +45,8 @@ class SmsController extends AbstractController
                 }
             }
         } catch (Exception $e) {
-            dd($e->getMessage());
+            $this->logger?->error('SMS API error: ' . $e->getMessage());
+            return;
         }
 
         if($smsService !== null) {
@@ -82,7 +87,7 @@ class SmsController extends AbstractController
                 $resultPostJob = $smsApi->post('/sms/' . $smsService . '/jobs', $content);
                 $smsJobs = $smsApi->get('/sms/' . $smsService . '/jobs');
             } catch (Exception $e) {
-                dd($e->getMessage());
+                $this->logger?->error('SMS sending error: ' . $e->getMessage());
             }
         }
     }

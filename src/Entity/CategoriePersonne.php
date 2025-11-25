@@ -6,24 +6,18 @@ use App\Repository\CategoriePersonneRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=CategoriePersonneRepository::class)
- */
+#[ORM\Entity(repositoryClass: CategoriePersonneRepository::class)]
 class CategoriePersonne
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"personne"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['personne'])]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"personne"})
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['personne'])]
+    private ?string $nom = null;
 
     public function getId(): ?int
     {
