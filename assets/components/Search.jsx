@@ -226,7 +226,7 @@ export function Personne({ isHotesse = false, personne, children }) {
               </div>
             </div>
           </div>
-          {table !== null ? <p>Table n°{table.numero}</p> : <p>Pas de table</p>}
+          {table ? <p>Table n°{table.numero}</p> : <p>Pas de table</p>}
           <a href={`mailto:${email}`}>{email}</a>
           <p>
             {adresse}

@@ -12,6 +12,7 @@ use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -197,14 +198,38 @@ class PersonneController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/add_table/{tableId}', name: 'personne_add_to_table', methods: ['GET'])]
-    public function addToTable($id, $tableId): Response
+    #[Route('/{id}/add_table/{tableId}', name: 'personne_add_to_table', methods: ['GET', 'POST'])]
+    public function addToTable($id, $tableId, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
         $table = $this->em->getRepository(Table::class)->find($tableId);
+        $isAjax = str_contains($request->headers->get('Accept', ''), 'application/json');
+
+        if (!$personne || !$table) {
+            if ($isAjax) {
+                return new JsonResponse(['success' => false, 'error' => 'Personne ou table non trouvée'], Response::HTTP_NOT_FOUND);
+            }
+            return $this->redirectToRoute('home');
+        }
+
+        if (count($table->getPersonnes()) >= $table->getNombrePlacesMax()) {
+            if ($isAjax) {
+                return new JsonResponse(['success' => false, 'error' => 'La table est complète'], Response::HTTP_BAD_REQUEST);
+            }
+            return $this->redirectToRoute('home');
+        }
+
         $personne->setTable($table);
         $this->em->persist($personne);
         $this->em->flush();
+
+        if ($isAjax) {
+            return new JsonResponse([
+                'success' => true,
+                'personneId' => $personne->getId(),
+                'tableId' => $table->getId()
+            ]);
+        }
 
         return $this->redirectToRoute('home');
     }
