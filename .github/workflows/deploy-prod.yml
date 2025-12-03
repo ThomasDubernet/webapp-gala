@@ -40,6 +40,8 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+        env:
+          APP_ENV: prod
 
       - name: Install NPM dependencies
         run: npm ci
