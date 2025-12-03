@@ -9,47 +9,27 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ImportController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-
-    /**
-     * @var PdfController
-     */
-    private $pdfController;
-
-    /**
-     * @var MailerController
-     */
-    private $mailerController;
-
     public function __construct(
-        EntityManagerInterface $em,
-        PdfController $pdfController,
-        MailerController $mailerController
-    ) {
-        $this->em = $em;
-        $this->pdfController = $pdfController;
-        $this->mailerController = $mailerController;
-    }
+        private readonly EntityManagerInterface $em,
+        private readonly PdfController $pdfController
+    ) {}
 
-    /**
-     * @Route("/import", name="import")
-     */
-    public function index(Request $request)
+    #[Route('/import', name: 'import')]
+    public function index(Request $request): Response
     {
         $file = $request->files->get('import')['importFile'];
         $currentUrl = $request->request->get('current_url');
         if ($file instanceof UploadedFile && $this->verify($file)) {
             $this->import($file);
         } else {
-            return $this->renderForm('home/index.html.twig', [
+            return $this->render('home/index.html.twig', [
                 'message' => [
                     "type" => "danger",
                     "text" => "Le fichier doit être de type .xlsx"
@@ -73,7 +53,7 @@ class ImportController extends AbstractController
         return true;
     }
 
-    public function import(UploadedFile $file)
+    public function import(UploadedFile $file): void
     {
         $inputFileName = $file->getRealPath();
         $inputFileType = \PhpOffice\PhpSpreadsheet\IOFactory::identify($inputFileName);
@@ -90,34 +70,34 @@ class ImportController extends AbstractController
 
         for ($row = 2; $row <= $maxCellValue; $row++) {
             $personne = new Personne();
-            $civiliteFile = in_array($this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()), ["M.", "Mme", "Mlle"]) ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B'.$row)->getValue()) : 'M.';
+            $civiliteFile = in_array($this->checkRichText($spreadsheet->getActiveSheet()->getCell('B' . $row)->getValue()), ["M.", "Mme", "Mlle"]) ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('B' . $row)->getValue()) : 'M.';
 
             $civilite = $this->em->getRepository(Civilite::class)->findOneBy([
                 'nom' => $civiliteFile
             ]);
 
-            if ($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== null && $this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()) !== "") {
+            if ($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C' . $row)->getValue()) !== null && $this->checkRichText($spreadsheet->getActiveSheet()->getCell('C' . $row)->getValue()) !== "") {
                 $personne
-                    ->setIdCerfa($this->checkRichText($spreadsheet->getActiveSheet()->getCell('A'.$row)->getValue()))
+                    ->setIdCerfa($this->checkRichText($spreadsheet->getActiveSheet()->getCell('A' . $row)->getValue()))
                     ->setCivilite($civilite)
-                    ->setNom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C'.$row)->getValue()))
-                    ->setPrenom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('D'.$row)->getValue()))
+                    ->setNom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('C' . $row)->getValue()))
+                    ->setPrenom($this->checkRichText($spreadsheet->getActiveSheet()->getCell('D' . $row)->getValue()))
                     ->setTelephone(
-                        $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue()) !== null
-                            ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E'.$row)->getValue())
+                        $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E' . $row)->getValue()) !== null
+                            ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('E' . $row)->getValue())
                             : ""
                     )
                     ->setEmail(
-                        $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue()) !== null
-                            ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F'.$row)->getValue())
+                        $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F' . $row)->getValue()) !== null
+                            ? $this->checkRichText($spreadsheet->getActiveSheet()->getCell('F' . $row)->getValue())
                             : ""
                     )
-                    ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G'.$row)->getValue()))
-                    ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H'.$row)->getValue()))
-                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I'.$row)->getValue()))
+                    ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G' . $row)->getValue()))
+                    ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H' . $row)->getValue()))
+                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I' . $row)->getValue()))
                     ->setMailEnvoye(null);
 
-                array_push($importPersonnes, $personne);
+                $importPersonnes[] = $personne;
             }
 
             if (($row % $batchSize) === 0) {
@@ -131,16 +111,15 @@ class ImportController extends AbstractController
         $this->em->flush();
         $this->em->clear();
 
-
         $this->addFlash('success', "Importation terminée !");
-        return;
     }
 
-    public function checkRichText($value)
+    public function checkRichText(mixed $value): mixed
     {
         if ($value instanceof RichText) {
             return $value->getRichTextElements()[0]->getText();
         }
+
         return $value;
     }
 }

@@ -6,30 +6,22 @@ use App\Repository\CategorieTableRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=CategorieTableRepository::class)
- */
+#[ORM\Entity(repositoryClass: CategorieTableRepository::class)]
 class CategorieTable
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"table"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['table'])]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"table"})
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['table'])]
+    private ?string $nom = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"table"})
-     */
-    private $couleur;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['table'])]
+    private ?string $couleur = null;
 
     public function getId(): ?int
     {

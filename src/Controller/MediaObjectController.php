@@ -10,14 +10,11 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 final class MediaObjectController extends AbstractController
 {
-    private $em;
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
-
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): MediaObject
     {
         $uploadedFile = $request->files->get('file');
         if (!$uploadedFile) {
@@ -30,7 +27,7 @@ final class MediaObjectController extends AbstractController
         return $mediaObject;
     }
 
-    public function create($uploadedFile)
+    public function create($uploadedFile): MediaObject
     {
         $mediaObject = new MediaObject();
         $mediaObject->file = $uploadedFile;

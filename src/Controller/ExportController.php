@@ -4,20 +4,18 @@ namespace App\Controller;
 
 use App\Repository\EvenementRepository;
 use App\Repository\PersonneRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Mime\FileinfoMimeTypeGuesser;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ExportController extends AbstractController
 {
-    /**
-     * @Route("/export", name="export")
-     */
-    public function export(PersonneRepository $personneRepo, EvenementRepository $eventRepo)
+    #[Route('/export', name: 'export')]
+    public function export(PersonneRepository $personneRepo, EvenementRepository $eventRepo): BinaryFileResponse
     {
         $personnes = $personneRepo->findBy([], ['nom' => "ASC"]);
         $event = $eventRepo->findAll()[0];
@@ -65,13 +63,13 @@ class ExportController extends AbstractController
         $startLineNumber = 2;
 
         foreach ($personnes as $personne) {
-            $presence= "";
-            if ( $personne->getPresent() ) {
+            $presence = "";
+            if ($personne->getPresent()) {
                 $presence = "Oui";
             } else {
                 $presence = "Non";
             }
-            
+
             $sheet->setCellValue('A' . $startLineNumber, $personne->getIdCerfa() !== null ? $personne->getIdCerfa() : null);
             $sheet->setCellValue('B' . $startLineNumber, $presence);
             $sheet->setCellValue('C' . $startLineNumber, $personne->getCivilite() !== null ? $personne->getCivilite()->getNom() : null);
@@ -87,8 +85,8 @@ class ExportController extends AbstractController
             $sheet->setCellValue('M' . $startLineNumber, $personne->getMontantPaye() !== null ? $personne->getMontantPaye() : null);
             $sheet->setCellValue('N' . $startLineNumber, $personne->getDateReglement() !== null ? $personne->getDateReglement()->format('d/m/Y') : null);
             $sheet->setCellValue('O' . $startLineNumber, $personne->getMoyenPaiement() !== null ? $personne->getMoyenPaiement() : null);
-            $sheet->setCellValue('P' . $startLineNumber, $personne->getCommentaire() !== null ? $personne->getCommentaire() : null);;
-            $sheet->setCellValue('Q' . $startLineNumber, $personne->getTable() !== null ? "T" . $personne->getTable()->getNumero() . " | " . $personne->getTable()->getNom() : null);;
+            $sheet->setCellValue('P' . $startLineNumber, $personne->getCommentaire() !== null ? $personne->getCommentaire() : null);
+            $sheet->setCellValue('Q' . $startLineNumber, $personne->getTable() !== null ? "T" . $personne->getTable()->getNumero() . " | " . $personne->getTable()->getNom() : null);
 
             $sheet->getRowDimension("$startLineNumber")->setRowHeight(25, 'pt');
             $sheet->getStyle("$startLineNumber")->getAlignment()->setVertical('center');
@@ -105,7 +103,7 @@ class ExportController extends AbstractController
         $mimeTypeGuesser = new FileinfoMimeTypeGuesser();
 
         if ($mimeTypeGuesser->isGuesserSupported()) {
-            $response->headers->set('Content-Type', $mimeTypeGuesser->guessMimeType($filePath)); 
+            $response->headers->set('Content-Type', $mimeTypeGuesser->guessMimeType($filePath));
         } else {
             $response->headers->set('Content-Type', 'text/plain');
         }

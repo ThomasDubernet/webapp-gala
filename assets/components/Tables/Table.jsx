@@ -8,7 +8,7 @@ import { useGetMany } from '../../hooks'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
 
-function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
+function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPersonneAdded }) {
   const submenu = useRef(null)
   const {
     id,
@@ -32,7 +32,13 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
 
   const handleOpen = () => setOpen(true)
   const handleSubMenuOpen = () => setOpenSubMenu(true)
-  const handleClose = () => setOpen(false)
+  const handleClose = () => {
+    setOpen(false)
+    if (hasAddedPersonne) {
+      setHasAddedPersonne(false)
+      load()
+    }
+  }
   const handleMenuClose = () => {
     setOpenSubMenu(false)
     setContextMenu(null)
@@ -65,6 +71,9 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
   // )
   const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [percentPresent, setPercentPresent] = useState(null)
+  const [addingPersonneId, setAddingPersonneId] = useState(null)
+  const [addedPersonneId, setAddedPersonneId] = useState(null)
+  const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
 
   const handleSearch = (event) => {
     const { value } = event.target
@@ -75,6 +84,51 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
       setFilteredPersonnes(result)
     } else {
       setFilteredPersonnes([])
+    }
+  }
+
+  const handleAddPersonne = async (personneId) => {
+    setAddingPersonneId(personneId)
+
+    try {
+      const response = await fetch(`/personne/${personneId}/add_table/${id}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        console.error('Erreur serveur:', response.status, text)
+        // eslint-disable-next-line no-alert
+        alert(`Erreur serveur: ${response.status}`)
+        return
+      }
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Retirer de la liste filtrée immédiatement
+        setFilteredPersonnes((prev) => prev.filter((p) => p.id !== personneId))
+        // Notifier le parent
+        onPersonneAdded(personneId)
+        // Feedback visuel bref
+        setAddedPersonneId(personneId)
+        setTimeout(() => setAddedPersonneId(null), 1500)
+        // Marquer qu'une personne a été ajoutée (load sera appelé à la fermeture)
+        setHasAddedPersonne(true)
+      } else {
+        // eslint-disable-next-line no-alert
+        alert(data.error || "Erreur lors de l'ajout")
+      }
+    } catch (error) {
+      console.error('Erreur réseau:', error)
+      // eslint-disable-next-line no-alert
+      alert(`Erreur: ${error.message}`)
+    } finally {
+      setAddingPersonneId(null)
     }
   }
   const pxToPercent = ({ x, y }) => {
@@ -344,12 +398,22 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes }) {
               {filteredPersonnes.length > 0
                 ? filteredPersonnes.map((personne, index) => (
                     <SearchPersonne key={index} personne={personne}>
-                      <a
-                        className="btn btn-sm btn-outline-primary btn-add"
-                        href={`/personne/${personne.id}/add_table/${id}`}
+                      <button
+                        type="button"
+                        className={`btn btn-sm btn-add ${
+                          addedPersonneId === personne.id
+                            ? 'btn-success'
+                            : 'btn-outline-primary'
+                        }`}
+                        onClick={() => handleAddPersonne(personne.id)}
+                        disabled={addingPersonneId === personne.id}
                       >
-                        Ajouter
-                      </a>
+                        {addingPersonneId === personne.id
+                          ? 'Ajout...'
+                          : addedPersonneId === personne.id
+                            ? 'Ajouté'
+                            : 'Ajouter'}
+                      </button>
                     </SearchPersonne>
                   ))
                 : 'Aucune personne ne correspond à votre recherche'}

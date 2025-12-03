@@ -2,45 +2,23 @@
 
 namespace App\Controller;
 
-use App\Entity\Civilite;
 use App\Entity\Evenement;
 use App\Entity\Personne;
 use App\Entity\Table;
-use App\Entity\Ticket;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Routing\Annotation\Route;
+use App\Service\MpdfFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Sasedev\MpdfBundle\Factory\MpdfFactory;
-use Mpdf\Mpdf;
+use Symfony\Component\Routing\Attribute\Route;
 
 class PdfController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-
-    /**
-     * @var TicketController
-     */
-    private $ticketController;
-
-    /**
-     * @var MpdfFactory
-     */
-    private $MpdfFactory;
-
     public function __construct(
-        EntityManagerInterface $em,
-        TicketController $ticketController,
-        MpdfFactory $MpdfFactory
-    ) {
-        $this->em = $em;
-        $this->MpdfFactory = $MpdfFactory;
-        $this->ticketController = $ticketController;
-    }
+        private readonly EntityManagerInterface $em,
+        private readonly TicketController $ticketController,
+        private readonly MpdfFactory $MpdfFactory
+    ) {}
 
-    public function createTicket(Personne $personne)
+    public function createTicket(Personne $personne): void
     {
         $mPdf = $this->MpdfFactory->createMpdfObject([
             'mode' => 'utf-8',
@@ -78,7 +56,7 @@ class PdfController extends AbstractController
         }
     }
 
-    public function createMassTickets(array $personnes, Evenement $event, string $uploadDir)
+    public function createMassTickets(array $personnes, Evenement $event, string $uploadDir): void
     {
         for ($i = 0; $i < count($personnes); $i++) {
             $mPdf = $this->MpdfFactory->createMpdfObject([
@@ -112,10 +90,8 @@ class PdfController extends AbstractController
         }
     }
 
-    /**
-     * @Route("/table/{id}/pdf", name="pdf_creation_list")
-     */
-    public function createListPersonneOfTable(Table $table)
+    #[Route('/table/{id}/pdf', name: 'pdf_creation_list')]
+    public function createListPersonneOfTable(Table $table): void
     {
         $personnes = $table->getPersonnes();
         $mPdf = $this->MpdfFactory->createMpdfObject([

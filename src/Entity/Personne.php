@@ -2,176 +2,134 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
+use App\Controller\SmsController;
+use App\Controller\UpdatePresenceController;
 use App\Repository\PersonneRepository;
 use App\Service\UtilsService;
 use App\Validator\Constraints as MyContraints;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=PersonneRepository::class)
- * @ApiResource(
- *  normalizationContext={"groups"={"admin", "personne"}},
- *  collectionOperations={"get"},
- *  itemOperations={
- *      "get",
- *      "put",
- *      "update_presence"={
- *          "method"="PUT",
- *          "path"="/personnes/{id}/update-presence",
- *          "controller"=App\Controller\UpdatePresenceController::class
- *      },
- *      "send_sms"={
- *          "method"="GET",
- *          "path"="/personnes/{id}/sms",
- *          "controller"=App\Controller\SmsController::class
- *      }
- *  }
- * )
- * @ApiFilter(ExistsFilter::class, properties={"table"})
- */
+#[ORM\Entity(repositoryClass: PersonneRepository::class)]
+#[ApiResource(
+    normalizationContext: ['groups' => ['admin', 'personne']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Put(),
+        new Put(
+            uriTemplate: '/personnes/{id}/update-presence',
+            controller: UpdatePresenceController::class,
+            name: 'update_presence'
+        ),
+        new Get(
+            uriTemplate: '/personnes/{id}/sms',
+            controller: SmsController::class,
+            name: 'send_sms'
+        )
+    ]
+)]
+#[ApiFilter(ExistsFilter::class, properties: ['table'])]
 class Personne
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"personne", "table", "ticket"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['personne', 'table', 'ticket'])]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"personne", "table", "ticket"})
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['personne', 'table', 'ticket'])]
+    private ?string $nom = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"personne", "table", "ticket"})
-     */
-    private $prenom;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['personne', 'table', 'ticket'])]
+    private ?string $prenom = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"personne", "ticket"})
-     */
-    private $adresse;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $adresse = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"personne", "ticket"})
-     */
-    private $telephone;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $telephone = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Groups({"personne", "ticket"})
-     */
-    private $email;
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $email = null;
 
-    /**
-     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"personne"})
-     */
-    private $montantBillet;
+    #[ORM\Column(type: 'decimal', precision: 6, scale: 2, nullable: true)]
+    #[Groups(['personne'])]
+    private ?string $montantBillet = null;
 
-    /**
-     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"personne"})
-     */
-    private $montantPaye;
+    #[ORM\Column(type: 'decimal', precision: 6, scale: 2, nullable: true)]
+    #[Groups(['personne'])]
+    private ?string $montantPaye = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"personne"})
-     * @MyContraints\dateReglementConstraint
-     */
-    private $dateReglement;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['personne'])]
+    #[MyContraints\dateReglementConstraint]
+    private ?\DateTimeInterface $dateReglement = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"personne"})
-     * @MyContraints\moyenReglementConstraint
-     */
-    private $moyenPaiement;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['personne'])]
+    #[MyContraints\moyenReglementConstraint]
+    private ?string $moyenPaiement = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     * @Groups({"personne", "ticket"})
-     */
-    private $commentaire;
+    #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $commentaire = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=CategoriePersonne::class)
-     * @Groups({"personne", "ticket"})
-     */
-    private $categorie;
+    #[ORM\ManyToOne(targetEntity: CategoriePersonne::class)]
+    #[Groups(['personne', 'ticket'])]
+    private ?CategoriePersonne $categorie = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Table::class, inversedBy="personnes", fetch="EAGER")
-     * @Groups({"personne", "ticket"})
-     */
-    private $table;
+    #[ORM\ManyToOne(targetEntity: Table::class, inversedBy: 'personnes', fetch: 'EAGER')]
+    #[Groups(['personne', 'ticket'])]
+    private ?Table $table = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Personne::class, cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"personne"})
-     */
-    private $conjoint;
+    #[ORM\OneToOne(targetEntity: Personne::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
+    #[Groups(['personne'])]
+    private ?Personne $conjoint = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=Ticket::class, mappedBy="personne", cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"personne"})
-     */
-    private $ticket;
+    #[ORM\OneToOne(targetEntity: Ticket::class, mappedBy: 'personne', cascade: ['persist', 'remove'], fetch: 'EAGER')]
+    #[Groups(['personne'])]
+    private ?Ticket $ticket = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"personne", "ticket"})
-     */
-    private $codePostal;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $codePostal = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"personne", "ticket"})
-     */
-    private $ville;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['personne', 'ticket'])]
+    private ?string $ville = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     * @Groups({"personne", "table"})
-     */
-    private $present;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    #[Groups(['personne', 'table'])]
+    private ?bool $present = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=Civilite::class, fetch="EAGER")
-     * @Groups({"admin", "personne", "table", "ticket"})
-     */
-    private $civilite;
+    #[ORM\ManyToOne(targetEntity: Civilite::class, fetch: 'EAGER')]
+    #[Groups(['admin', 'personne', 'table', 'ticket'])]
+    private ?Civilite $civilite = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $idCerfa;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $idCerfa = null;
 
-    /**
-     * @ORM\Column(type="boolean", nullable=true)
-     */
-    private $mailEnvoye;
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private ?bool $mailEnvoye = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $billetWebTicketId;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $billetWebTicketId = null;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $smsSended = false;
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['personne', 'table'])]
+    private bool $smsSended = false;
 
     public function getId(): ?int
     {

@@ -4,31 +4,21 @@ namespace App\Controller;
 
 use App\Entity\Table;
 use App\Form\TableType;
-use App\Repository\TableRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/table")
- */
+#[Route('/table')]
 class TableController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
-    /**
-     * @Route("/new", name="table_new", methods={"GET", "POST"})
-     */
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('/new', name: 'table_new', methods: ['GET', 'POST'])]
+    public function new(Request $request): Response
     {
         $table = new Table();
         $form = $this->createForm(TableType::class, $table);
@@ -44,15 +34,13 @@ class TableController extends AbstractController
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('table/new.html.twig', [
+        return $this->render('table/new.html.twig', [
             'table' => $table,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="table_edit", methods={"GET", "POST"})
-     */
+    #[Route('/{id}/edit', name: 'table_edit', methods: ['GET', 'POST'])]
     public function edit(Table $table, Request $request): Response
     {
         $form = $this->createForm(TableType::class, $table);

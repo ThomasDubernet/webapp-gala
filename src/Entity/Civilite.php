@@ -2,27 +2,21 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CiviliteRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ApiResource()
- * @ORM\Entity(repositoryClass=CiviliteRepository::class)
- */
+#[ORM\Entity(repositoryClass: CiviliteRepository::class)]
+#[ApiResource]
 class Civilite
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $nom = null;
 
     public function getId(): ?int
     {

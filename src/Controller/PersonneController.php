@@ -12,38 +12,29 @@ use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/personne")
- */
+#[Route('/personne')]
 class PersonneController extends AbstractController
 {
-    private $em;
-    private $billetWebService;
-    private $smsService;
-
     public function __construct(
-        EntityManagerInterface $em,
-        BilletWebService $billetWebService,
-        SmsService $smsService
-    ) {
-        $this->em = $em;
-        $this->billetWebService = $billetWebService;
-        $this->smsService = $smsService;
-    }
+        private readonly EntityManagerInterface $em,
+        private readonly BilletWebService $billetWebService,
+        private readonly SmsService $smsService
+    ) {}
 
-    /**
-     * @Route("/", name="personne_index", methods={"GET", "POST"})
-     */
+    #[Route('/', name: 'personne_index', methods: ['GET', 'POST'])]
     public function index(PersonneRepository $repo, Request $request): Response
     {
         $personnes = $repo->findBy([], ['nom' => 'ASC']);
         $personnesHasTable = 0;
         foreach ($personnes as $personne) {
-            if ($personne->getTable() !== null) ++$personnesHasTable;
+            if ($personne->getTable() !== null) {
+                ++$personnesHasTable;
+            }
         }
         $personnesPresent = count(array_filter($personnes, function ($n) {
             return $n->getPresent();
@@ -51,7 +42,7 @@ class PersonneController extends AbstractController
 
         $filterForm = $this->createFormBuilder()
             ->add('table', CheckboxType::class, [
-                'label'    => 'Montrer les personnes sans table',
+                'label' => 'Montrer les personnes sans table',
                 'required' => false,
             ])
             ->getForm();
@@ -61,7 +52,7 @@ class PersonneController extends AbstractController
         if ($filterForm->isSubmitted() && $filterForm->isValid()) {
             $data = $filterForm->getData();
             if ($data['table'] === true) {
-                $personnes =$repo->findBy(['table' => null], ['nom' => 'ASC']);
+                $personnes = $repo->findBy(['table' => null], ['nom' => 'ASC']);
             }
         }
 
@@ -73,14 +64,13 @@ class PersonneController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/new", name="personne_new", methods={"GET", "POST"})
-     */
+    #[Route('/new', name: 'personne_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $personne = new Personne();
-        $form = isset($_GET['table'])
-            ? $this->createForm(PersonneType::class, $personne, ['attr' => ['table' =>  $_GET['table']]])
+        $tableId = $request->query->get('table');
+        $form = $tableId
+            ? $this->createForm(PersonneType::class, $personne, ['attr' => ['table' => $tableId]])
             : $this->createForm(PersonneType::class, $personne);
 
         $form->handleRequest($request);
@@ -89,9 +79,7 @@ class PersonneController extends AbstractController
             $this->em->persist($personne);
             $this->em->flush();
 
-
-            if ($_POST['action'] == "Créer avec un conjoint") {
-
+            if ($request->request->get('action') === "Créer avec un conjoint") {
                 return $this->redirectToRoute('conjoint_new', [
                     'id' => $personne->getId()
                 ]);
@@ -102,15 +90,13 @@ class PersonneController extends AbstractController
             return $this->redirectToRoute('home');
         }
 
-        return $this->renderForm('personne/new.html.twig', [
+        return $this->render('personne/new.html.twig', [
             'personne' => $personne,
             'form' => $form,
         ]);
     }
 
-    /**
-     * @Route("/{id}/new_conjoint", name="conjoint_new", methods={"GET", "POST"})
-     */
+    #[Route('/{id}/new_conjoint', name: 'conjoint_new', methods: ['GET', 'POST'])]
     public function newConjoint(string $id, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
@@ -161,16 +147,14 @@ class PersonneController extends AbstractController
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('personne/new.html.twig', [
+        return $this->render('personne/new.html.twig', [
             'conjoint' => $conjoint,
             'form' => $form,
             'title' => "Création du conjoint"
         ]);
     }
 
-    /**
-     * @Route("/{id}/edit", name="personne_edit", methods={"GET", "POST"})
-     */
+    #[Route('/{id}/edit', name: 'personne_edit', methods: ['GET', 'POST'])]
     public function edit(Personne $personne, Request $request): Response
     {
         $form = $this->createForm(PersonneType::class, $personne);
@@ -214,23 +198,43 @@ class PersonneController extends AbstractController
         ]);
     }
 
-    /**
-     * @Route("/{id}/add_table/{tableId}", name="personne_add_to_table", methods={"GET"})
-     */
-    public function addToTable($id, $tableId): Response
+    #[Route('/{id}/add_table/{tableId}', name: 'personne_add_to_table', methods: ['GET', 'POST'])]
+    public function addToTable($id, $tableId, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
         $table = $this->em->getRepository(Table::class)->find($tableId);
+        $isAjax = str_contains($request->headers->get('Accept', ''), 'application/json');
+
+        if (!$personne || !$table) {
+            if ($isAjax) {
+                return new JsonResponse(['success' => false, 'error' => 'Personne ou table non trouvée'], Response::HTTP_NOT_FOUND);
+            }
+            return $this->redirectToRoute('home');
+        }
+
+        if (count($table->getPersonnes()) >= $table->getNombrePlacesMax()) {
+            if ($isAjax) {
+                return new JsonResponse(['success' => false, 'error' => 'La table est complète'], Response::HTTP_BAD_REQUEST);
+            }
+            return $this->redirectToRoute('home');
+        }
+
         $personne->setTable($table);
         $this->em->persist($personne);
         $this->em->flush();
 
+        if ($isAjax) {
+            return new JsonResponse([
+                'success' => true,
+                'personneId' => $personne->getId(),
+                'tableId' => $table->getId()
+            ]);
+        }
+
         return $this->redirectToRoute('home');
     }
 
-    /**
-     * @Route("/{id}", name="personne_delete", methods={"POST"})
-     */
+    #[Route('/{id}', name: 'personne_delete', methods: ['POST'])]
     public function delete(Request $request, Personne $personne): Response
     {
         if ($this->isCsrfTokenValid('delete' . $personne->getId(), $request->request->get('_token'))) {
@@ -242,7 +246,7 @@ class PersonneController extends AbstractController
                 $personne->setConjoint(null);
 
                 $this->em->persist($conjoint);
-            } elseif ($principal instanceof Personne){
+            } elseif ($principal instanceof Personne) {
                 $principal->setConjoint(null);
                 $personne->setConjoint(null);
 

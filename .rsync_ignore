@@ -49,4 +49,5 @@ error_log
 /assets/
 /tests/
 /.git/
-###< Foldersa
+/.github/
+###< Folders

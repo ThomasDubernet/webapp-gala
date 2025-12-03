@@ -2,73 +2,63 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
 use App\Repository\TableRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=TableRepository::class)
- * @ApiResource(
- *  normalizationContext={"groups"={"admin", "table"}},
- *  collectionOperations={"get"},
- *  itemOperations={"get", "put", "delete"}
- * )
- * @ORM\Table(name="`table`")
- */
+#[ORM\Entity(repositoryClass: TableRepository::class)]
+#[ORM\Table(name: '`table`')]
+#[ApiResource(
+    normalizationContext: ['groups' => ['admin', 'table']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Put(),
+        new Delete()
+    ]
+)]
 class Table
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"table", "personne"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['table', 'personne'])]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"table", "personne"})
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['table', 'personne'])]
+    private ?string $nom = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @Groups({"table", "personne"})
-     */
-    private $numero;
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['table', 'personne'])]
+    private ?int $numero = null;
 
-    /**
-     * @ORM\Column(type="integer")
-     * @Groups({"table", "personne"})
-     */
-    private $nombrePlacesMax;
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['table', 'personne'])]
+    private ?int $nombrePlacesMax = null;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=CategorieTable::class)
-     * @Groups({"table", "personne"})
-     */
-    private $categorie;
+    #[ORM\ManyToOne(targetEntity: CategorieTable::class)]
+    #[Groups(['table', 'personne'])]
+    private ?CategorieTable $categorie = null;
 
-    /**
-     * @ORM\OneToMany(targetEntity=Personne::class, mappedBy="table", fetch="EAGER")
-     * @Groups({"table"})
-     */
-    private $personnes;
+    #[ORM\OneToMany(targetEntity: Personne::class, mappedBy: 'table', fetch: 'EAGER')]
+    #[Groups(['table'])]
+    private Collection $personnes;
 
-    /**
-     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"table", "personne"})
-     */
-    private $posX;
+    #[ORM\Column(type: 'decimal', precision: 6, scale: 2, nullable: true)]
+    #[Groups(['table', 'personne'])]
+    private ?string $posX = null;
 
-    /**
-     * @ORM\Column(type="decimal", precision=6, scale=2, nullable=true)
-     * @Groups({"table", "personne"})
-     */
-    private $posY;
+    #[ORM\Column(type: 'decimal', precision: 6, scale: 2, nullable: true)]
+    #[Groups(['table', 'personne'])]
+    private ?string $posY = null;
 
     public function __construct()
     {
@@ -129,7 +119,7 @@ class Table
     }
 
     /**
-     * @return Collection|Personne[]
+     * @return Collection<int, Personne>
      */
     public function getPersonnes(): Collection
     {

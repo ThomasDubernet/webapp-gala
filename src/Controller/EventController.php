@@ -3,42 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\Evenement;
-use App\Entity\MediaObject;
-use App\Entity\Personne;
-use App\Entity\Table;
-use App\Entity\Ticket;
 use App\Form\EventType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/evenement")
- */
+#[Route('/evenement')]
 class EventController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly MediaObjectController $mediaObjectController
+    ) {}
 
-    /**
-     * @var MediaObjectController
-     */
-    private $mediaObjectController;
-
-    public function __construct(EntityManagerInterface $em, MediaObjectController $mediaObjectController)
-    {
-        $this->em = $em;
-        $this->mediaObjectController = $mediaObjectController;
-    }
-
-    /**
-     * @Route("/edit", name="event_edit")
-     */
+    #[Route('/edit', name: 'event_edit')]
     public function edit(Request $request): Response
     {
         $allEvents = $this->em->getRepository(Evenement::class)->findAll();
@@ -74,7 +55,7 @@ class EventController extends AbstractController
             return $this->redirectToRoute('home', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->renderForm('event/edit.html.twig', [
+        return $this->render('event/edit.html.twig', [
             'event' => $event,
             'form' => $form
         ]);
@@ -107,5 +88,7 @@ class EventController extends AbstractController
             }
             return true;
         }
+
+        return false;
     }
 }

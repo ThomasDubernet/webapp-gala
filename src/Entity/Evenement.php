@@ -2,87 +2,64 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\EvenementRepository;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
-/**
- * @ORM\Entity(repositoryClass=EvenementRepository::class)
- * @ApiResource(
- *  collectionOperations={"get"}
- * )
- */
+#[ORM\Entity(repositoryClass: EvenementRepository::class)]
+#[ApiResource(
+    operations: [
+        new GetCollection()
+    ]
+)]
 class Evenement
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @Groups({"admin"})
-     */
-    private $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
+    #[Groups(['admin'])]
+    private ?int $id = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
-     */
-    private $nom;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['admin'])]
+    private ?string $nom = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
-     */
-    private $nomSalle;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['admin'])]
+    private ?string $nomSalle = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     * @Groups({"admin"})
-     */
-    private $date;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['admin'])]
+    private ?\DateTimeInterface $date = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     * @Groups({"admin"})
-     */
-    private $adresse;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['admin'])]
+    private ?string $adresse = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"admin"})
-     */
-    private $plan;
+    #[ORM\OneToOne(targetEntity: MediaObject::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
+    #[Groups(['admin'])]
+    private ?MediaObject $plan = null;
 
-    /**
-     * @ORM\OneToOne(targetEntity=MediaObject::class, cascade={"persist", "remove"}, fetch="EAGER")
-     * @Groups({"admin"})
-     */
-    private $imageTicket;
+    #[ORM\OneToOne(targetEntity: MediaObject::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
+    #[Groups(['admin'])]
+    private ?MediaObject $imageTicket = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $codePostal;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $codePostal = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $ville;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $ville = null;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $textEmail;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $textEmail = null;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $billetwebId;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $billetwebId = null;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $lastUpdateBilletWeb;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $lastUpdateBilletWeb = null;
 
     public function getId(): ?int
     {

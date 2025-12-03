@@ -18,7 +18,7 @@ function Plan() {
       {events.length > 0 && (
         <div id="img-box" className="img-box" ref={planRef}>
           <img src={`${events[0].plan.contentUrl}`} alt="plan" />
-          <TableProvider tables={tables} plan={planRef} />
+          <TableProvider tables={tables} plan={planRef} load={load} />
         </div>
       )}
     </div>

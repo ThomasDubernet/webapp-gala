@@ -6,24 +6,16 @@ use App\Entity\Personne;
 use App\Entity\Ticket;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-/**
- * @Route("/ticket")
- */
+#[Route('/ticket')]
 class TicketController extends AbstractController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
-
-    public function create(string $filename, Personne $personne, $flush = true): Ticket
+    public function create(string $filename, Personne $personne, bool $flush = true): Ticket
     {
         $allTickets = $this->em->getRepository(Ticket::class)->findAllByNumero();
         if (count($allTickets) > 0) {
@@ -31,21 +23,21 @@ class TicketController extends AbstractController
         } else {
             $newNumero = 1;
         }
-        
+
         $ticket = new Ticket();
         $ticket
             ->setFichier($filename)
             ->setNumero($newNumero)
-            ->setPersonne($personne)
-        ;
+            ->setPersonne($personne);
         $personne->setTicket($ticket);
-        
+
         $this->em->persist($ticket);
         $this->em->persist($personne);
-        
+
         if ($flush) {
             $this->em->flush();
         }
+
         return $ticket;
     }
 }
