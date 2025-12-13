@@ -15,7 +15,6 @@
 # -----------------------------------------
 # ENVIRONMENT & SECRETS (server-managed)
 # -----------------------------------------
-.env
 .env.*
 .env.local
 .env.local.php

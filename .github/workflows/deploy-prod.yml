@@ -66,5 +66,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/public_html
-            APP_ENV=prod php bin/console doctrine:migrations:migrate -n
-            APP_ENV=prod php bin/console cache:clear
+            php bin/console doctrine:migrations:migrate -n
+            php bin/console cache:clear
