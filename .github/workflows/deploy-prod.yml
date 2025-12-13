@@ -56,8 +56,10 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           TARGET: ~/public_html/
           EXCLUDE: |
+            .env
             .env.local
             .env.local.php
+            .env.*
             .env.*.local
             .env.test
             /config/secrets/prod/prod.decrypt.private.php
