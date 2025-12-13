@@ -1,62 +1,115 @@
-# Environment files
+# ===========================================
+# RSYNC EXCLUDE FILE FOR PRODUCTION DEPLOYMENT
+# ===========================================
+# Only these directories are needed in production:
+# - bin/          (Symfony console)
+# - config/       (configuration)
+# - migrations/   (database migrations)
+# - public/       (web root, with build/)
+# - src/          (PHP source code)
+# - templates/    (Twig templates)
+# - translations/ (i18n files)
+# - vendor/       (PHP dependencies)
+# ===========================================
+
+# -----------------------------------------
+# ENVIRONMENT & SECRETS (server-managed)
+# -----------------------------------------
 .env
 .env.*
 .env.local
 .env.local.php
 .env.test
-
-# Secrets
 config/secrets/prod/prod.decrypt.private.php
 
-# Uploads (managed on server)
+# -----------------------------------------
+# UPLOADS & RUNTIME (server-managed)
+# -----------------------------------------
 public/uploads/
-
-# Cache and logs
 var/
 
-# Test files
+# -----------------------------------------
+# TESTS
+# -----------------------------------------
+tests/
 .phpunit.result.cache
 phpunit.xml
 phpunit.xml.dist
-tests/
 
-# Node
+# -----------------------------------------
+# NODE / FRONTEND BUILD (only public/build needed)
+# -----------------------------------------
 node_modules/
+assets/
+package.json
+package-lock.json
 npm-debug.log
 yarn-error.log
-
-# Build source (only public/build is needed)
-assets/
-
-# Dev/CI files
-.git/
-.github/
-.gitlab-ci.yml
-.gitlab-ci.yaml
-.serena/
-.claude/
-CLAUDE.md
-deploy.sh
-.rsync_ignore
-.rsync-exclude
-Dockerfile
-docker/
-compose.yaml
-docker-compose.yaml
-
-# IDE and OS
-.DS_Store
-.idea/
-.vscode/
-
-# Config files not needed on server
+webpack.config.js
 postcss.config.js
 postccs.config.js
 .eslintrc.json
 .prettierrc
-webpack.config.js
 
-# Server-specific files (don't overwrite)
+# -----------------------------------------
+# VERSION CONTROL & CI/CD
+# -----------------------------------------
+.git/
+.github/
+.gitignore
+.gitlab-ci.yml
+.gitlab-ci.yaml
+
+# -----------------------------------------
+# DOCKER
+# -----------------------------------------
+Dockerfile
+docker/
+compose.yaml
+docker-compose.yaml
+docker-compose.yml
+
+# -----------------------------------------
+# DEPLOYMENT SCRIPTS
+# -----------------------------------------
+deploy.sh
+.rsync_ignore
+.rsync-exclude
+
+# -----------------------------------------
+# AI ASSISTANTS
+# -----------------------------------------
+.serena/
+.claude/
+CLAUDE.md
+
+# -----------------------------------------
+# IDE & OS
+# -----------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# -----------------------------------------
+# DOCUMENTATION (not needed in prod)
+# -----------------------------------------
+readme.md
+README.md
+CHANGELOG.md
+LICENSE
+
+# -----------------------------------------
+# COMPOSER (vendor already installed)
+# -----------------------------------------
+# Note: Keep composer.json for potential runtime needs
+composer.lock
+
+# -----------------------------------------
+# SERVER-SPECIFIC FILES (don't overwrite)
+# -----------------------------------------
 .htaccess
 php.ini
 .user.ini
