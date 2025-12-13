@@ -62,12 +62,12 @@ jobs:
             .env.*
             .env.*.local
             .env.test
-            /config/secrets/prod/prod.decrypt.private.php
-            /public/uploads/*
-            /var/
+            config/secrets/prod/prod.decrypt.private.php
+            public/uploads/
+            var/
             .phpunit.result.cache
-            /phpunit.xml
-            /node_modules/
+            phpunit.xml
+            node_modules/
             npm-debug.log
             yarn-error.log
             deploy.sh
@@ -80,13 +80,19 @@ jobs:
             php.ini
             .user.ini
             error_log
-            /public/.htaccess
-            /public/php.ini
-            /public/.user.ini
-            /assets/
-            /tests/
-            /.git/
-            /.github/
+            public/.htaccess
+            public/php.ini
+            public/.user.ini
+            assets/
+            tests/
+            .git/
+            .github/
+            .serena/
+            .claude/
+            CLAUDE.md
+            docker/
+            Dockerfile
+            .eslintrc.json
           ARGS: -avz --delete
 
       - name: Run migrations and clear cache
