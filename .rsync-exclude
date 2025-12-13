@@ -1,0 +1,66 @@
+# Environment files
+.env
+.env.*
+.env.local
+.env.local.php
+.env.test
+
+# Secrets
+config/secrets/prod/prod.decrypt.private.php
+
+# Uploads (managed on server)
+public/uploads/
+
+# Cache and logs
+var/
+
+# Test files
+.phpunit.result.cache
+phpunit.xml
+phpunit.xml.dist
+tests/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build source (only public/build is needed)
+assets/
+
+# Dev/CI files
+.git/
+.github/
+.gitlab-ci.yml
+.gitlab-ci.yaml
+.serena/
+.claude/
+CLAUDE.md
+deploy.sh
+.rsync_ignore
+.rsync-exclude
+Dockerfile
+docker/
+compose.yaml
+docker-compose.yaml
+
+# IDE and OS
+.DS_Store
+.idea/
+.vscode/
+
+# Config files not needed on server
+postcss.config.js
+postccs.config.js
+.eslintrc.json
+.prettierrc
+webpack.config.js
+
+# Server-specific files (don't overwrite)
+.htaccess
+php.ini
+.user.ini
+error_log
+public/.htaccess
+public/php.ini
+public/.user.ini
