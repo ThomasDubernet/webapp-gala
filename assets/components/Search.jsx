@@ -291,31 +291,19 @@ function Search() {
   }, [])
 
   useEffect(() => {
-    personnes.forEach((item) => {
-      item.fullname = `${item.prenom} ${item.nom}`
-    })
-
     if (stringToSearch !== '' && stringToSearch.length > 2) {
-      const result = personnes.filter((personne) =>
-        personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
-      )
+      const result = personnes.filter((personne) => {
+        const fullname = `${personne.prenom} ${personne.nom}`
+        return fullname.toLowerCase().includes(stringToSearch.toLowerCase())
+      })
       setFilteredStudents(result)
     } else {
       setFilteredStudents([])
     }
-  }, [personnes])
+  }, [personnes, stringToSearch])
 
   const handleSearch = (event) => {
-    const { value } = event.target
-    setStringToSearch(value)
-    if (value.length > 2) {
-      const result = personnes.filter((personne) =>
-        personne.fullname.toLowerCase().includes(value.toLowerCase())
-      )
-      setFilteredStudents(result)
-    } else {
-      setFilteredStudents([])
-    }
+    setStringToSearch(event.target.value)
   }
 
   const handleClose = () => {

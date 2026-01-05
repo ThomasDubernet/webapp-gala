@@ -199,7 +199,7 @@ class PersonneController extends AbstractController
     }
 
     #[Route('/{id}/add_table/{tableId}', name: 'personne_add_to_table', methods: ['GET', 'POST'])]
-    public function addToTable($id, $tableId, Request $request): Response
+    public function addToTable(int $id, int $tableId, Request $request): Response
     {
         $personne = $this->em->getRepository(Personne::class)->find($id);
         $table = $this->em->getRepository(Table::class)->find($tableId);

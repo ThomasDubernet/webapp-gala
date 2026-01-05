@@ -19,8 +19,9 @@ import './components/Search'
 import './components/Plan'
 import './components/HotesseSearch'
 
-// Keep log for don't remove import
-console.log({ Tooltip, Toast, Popover })
+// Bootstrap components are imported for side effects (initializing Bootstrap JS)
+// eslint-disable-next-line no-unused-vars, no-underscore-dangle
+const _bootstrap = { Tooltip, Toast, Popover }
 
 const syncBilletWebData = async () => {
   const popup = document.getElementById('billet_web_sync_popup')
@@ -35,9 +36,7 @@ const syncBilletWebData = async () => {
     })
 
     if (response.status === 200) {
-      const data = await response.json()
-      // eslint-disable-next-line no-console
-      console.log(data)
+      await response.json()
     }
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -62,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (syncBtn) {
     syncBtn.addEventListener('click', (e) => {
-      console.log('click')
       e.preventDefault()
       syncBilletWebData()
     })
