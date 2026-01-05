@@ -179,13 +179,11 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
   /**
    * API events
    */
-  function handleDelete() {
-    fetch(`/api/tables/${id}`, {
+  async function handleDelete() {
+    await fetch(`/api/tables/${id}`, {
       method: 'DELETE',
     })
-    setTimeout(() => {
-      load()
-    }, 1000)
+    load()
   }
   const handleStop = async (event, data) => {
     event.preventDefault()
@@ -233,6 +231,10 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
     })
     window.addEventListener('resize', onWindowResize)
     setLoading(false)
+
+    return () => {
+      window.removeEventListener('resize', onWindowResize)
+    }
   }, [positionPercent])
 
   // useEffect(() => {

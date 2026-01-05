@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { useGetMany } from '../hooks'
 import { PersonneProvider } from './Search'
 
@@ -18,7 +18,7 @@ function HotessePage() {
       item.fullname = `${item.prenom} ${item.nom}`
     })
 
-    if (stringToSearch !== '' && stringToSearch > 2) {
+    if (stringToSearch !== '' && stringToSearch.length > 2) {
       const result = items.filter((personne) =>
         personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
       )
@@ -77,7 +77,8 @@ function HotessePage() {
 
 class HotesseElement extends HTMLElement {
   connectedCallback() {
-    render(<HotessePage />, this)
+    const root = createRoot(this)
+    root.render(<HotessePage />)
   }
 }
 

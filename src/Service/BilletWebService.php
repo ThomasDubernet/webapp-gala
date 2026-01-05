@@ -7,16 +7,17 @@ use App\Entity\Personne;
 use App\Repository\EvenementRepository;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class BilletWebService
 {
-    public const BILLET_WEB_API_URL = 'https://www.billetweb.fr';
-
-    private $eventRepo;
-    public function __construct(EvenementRepository $eventRepo)
-    {
-        $this->eventRepo = $eventRepo;
-    }
+    public function __construct(
+        private readonly EvenementRepository $eventRepo,
+        #[Autowire(service: 'billetweb.http_client')] private readonly Client $httpClient,
+        #[Autowire('%env(BILLET_WEB_BASIC)%')] private readonly string $billetWebToken,
+        private readonly LoggerInterface $logger
+    ) {}
 
     public function createPerson(Personne $person): void
     {
@@ -27,12 +28,9 @@ class BilletWebService
 
             if ($billetWebId) {
                 try {
-                    $httpClient = new Client([
-                        'base_uri' => self::BILLET_WEB_API_URL,
-                    ]);
-                    $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
+                    $this->httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
                         'headers' => [
-                            'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
+                            'Authorization' => 'Basic '.$this->billetWebToken
                         ],
                         'json' => [
                             'data' => [
@@ -40,7 +38,7 @@ class BilletWebService
                                     'name' => $person->getNom(),
                                     'firstname' => $person->getPrenom(),
                                     'email' => $person->getEmail(),
-                                    'session' => '0', // TODO check à quoi ça correspond
+                                    'session' => '0',
                                     'payment_type' => 'other',
                                     'products' => [
                                         [
@@ -63,7 +61,10 @@ class BilletWebService
                         ]
                     ]);
                 } catch (GuzzleException $e) {
-                    // TODO : log
+                    $this->logger->error('BilletWeb API call failed for person creation', [
+                        'person_id' => $person->getId(),
+                        'error' => $e->getMessage()
+                    ]);
                 }
             }
         }
@@ -78,12 +79,9 @@ class BilletWebService
 
             if ($billetWebId) {
                 try {
-                    $httpClient = new Client([
-                        'base_uri' => self::BILLET_WEB_API_URL,
-                    ]);
-                    $httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
+                    $this->httpClient->request('POST', '/api/event/'.$billetWebId.'/add_order', [
                         'headers' => [
-                            'Authorization' => "Basic ".$_ENV['BILLET_WEB_BASIC']
+                            'Authorization' => 'Basic '.$this->billetWebToken
                         ],
                         'json' => [
                             'data' => [
@@ -128,7 +126,11 @@ class BilletWebService
                         ]
                     ]);
                 } catch (GuzzleException $e) {
-                    // TODO : log
+                    $this->logger->error('BilletWeb API call failed for couple creation', [
+                        'person_id' => $person->getId(),
+                        'conjoint_id' => $conjoint->getId(),
+                        'error' => $e->getMessage()
+                    ]);
                 }
             }
         }

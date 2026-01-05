@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { useGetMany } from '../hooks'
 import TableProvider from './Tables/provider'
 
@@ -29,7 +29,8 @@ function Plan() {
 
 class PlanElement extends HTMLElement {
   connectedCallback() {
-    render(<Plan />, this)
+    const root = createRoot(this)
+    root.render(<Plan />)
   }
 }
 

@@ -8,17 +8,20 @@ use App\Entity\Personne;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class BilletWebController extends AbstractController
 {
-    public const BILLET_WEB_API_URL = 'https://www.billetweb.fr';
-
     public function __construct(
-        private readonly EntityManagerInterface $em
+        private readonly EntityManagerInterface $em,
+        #[Autowire(service: 'billetweb.http_client')] private readonly Client $httpClient,
+        #[Autowire('%env(BILLET_WEB_BASIC)%')] private readonly string $billetWebToken,
+        private readonly LoggerInterface $logger
     ) {}
 
     #[Route('/api/billet-web/sync', name: 'billet_web_sync_post', methods: ['POST'])]
@@ -54,13 +57,9 @@ class BilletWebController extends AbstractController
         }
 
         try {
-            $client = new Client([
-                'base_uri' => self::BILLET_WEB_API_URL,
-            ]);
-
-            $response = $client->request('GET', $apiUrl, [
+            $response = $this->httpClient->request('GET', $apiUrl, [
                 'headers' => [
-                    'Authorization' => "Basic " . $_ENV['BILLET_WEB_BASIC']
+                    'Authorization' => 'Basic '.$this->billetWebToken
                 ]
             ]);
 
@@ -109,105 +108,29 @@ class BilletWebController extends AbstractController
                     $principalCustomer = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principal['email'], 'nom' => $principal['name'], 'prenom' => $principal['firstname']]);
 
                     if (!$principalCustomer instanceof Personne) {
-                        $email = $principal['email'];
-                        $name = $principal['name'];
-                        $firstname = $principal['firstname'];
-                        $price = $principal['price'];
-                        $paymentMethod = $principal['order_payment_type'];
-
-                        // Récupération de la civilite
-                        $civilite = null;
-                        if (isset($principal['custom']['Civilité'])) {
-                            if (str_contains(strtolower($principal['custom']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        } else {
-                            if (str_contains(strtolower($principal['custom_order']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        }
-
-                        // Récupération du portable
-                        $portable = $principal['custom']['Portable'] ?? $principal['custom_order']['Portable'];
-
-                        $adresse = $principal['custom_order']['Adresse'];
-                        $ville = $principal['custom_order']['Ville'];
-                        $codePostal = $principal['custom_order']['Code postal'];
-
-                        $principalCustomer = new Personne();
-                        $principalCustomer
-                            ->setCivilite($civilite)
-                            ->setPrenom($firstname)
-                            ->setNom($name)
-                            ->setEmail($email)
-                            ->setTelephone($portable)
-                            ->setAdresse($adresse)
-                            ->setCodePostal($codePostal)
-                            ->setVille($ville)
-                            ->setMontantBillet($price)
-                            ->setMontantPaye($price)
-                            ->setDateReglement(new \DateTime($principal['order_date']))
-                            ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($ticketExtId);
-
+                        $principalCustomer = $this->createPersonneFromBilletWebData(
+                            $principal,
+                            $monsieurCivilite,
+                            $madameCivilite
+                        );
                         ++$count;
                     } elseif ($principalCustomer->getBilletWebTicketId() === null) {
                         $principalCustomer->setBilletWebTicketId($ticketExtId);
                     }
 
                     $conjointTicketExtId = $conjoint['ext_id'];
-                    $conjointCustomer = $this->em->getRepository(Personne::class)->findOneBy(['email' => $conjoint['email'], 'nom' => $conjoint['name'], 'prenom' => $conjoint['firstname']]);
+                    $conjointCustomer = $this->em->getRepository(Personne::class)->findOneBy([
+                        'email' => $conjoint['email'],
+                        'nom' => $conjoint['name'],
+                        'prenom' => $conjoint['firstname']
+                    ]);
 
                     if (!$conjointCustomer instanceof Personne) {
-                        $email = $conjoint['email'];
-                        $name = $conjoint['name'];
-                        $firstname = $conjoint['firstname'];
-                        $price = $conjoint['price'];
-                        $paymentMethod = $conjoint['order_payment_type'];
-
-                        // Récupération de la civilite
-                        $civilite = null;
-                        if (isset($conjoint['custom']['Civilité'])) {
-                            if (str_contains(strtolower($conjoint['custom']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        } else {
-                            if (str_contains(strtolower($conjoint['custom_order']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        }
-
-                        // Récupération du portable
-                        $portable = $conjoint['custom']['Portable'] ?? $conjoint['custom_order']['Portable'];
-
-                        $adresse = $conjoint['custom_order']['Adresse'];
-                        $ville = $conjoint['custom_order']['Ville'];
-                        $codePostal = $conjoint['custom_order']['Code postal'];
-
-                        $conjointCustomer = new Personne();
-                        $conjointCustomer
-                            ->setCivilite($civilite)
-                            ->setPrenom($firstname)
-                            ->setNom($name)
-                            ->setEmail($email)
-                            ->setTelephone($portable)
-                            ->setAdresse($adresse)
-                            ->setCodePostal($codePostal)
-                            ->setVille($ville)
-                            ->setMontantBillet($price)
-                            ->setMontantPaye($price)
-                            ->setDateReglement(new \DateTime($conjoint['order_date']))
-                            ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($conjointTicketExtId);
-
+                        $conjointCustomer = $this->createPersonneFromBilletWebData(
+                            $conjoint,
+                            $monsieurCivilite,
+                            $madameCivilite
+                        );
                         ++$count;
                     } elseif ($conjointCustomer->getBilletWebTicketId() === null) {
                         $conjointCustomer->setBilletWebTicketId($conjointTicketExtId);
@@ -219,54 +142,18 @@ class BilletWebController extends AbstractController
                     $principal = $customers[0];
 
                     $ticketExtId = $principal['ext_id'];
-                    $principalCustomer = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principal['email'], 'nom' => $principal['name'], 'prenom' => $principal['firstname']]);
+                    $principalCustomer = $this->em->getRepository(Personne::class)->findOneBy([
+                        'email' => $principal['email'],
+                        'nom' => $principal['name'],
+                        'prenom' => $principal['firstname']
+                    ]);
 
                     if (!$principalCustomer instanceof Personne) {
-                        $email = $principal['email'];
-                        $name = $principal['name'];
-                        $firstname = $principal['firstname'];
-                        $price = $principal['price'];
-                        $paymentMethod = $principal['order_payment_type'];
-
-                        // Récupération de la civilite
-                        $civilite = null;
-                        if (isset($principal['custom']['Civilité'])) {
-                            if (str_contains(strtolower($principal['custom']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        } else {
-                            if (str_contains(strtolower($principal['custom_order']['Civilité']), 'mme')) {
-                                $civilite = $madameCivilite;
-                            } else {
-                                $civilite = $monsieurCivilite;
-                            }
-                        }
-
-                        // Récupération du portable
-                        $portable = $principal['custom']['Portable'] ?? $principal['custom_order']['Portable'];
-
-                        $adresse = $principal['custom_order']['Adresse'];
-                        $ville = $principal['custom_order']['Ville'];
-                        $codePostal = $principal['custom_order']['Code postal'];
-
-                        $principalCustomer = new Personne();
-                        $principalCustomer
-                            ->setCivilite($civilite)
-                            ->setPrenom($firstname)
-                            ->setNom($name)
-                            ->setEmail($email)
-                            ->setTelephone($portable)
-                            ->setAdresse($adresse)
-                            ->setCodePostal($codePostal)
-                            ->setVille($ville)
-                            ->setMontantBillet($price)
-                            ->setMontantPaye($price)
-                            ->setDateReglement(new \DateTime($principal['order_date']))
-                            ->setMoyenPaiement($paymentMethod)
-                            ->setBilletWebTicketId($ticketExtId);
-
+                        $principalCustomer = $this->createPersonneFromBilletWebData(
+                            $principal,
+                            $monsieurCivilite,
+                            $madameCivilite
+                        );
                         ++$count;
                     } elseif ($principalCustomer->getBilletWebTicketId() === null) {
                         $principalCustomer->setBilletWebTicketId($ticketExtId);
@@ -283,11 +170,55 @@ class BilletWebController extends AbstractController
                 'newLastSyncDate' => $newLastSyncDate->format('Y-m-d H:i:s'),
             ], Response::HTTP_OK);
         } catch (\Exception|GuzzleException $e) {
+            $this->logger->error('BilletWeb sync failed', [
+                'error' => $e->getMessage()
+            ]);
+
             return $this->json([
                 'error' => 'ERROR_SYNC_BILLET_WEB_003',
                 'status' => 'error',
                 'message' => 'Error while trying to sync with billet web'
             ], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    /**
+     * Détermine la civilité à partir des données BilletWeb
+     */
+    private function determineCivilite(array $data, Civilite $monsieur, Civilite $madame): Civilite
+    {
+        $civiliteStr = $data['custom']['Civilité'] ?? $data['custom_order']['Civilité'] ?? '';
+
+        return str_contains(strtolower($civiliteStr), 'mme') ? $madame : $monsieur;
+    }
+
+    /**
+     * Crée une Personne à partir des données BilletWeb
+     */
+    private function createPersonneFromBilletWebData(
+        array $customerData,
+        Civilite $monsieurCivilite,
+        Civilite $madameCivilite
+    ): Personne {
+        $civilite = $this->determineCivilite($customerData, $monsieurCivilite, $madameCivilite);
+        $portable = $customerData['custom']['Portable'] ?? $customerData['custom_order']['Portable'];
+
+        $personne = new Personne();
+        $personne
+            ->setCivilite($civilite)
+            ->setPrenom($customerData['firstname'])
+            ->setNom($customerData['name'])
+            ->setEmail($customerData['email'])
+            ->setTelephone($portable)
+            ->setAdresse($customerData['custom_order']['Adresse'])
+            ->setCodePostal($customerData['custom_order']['Code postal'])
+            ->setVille($customerData['custom_order']['Ville'])
+            ->setMontantBillet($customerData['price'])
+            ->setMontantPaye($customerData['price'])
+            ->setDateReglement(new \DateTime($customerData['order_date']))
+            ->setMoyenPaiement($customerData['order_payment_type'])
+            ->setBilletWebTicketId($customerData['ext_id']);
+
+        return $personne;
     }
 }
