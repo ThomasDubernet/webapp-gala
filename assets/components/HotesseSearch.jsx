@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { useGetMany } from '../hooks'
 import { PersonneProvider } from './Search'
 
@@ -77,7 +77,8 @@ function HotessePage() {
 
 class HotesseElement extends HTMLElement {
   connectedCallback() {
-    render(<HotessePage />, this)
+    const root = createRoot(this)
+    root.render(<HotessePage />)
   }
 }
 

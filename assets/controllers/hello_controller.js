@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Controller } from 'stimulus'
+import { Controller } from '@hotwired/stimulus'
 
 /*
  * This is an example Stimulus controller!

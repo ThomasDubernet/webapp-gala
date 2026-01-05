@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 import { Box, Button, Checkbox, Modal, Typography } from '@mui/material'
 import { useGetMany } from '../hooks'
 
@@ -352,7 +352,8 @@ function Search() {
 
 class SearchElement extends HTMLElement {
   connectedCallback() {
-    render(<Search />, this)
+    const root = createRoot(this)
+    root.render(<Search />)
   }
 }
 
