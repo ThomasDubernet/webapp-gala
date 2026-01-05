@@ -18,7 +18,7 @@ function HotessePage() {
       item.fullname = `${item.prenom} ${item.nom}`
     })
 
-    if (stringToSearch !== '' && stringToSearch > 2) {
+    if (stringToSearch !== '' && stringToSearch.length > 2) {
       const result = items.filter((personne) =>
         personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
       )

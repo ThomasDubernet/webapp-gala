@@ -21,12 +21,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PersonneType extends AbstractType
 {
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
+    public function __construct(
+        private readonly EntityManagerInterface $em
+    ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

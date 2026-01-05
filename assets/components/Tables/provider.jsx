@@ -45,7 +45,7 @@ function TableProvider(props) {
   useEffect(() => {
     if (
       planElement !== null &&
-      planElement.clientWidt !== 0 &&
+      planElement.clientWidth !== 0 &&
       planElement.clientHeight !== 0
     ) {
       setPlanSize({
