@@ -5,6 +5,7 @@ import Draggable from 'react-draggable'
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
+import { useDebounce } from '../../hooks'
 
 function Table({
   table,
@@ -39,6 +40,8 @@ function Table({
   const handleSubMenuOpen = () => setOpenSubMenu(true)
   const handleClose = () => {
     setOpen(false)
+    setStringToSearch('')
+    setFilteredPersonnes([])
     if (hasAddedPersonne) {
       setHasAddedPersonne(false)
       load()
@@ -79,22 +82,31 @@ function Table({
   const [addingPersonneId, setAddingPersonneId] = useState(null)
   const [addedPersonneId, setAddedPersonneId] = useState(null)
   const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
+  const [stringToSearch, setStringToSearch] = useState('')
+  const debouncedSearch = useDebounce(stringToSearch, 300)
 
-  const handleSearch = (event) => {
-    const { value } = event.target
-    if (value.length > 2) {
-      const searchLower = value.toLowerCase()
+  useEffect(() => {
+    if (debouncedSearch !== '' && debouncedSearch.length >= 2) {
+      const searchLower = debouncedSearch.toLowerCase()
       const result = allPersonnes.filter((personne) => {
         const email = personne.email || ''
+        const telephone = personne.telephone || ''
+        const ville = personne.ville || ''
         return (
           personne.fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower)
+          email.toLowerCase().includes(searchLower) ||
+          telephone.toLowerCase().includes(searchLower) ||
+          ville.toLowerCase().includes(searchLower)
         )
       })
       setFilteredPersonnes(result)
     } else {
       setFilteredPersonnes([])
     }
+  }, [allPersonnes, debouncedSearch])
+
+  const handleSearch = (event) => {
+    setStringToSearch(event.target.value)
   }
 
   const handleAddPersonne = async (personneId) => {
@@ -395,12 +407,18 @@ function Table({
             <div className="d-flex align-items-center justify-content-between">
               <Typography id="modal-modal-title" variant="h6" component="h2">
                 Personnes non affectées
+                {filteredPersonnes.length > 0 && (
+                  <span className="badge bg-secondary ms-2">
+                    {filteredPersonnes.length}
+                  </span>
+                )}
               </Typography>
               <input
                 className="form-control me-2 w-50"
                 type="search"
                 placeholder="Rechercher une personne"
                 aria-label="Rechercher"
+                value={stringToSearch}
                 onChange={handleSearch}
               />
             </div>
@@ -426,7 +444,9 @@ function Table({
                       </button>
                     </SearchPersonne>
                   ))
-                : 'Aucune personne ne correspond à votre recherche'}
+                : debouncedSearch.length >= 2
+                  ? 'Aucune personne ne correspond à votre recherche'
+                  : 'Tapez au moins 2 caractères pour rechercher'}
             </div>
           </Box>
         </Modal>

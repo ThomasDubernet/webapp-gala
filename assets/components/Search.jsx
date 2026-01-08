@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Box, Button, Checkbox, Modal, Typography } from '@mui/material'
-import { useGetMany } from '../hooks'
+import { useDebounce, useGetMany } from '../hooks'
 
 export function Personne({ isHotesse = false, personne, children }) {
   const [person, setPerson] = useState(personne)
@@ -285,27 +285,32 @@ function Search() {
   const [filteredStudents, setFilteredStudents] = useState([])
   const [activeModal, setActiveModal] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
+  const debouncedSearch = useDebounce(stringToSearch, 300)
 
   useEffect(() => {
     load()
   }, [])
 
   useEffect(() => {
-    if (stringToSearch !== '' && stringToSearch.length > 2) {
-      const searchLower = stringToSearch.toLowerCase()
+    if (debouncedSearch !== '' && debouncedSearch.length >= 2) {
+      const searchLower = debouncedSearch.toLowerCase()
       const result = personnes.filter((personne) => {
         const fullname = `${personne.prenom} ${personne.nom}`
         const email = personne.email || ''
+        const telephone = personne.telephone || ''
+        const ville = personne.ville || ''
         return (
           fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower)
+          email.toLowerCase().includes(searchLower) ||
+          telephone.toLowerCase().includes(searchLower) ||
+          ville.toLowerCase().includes(searchLower)
         )
       })
       setFilteredStudents(result)
     } else {
       setFilteredStudents([])
     }
-  }, [personnes, stringToSearch])
+  }, [personnes, debouncedSearch])
 
   const handleSearch = (event) => {
     setStringToSearch(event.target.value)
@@ -337,7 +342,15 @@ function Search() {
           >
             <i className="bi bi-x-lg" />
           </button>
-          <h3 className="title">Personnes</h3>
+          <h3 className="title">
+            Personnes
+            {filteredStudents.length > 0 && (
+              <span className="badge bg-secondary ms-2">
+                {filteredStudents.length} résultat
+                {filteredStudents.length > 1 ? 's' : ''}
+              </span>
+            )}
+          </h3>
           <div className="content">
             {filteredStudents.length > 0
               ? filteredStudents.map((personne) => (
@@ -347,7 +360,9 @@ function Search() {
                     load={load}
                   />
                 ))
-              : 'Aucune personne ne correspond à votre recherche'}
+              : debouncedSearch.length >= 2
+                ? 'Aucune personne ne correspond à votre recherche'
+                : 'Tapez au moins 2 caractères pour rechercher'}
           </div>
         </div>
       )}
