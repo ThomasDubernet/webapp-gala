@@ -85,81 +85,31 @@ class BilletWebController extends AbstractController
             $monsieurCivilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'M.']);
             $madameCivilite = $this->em->getRepository(Civilite::class)->findOneBy(['nom' => 'Mme']);
 
-            // On parcours les commandes
+            // On parcourt les commandes - traite tous les participants
             foreach ($orders as $orderExtId => $customers) {
-                if (count($customers) === 2) {
-                    $principal = null;
-                    $conjoint = null;
+                foreach ($customers as $customer) {
+                    $ticketExtId = $customer['ext_id'];
+                    $existingPerson = $this->em->getRepository(Personne::class)->findOneBy([
+                        'email' => $customer['email'],
+                        'nom' => $customer['name'],
+                        'prenom' => $customer['firstname']
+                    ]);
 
-                    foreach ($customers as $customer) {
-                        if ($customer['firstname'] === $customer['order_firstname'] && $principal === null) {
-                            $principal = $customer;
-                        } else {
-                            $conjoint = $customer;
+                    if (!$existingPerson instanceof Personne) {
+                        $person = $this->createPersonneFromBilletWebData(
+                            $customer,
+                            $monsieurCivilite,
+                            $madameCivilite
+                        );
+                        ++$count;
+                    } else {
+                        $person = $existingPerson;
+                        if ($person->getBilletWebTicketId() === null) {
+                            $person->setBilletWebTicketId($ticketExtId);
                         }
                     }
 
-                    if ($principal === null || $conjoint === null) {
-                        $principal = $customers[0];
-                        $conjoint = $customers[1];
-                    }
-
-                    $ticketExtId = $principal['ext_id'];
-                    $principalCustomer = $this->em->getRepository(Personne::class)->findOneBy(['email' => $principal['email'], 'nom' => $principal['name'], 'prenom' => $principal['firstname']]);
-
-                    if (!$principalCustomer instanceof Personne) {
-                        $principalCustomer = $this->createPersonneFromBilletWebData(
-                            $principal,
-                            $monsieurCivilite,
-                            $madameCivilite
-                        );
-                        ++$count;
-                    } elseif ($principalCustomer->getBilletWebTicketId() === null) {
-                        $principalCustomer->setBilletWebTicketId($ticketExtId);
-                    }
-
-                    $conjointTicketExtId = $conjoint['ext_id'];
-                    $conjointCustomer = $this->em->getRepository(Personne::class)->findOneBy([
-                        'email' => $conjoint['email'],
-                        'nom' => $conjoint['name'],
-                        'prenom' => $conjoint['firstname']
-                    ]);
-
-                    if (!$conjointCustomer instanceof Personne) {
-                        $conjointCustomer = $this->createPersonneFromBilletWebData(
-                            $conjoint,
-                            $monsieurCivilite,
-                            $madameCivilite
-                        );
-                        ++$count;
-                    } elseif ($conjointCustomer->getBilletWebTicketId() === null) {
-                        $conjointCustomer->setBilletWebTicketId($conjointTicketExtId);
-                    }
-
-                    $this->em->persist($principalCustomer);
-                    $this->em->persist($conjointCustomer);
-                } else {
-                    $principal = $customers[0];
-
-                    $ticketExtId = $principal['ext_id'];
-                    $principalCustomer = $this->em->getRepository(Personne::class)->findOneBy([
-                        'email' => $principal['email'],
-                        'nom' => $principal['name'],
-                        'prenom' => $principal['firstname']
-                    ]);
-
-                    if (!$principalCustomer instanceof Personne) {
-                        $principalCustomer = $this->createPersonneFromBilletWebData(
-                            $principal,
-                            $monsieurCivilite,
-                            $madameCivilite
-                        );
-                        ++$count;
-                    } elseif ($principalCustomer->getBilletWebTicketId() === null) {
-                        $principalCustomer->setBilletWebTicketId($ticketExtId);
-                    }
-
-                    $this->em->persist($principalCustomer);
+                    $this->em->persist($person);
                 }
                 $this->em->flush();
             }
