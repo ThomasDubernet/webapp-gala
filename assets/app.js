@@ -8,9 +8,6 @@
 // any CSS you import will output into a single css file (app.css in this case)
 import './styles/app.scss'
 
-// start the Stimulus application
-import './bootstrap'
-
 // eslint-disable-next-line no-unused-vars
 import { Popover, Toast, Tooltip } from 'bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.css'
