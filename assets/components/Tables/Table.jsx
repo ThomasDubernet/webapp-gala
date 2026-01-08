@@ -5,16 +5,9 @@ import Draggable from 'react-draggable'
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
-import { useDebounce } from '../../hooks'
+import { useSearchPersonnes } from '../../hooks'
 
-function Table({
-  table,
-  load,
-  planSize: baseSize,
-  planRef,
-  allPersonnes,
-  onPersonneAdded,
-}) {
+function Table({ table, load, planSize: baseSize, planRef }) {
   const submenu = useRef(null)
   const {
     id,
@@ -41,7 +34,6 @@ function Table({
   const handleClose = () => {
     setOpen(false)
     setStringToSearch('')
-    setFilteredPersonnes([])
     if (hasAddedPersonne) {
       setHasAddedPersonne(false)
       load()
@@ -74,36 +66,24 @@ function Table({
   /**
    * Personnes
    */
-  // const { items: allPersonnes, load: loadPersonnes } = useGetMany(
-  //   `personnes?exists[table]=false`
-  // )
-  const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [percentPresent, setPercentPresent] = useState(null)
   const [addingPersonneId, setAddingPersonneId] = useState(null)
   const [addedPersonneId, setAddedPersonneId] = useState(null)
   const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
-  const debouncedSearch = useDebounce(stringToSearch, 300)
 
-  useEffect(() => {
-    if (debouncedSearch !== '' && debouncedSearch.length >= 2) {
-      const searchLower = debouncedSearch.toLowerCase()
-      const result = allPersonnes.filter((personne) => {
-        const email = personne.email || ''
-        const telephone = personne.telephone || ''
-        const ville = personne.ville || ''
-        return (
-          personne.fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower) ||
-          telephone.toLowerCase().includes(searchLower) ||
-          ville.toLowerCase().includes(searchLower)
-        )
-      })
-      setFilteredPersonnes(result)
-    } else {
-      setFilteredPersonnes([])
-    }
-  }, [allPersonnes, debouncedSearch])
+  // Recherche côté serveur des personnes non assignées
+  const {
+    results: filteredPersonnes,
+    loading: searchLoading,
+    total: searchTotal,
+    hasSearched,
+    refresh: refreshSearch,
+  } = useSearchPersonnes({
+    searchQuery: stringToSearch,
+    minChars: 2,
+    unassignedOnly: true,
+  })
 
   const handleSearch = (event) => {
     setStringToSearch(event.target.value)
@@ -132,10 +112,8 @@ function Table({
       const data = await response.json()
 
       if (data.success) {
-        // Retirer de la liste filtrée immédiatement
-        setFilteredPersonnes((prev) => prev.filter((p) => p.id !== personneId))
-        // Notifier le parent
-        onPersonneAdded(personneId)
+        // Rafraîchir la liste des personnes non assignées
+        refreshSearch()
         // Feedback visuel bref
         setAddedPersonneId(personneId)
         setTimeout(() => setAddedPersonneId(null), 1500)
@@ -407,10 +385,8 @@ function Table({
             <div className="d-flex align-items-center justify-content-between">
               <Typography id="modal-modal-title" variant="h6" component="h2">
                 Personnes non affectées
-                {filteredPersonnes.length > 0 && (
-                  <span className="badge bg-secondary ms-2">
-                    {filteredPersonnes.length}
-                  </span>
+                {searchTotal > 0 && (
+                  <span className="badge bg-secondary ms-2">{searchTotal}</span>
                 )}
               </Typography>
               <input
@@ -423,30 +399,41 @@ function Table({
               />
             </div>
             <div className="mt-4 grid-search">
-              {filteredPersonnes.length > 0
-                ? filteredPersonnes.map((personne, index) => (
-                    <SearchPersonne key={index} personne={personne}>
-                      <button
-                        type="button"
-                        className={`btn btn-sm btn-add ${
-                          addedPersonneId === personne.id
-                            ? 'btn-success'
-                            : 'btn-outline-primary'
-                        }`}
-                        onClick={() => handleAddPersonne(personne.id)}
-                        disabled={addingPersonneId === personne.id}
-                      >
-                        {addingPersonneId === personne.id
-                          ? 'Ajout...'
-                          : addedPersonneId === personne.id
-                            ? 'Ajouté'
-                            : 'Ajouter'}
-                      </button>
-                    </SearchPersonne>
-                  ))
-                : debouncedSearch.length >= 2
-                  ? 'Aucune personne ne correspond à votre recherche'
-                  : 'Tapez au moins 2 caractères pour rechercher'}
+              {searchLoading ? (
+                <div className="text-center py-3">
+                  <div
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                  >
+                    <span className="visually-hidden">Chargement...</span>
+                  </div>
+                </div>
+              ) : filteredPersonnes.length > 0 ? (
+                filteredPersonnes.map((personne, index) => (
+                  <SearchPersonne key={index} personne={personne}>
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-add ${
+                        addedPersonneId === personne.id
+                          ? 'btn-success'
+                          : 'btn-outline-primary'
+                      }`}
+                      onClick={() => handleAddPersonne(personne.id)}
+                      disabled={addingPersonneId === personne.id}
+                    >
+                      {addingPersonneId === personne.id
+                        ? 'Ajout...'
+                        : addedPersonneId === personne.id
+                          ? 'Ajouté'
+                          : 'Ajouter'}
+                    </button>
+                  </SearchPersonne>
+                ))
+              ) : hasSearched ? (
+                'Aucune personne ne correspond à votre recherche'
+              ) : (
+                'Tapez au moins 2 caractères pour rechercher'
+              )}
             </div>
           </Box>
         </Modal>

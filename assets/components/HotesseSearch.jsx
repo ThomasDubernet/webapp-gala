@@ -1,43 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { useDebounce, useGetMany } from '../hooks'
+import { useSearchPersonnes } from '../hooks'
 import { PersonneProvider } from './Search'
 
 function HotessePage() {
-  const { items, load } = useGetMany('personnes')
-  const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [stringToSearch, setStringToSearch] = useState('')
-  const debouncedSearch = useDebounce(stringToSearch, 300)
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  useEffect(() => {
-    items.forEach((item) => {
-      item.fullname = `${item.prenom} ${item.nom}`
-    })
-
-    if (debouncedSearch !== '' && debouncedSearch.length >= 2) {
-      const searchLower = debouncedSearch.toLowerCase()
-      const result = items.filter((personne) => {
-        const email = personne.email || ''
-        const telephone = personne.telephone || ''
-        const ville = personne.ville || ''
-        return (
-          personne.fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower) ||
-          telephone.toLowerCase().includes(searchLower) ||
-          ville.toLowerCase().includes(searchLower)
-        )
-      })
-      setFilteredPersonnes(result)
-    } else if (debouncedSearch === '') {
-      setFilteredPersonnes(items)
-    } else {
-      setFilteredPersonnes([])
-    }
-  }, [items, debouncedSearch])
+  const {
+    results: filteredPersonnes,
+    loading,
+    total,
+    hasSearched,
+    refresh,
+  } = useSearchPersonnes({
+    searchQuery: stringToSearch,
+    minChars: 2,
+    loadOnEmpty: true, // Charge tous les résultats quand la recherche est vide
+  })
 
   const handleSearch = (event) => {
     setStringToSearch(event.target.value)
@@ -58,27 +37,29 @@ function HotessePage() {
           />
         </div>
       </nav>
-      {debouncedSearch.length >= 2 && (
-        <div className="px-4 py-2">
-          <span className="badge bg-secondary">
-            {filteredPersonnes.length} résultat
-            {filteredPersonnes.length > 1 ? 's' : ''}
+      <div className="px-4 py-2">
+        <span className="badge bg-secondary">
+          {total} résultat{total > 1 ? 's' : ''}
+        </span>
+        {loading && (
+          <span className="spinner-border spinner-border-sm ms-2" role="status">
+            <span className="visually-hidden">Chargement...</span>
           </span>
-        </div>
-      )}
+        )}
+      </div>
       <div className="grid-personnes px-4">
         {filteredPersonnes.length > 0
           ? filteredPersonnes.map((personne) => (
               <PersonneProvider
                 key={personne.id}
                 personne={personne}
-                load={load}
+                load={refresh}
                 isHotesse
               />
             ))
-          : debouncedSearch.length >= 2
+          : hasSearched
             ? 'Aucune personne ne correspond à votre recherche'
-            : debouncedSearch.length > 0
+            : stringToSearch.length > 0 && stringToSearch.length < 2
               ? 'Tapez au moins 2 caractères pour rechercher'
               : 'Aucune personne enregistrée'}
       </div>

@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Box, Button, Checkbox, Modal, Typography } from '@mui/material'
-import { useDebounce, useGetMany } from '../hooks'
+import { useSearchPersonnes } from '../hooks'
 
 export function Personne({ isHotesse = false, personne, children }) {
   const [person, setPerson] = useState(personne)
@@ -281,43 +281,26 @@ export function PersonneProvider({ personne, load, isHotesse = false }) {
 }
 
 function Search() {
-  const { items: personnes, load } = useGetMany('personnes')
-  const [filteredStudents, setFilteredStudents] = useState([])
   const [activeModal, setActiveModal] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
-  const debouncedSearch = useDebounce(stringToSearch, 300)
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  useEffect(() => {
-    if (debouncedSearch !== '' && debouncedSearch.length >= 2) {
-      const searchLower = debouncedSearch.toLowerCase()
-      const result = personnes.filter((personne) => {
-        const fullname = `${personne.prenom} ${personne.nom}`
-        const email = personne.email || ''
-        const telephone = personne.telephone || ''
-        const ville = personne.ville || ''
-        return (
-          fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower) ||
-          telephone.toLowerCase().includes(searchLower) ||
-          ville.toLowerCase().includes(searchLower)
-        )
-      })
-      setFilteredStudents(result)
-    } else {
-      setFilteredStudents([])
-    }
-  }, [personnes, debouncedSearch])
+  const {
+    results: filteredStudents,
+    loading,
+    total,
+    hasSearched,
+    refresh,
+  } = useSearchPersonnes({
+    searchQuery: stringToSearch,
+    minChars: 2,
+  })
 
   const handleSearch = (event) => {
     setStringToSearch(event.target.value)
   }
 
   const handleClose = () => {
-    load()
+    refresh()
     setActiveModal(false)
     setStringToSearch('')
   }
@@ -344,25 +327,32 @@ function Search() {
           </button>
           <h3 className="title">
             Personnes
-            {filteredStudents.length > 0 && (
+            {total > 0 && (
               <span className="badge bg-secondary ms-2">
-                {filteredStudents.length} résultat
-                {filteredStudents.length > 1 ? 's' : ''}
+                {total} résultat{total > 1 ? 's' : ''}
               </span>
             )}
           </h3>
           <div className="content">
-            {filteredStudents.length > 0
-              ? filteredStudents.map((personne) => (
-                  <PersonneProvider
-                    key={personne.id}
-                    personne={personne}
-                    load={load}
-                  />
-                ))
-              : debouncedSearch.length >= 2
-                ? 'Aucune personne ne correspond à votre recherche'
-                : 'Tapez au moins 2 caractères pour rechercher'}
+            {loading ? (
+              <div className="text-center py-3">
+                <div className="spinner-border spinner-border-sm" role="status">
+                  <span className="visually-hidden">Chargement...</span>
+                </div>
+              </div>
+            ) : filteredStudents.length > 0 ? (
+              filteredStudents.map((personne) => (
+                <PersonneProvider
+                  key={personne.id}
+                  personne={personne}
+                  load={refresh}
+                />
+              ))
+            ) : hasSearched ? (
+              'Aucune personne ne correspond à votre recherche'
+            ) : (
+              'Tapez au moins 2 caractères pour rechercher'
+            )}
           </div>
         </div>
       )}
