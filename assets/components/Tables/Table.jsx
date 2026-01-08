@@ -1,14 +1,19 @@
-/* eslint-disable react/no-array-index-key */
 import React, { useEffect, useRef, useState } from 'react'
 import { Box, Menu, Modal, Typography } from '@mui/material'
 import Draggable from 'react-draggable'
 
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
-import { useGetMany } from '../../hooks'
 import { Personne as SearchPersonne } from '../Search'
 import { CustomMenuItem } from './tablesStyles'
 
-function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPersonneAdded }) {
+function Table({
+  table,
+  load,
+  planSize: baseSize,
+  planRef,
+  allPersonnes,
+  onPersonneAdded,
+}) {
   const submenu = useRef(null)
   const {
     id,
@@ -51,7 +56,7 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
             mouseX: event.clientX - 2,
             mouseY: event.clientY - 4,
           }
-        : null
+        : null,
     )
   }
 
@@ -78,9 +83,14 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
   const handleSearch = (event) => {
     const { value } = event.target
     if (value.length > 2) {
-      const result = allPersonnes.filter((personne) =>
-        personne.fullname.toLowerCase().includes(value.toLowerCase())
-      )
+      const searchLower = value.toLowerCase()
+      const result = allPersonnes.filter((personne) => {
+        const email = personne.email || ''
+        return (
+          personne.fullname.toLowerCase().includes(searchLower) ||
+          email.toLowerCase().includes(searchLower)
+        )
+      })
       setFilteredPersonnes(result)
     } else {
       setFilteredPersonnes([])
@@ -102,7 +112,7 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
       if (!response.ok) {
         const text = await response.text()
         console.error('Erreur serveur:', response.status, text)
-        // eslint-disable-next-line no-alert
+
         alert(`Erreur serveur: ${response.status}`)
         return
       }
@@ -120,12 +130,11 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
         // Marquer qu'une personne a été ajoutée (load sera appelé à la fermeture)
         setHasAddedPersonne(true)
       } else {
-        // eslint-disable-next-line no-alert
         alert(data.error || "Erreur lors de l'ajout")
       }
     } catch (error) {
       console.error('Erreur réseau:', error)
-      // eslint-disable-next-line no-alert
+
       alert(`Erreur: ${error.message}`)
     } finally {
       setAddingPersonneId(null)
@@ -310,9 +319,8 @@ function Table({ table, load, planSize: baseSize, planRef, allPersonnes, onPerso
             <button
               style={{ fontSize: '14px' }}
               onClick={() =>
-                // eslint-disable-next-line no-alert
                 window.confirm(
-                  'Êtes vous sûr de vouloir supprimer cette table ?'
+                  'Êtes vous sûr de vouloir supprimer cette table ?',
                 ) && handleDelete()
               }
               className="btn btn-danger mx-auto"

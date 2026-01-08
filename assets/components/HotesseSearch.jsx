@@ -14,14 +14,18 @@ function HotessePage() {
 
   useEffect(() => {
     items.forEach((item) => {
-      // eslint-disable-next-line no-param-reassign
       item.fullname = `${item.prenom} ${item.nom}`
     })
 
     if (stringToSearch !== '' && stringToSearch.length > 2) {
-      const result = items.filter((personne) =>
-        personne.fullname.toLowerCase().includes(stringToSearch.toLowerCase())
-      )
+      const searchLower = stringToSearch.toLowerCase()
+      const result = items.filter((personne) => {
+        const email = personne.email || ''
+        return (
+          personne.fullname.toLowerCase().includes(searchLower) ||
+          email.toLowerCase().includes(searchLower)
+        )
+      })
       setFilteredPersonnes(result)
     } else {
       // setFilteredPersonnes([])
@@ -33,9 +37,14 @@ function HotessePage() {
     const { value } = event.target
     setStringToSearch(value)
     if (value.length > 2) {
-      const result = items.filter((personne) =>
-        personne.fullname.toLowerCase().includes(value.toLowerCase())
-      )
+      const searchLower = value.toLowerCase()
+      const result = items.filter((personne) => {
+        const email = personne.email || ''
+        return (
+          personne.fullname.toLowerCase().includes(searchLower) ||
+          email.toLowerCase().includes(searchLower)
+        )
+      })
       setFilteredPersonnes(result)
     } else {
       setFilteredPersonnes([])

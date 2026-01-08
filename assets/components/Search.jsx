@@ -25,7 +25,7 @@ export function Personne({ isHotesse = false, personne, children }) {
 
   const isPayed = useMemo(
     () => montantBillet !== null && montantBillet === montantPaye,
-    [montantBillet, montantPaye]
+    [montantBillet, montantPaye],
   )
 
   const updatePresence = async (presence, withSms) => {
@@ -292,9 +292,14 @@ function Search() {
 
   useEffect(() => {
     if (stringToSearch !== '' && stringToSearch.length > 2) {
+      const searchLower = stringToSearch.toLowerCase()
       const result = personnes.filter((personne) => {
         const fullname = `${personne.prenom} ${personne.nom}`
-        return fullname.toLowerCase().includes(stringToSearch.toLowerCase())
+        const email = personne.email || ''
+        return (
+          fullname.toLowerCase().includes(searchLower) ||
+          email.toLowerCase().includes(searchLower)
+        )
       })
       setFilteredStudents(result)
     } else {
