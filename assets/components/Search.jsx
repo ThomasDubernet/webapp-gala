@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Box, Button, Checkbox, Modal, Typography } from '@mui/material'
 import { useSearchPersonnes } from '../hooks'
+import { PersonCard } from './PersonCard'
 
 export function Personne({ isHotesse = false, personne, children }) {
   const [person, setPerson] = useState(personne)
@@ -342,10 +343,11 @@ function Search() {
               </div>
             ) : filteredStudents.length > 0 ? (
               filteredStudents.map((personne) => (
-                <PersonneProvider
+                <PersonCard
                   key={personne.id}
                   personne={personne}
-                  load={refresh}
+                  onRefresh={refresh}
+                  variant="default"
                 />
               ))
             ) : hasSearched ? (

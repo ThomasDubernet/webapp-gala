@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { useSearchPersonnes } from '../hooks'
-import { PersonneProvider } from './Search'
+import { PersonCard } from './PersonCard'
 
 function HotessePage() {
   const [stringToSearch, setStringToSearch] = useState('')
@@ -50,11 +50,11 @@ function HotessePage() {
       <div className="grid-personnes px-4">
         {filteredPersonnes.length > 0
           ? filteredPersonnes.map((personne) => (
-              <PersonneProvider
+              <PersonCard
                 key={personne.id}
                 personne={personne}
-                load={refresh}
-                isHotesse
+                onRefresh={refresh}
+                variant="fullpage"
               />
             ))
           : hasSearched

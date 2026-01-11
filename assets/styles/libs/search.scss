@@ -29,6 +29,7 @@ custom-searchbar {
       display: grid;
       gap: 15px;
       grid-template-columns: repeat(4, 1fr);
+      align-items: stretch;
       height: calc(100% - 55px);
       overflow: scroll;
     }
