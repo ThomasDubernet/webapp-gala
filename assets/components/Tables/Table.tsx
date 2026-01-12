@@ -1,14 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Draggable from 'react-draggable'
+import React, { useEffect, useRef, useState, RefObject } from 'react'
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
-import { X, ChevronRight, MoreHorizontal, Pencil, Loader2, Check } from 'lucide-react'
+import { ChevronRight, MoreHorizontal, Loader2, Check } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
 import { Badge } from '../ui/badge'
+import type { Table as TableType, Personne as PersonneType } from '../../types/api'
 
-function Table({ table, load, planSize: baseSize, planRef }) {
-  const submenu = useRef(null)
+interface PlanSize {
+  width: number
+  height: number
+}
+
+interface Position {
+  x: number
+  y: number
+}
+
+interface ContextMenuPosition {
+  mouseX: number
+  mouseY: number
+}
+
+type DragState = 'idle' | 'dragging' | 'saving' | 'saved'
+
+interface TableProps {
+  table: TableType
+  load: () => void
+  planSize: PlanSize
+  planRef: RefObject<HTMLDivElement | null>
+}
+
+function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
+  const submenu = useRef<HTMLButtonElement>(null)
   const {
     id,
     nom,
@@ -16,22 +41,24 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     numero,
     posX,
     posY,
-    personnes,
-    categorie: { couleur },
+    personnes = [],
+    categorie,
   } = table
+
+  const couleur = categorie?.couleur || '#6366f1'
 
   const [loading, setLoading] = useState(true)
 
   /**
    * Drag & Save state: 'idle' | 'dragging' | 'saving' | 'saved'
    */
-  const [dragState, setDragState] = useState('idle')
-  const [previousPosition, setPreviousPosition] = useState(null)
+  const [dragState, setDragState] = useState<DragState>('idle')
+  const [previousPosition, setPreviousPosition] = useState<Position | null>(null)
 
   /**
    * Menus
    */
-  const [contextMenu, setContextMenu] = useState(null)
+  const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null)
   const [open, setOpen] = useState(false)
   const [openSubMenu, setOpenSubMenu] = useState(false)
 
@@ -49,7 +76,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     setOpenSubMenu(false)
     setContextMenu(null)
   }
-  const handleContextMenu = (event) => {
+  const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault()
     setContextMenu(
       contextMenu === null
@@ -64,17 +91,17 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   /**
    * Tailles & positions
    */
-  const [height, setHeight] = useState(null)
-  const [positionPx, setPositionPx] = useState({ x: null, y: null })
-  const [positionPercent, setPositionPercent] = useState({ x: posX, y: posY })
-  const [planSize, setPlanSize] = useState(baseSize)
+  const [height, setHeight] = useState<number | null>(null)
+  const [positionPx, setPositionPx] = useState<Position>({ x: 0, y: 0 })
+  const [positionPercent, setPositionPercent] = useState<Position>({ x: posX, y: posY })
+  const [planSize, setPlanSize] = useState<PlanSize>(baseSize)
 
   /**
    * Personnes
    */
-  const [percentPresent, setPercentPresent] = useState(null)
-  const [addingPersonneId, setAddingPersonneId] = useState(null)
-  const [addedPersonneId, setAddedPersonneId] = useState(null)
+  const [percentPresent, setPercentPresent] = useState<number | null>(null)
+  const [addingPersonneId, setAddingPersonneId] = useState<number | null>(null)
+  const [addedPersonneId, setAddedPersonneId] = useState<number | null>(null)
   const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
 
@@ -91,11 +118,11 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     unassignedOnly: true,
   })
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStringToSearch(event.target.value)
   }
 
-  const handleAddPersonne = async (personneId) => {
+  const handleAddPersonne = async (personneId: number) => {
     setAddingPersonneId(personneId)
 
     try {
@@ -110,7 +137,6 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       if (!response.ok) {
         const text = await response.text()
         console.error('Erreur serveur:', response.status, text)
-
         alert(`Erreur serveur: ${response.status}`)
         return
       }
@@ -130,47 +156,31 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       }
     } catch (error) {
       console.error('Erreur réseau:', error)
-
-      alert(`Erreur: ${error.message}`)
+      alert(`Erreur: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setAddingPersonneId(null)
     }
   }
-  const pxToPercent = ({ x, y }) => {
-    const percentX = parseFloat((x * 100) / planSize.width).toPrecision(6)
-    const percentY = parseFloat((y * 100) / planSize.height).toPrecision(6)
 
+  const pxToPercent = ({ x, y }: Position) => {
+    const percentX = parseFloat(((x * 100) / planSize.width).toPrecision(6))
+    const percentY = parseFloat(((y * 100) / planSize.height).toPrecision(6))
     return { percentX, percentY }
   }
-  const percentToPx = (percent, type, size = null) => {
-    let number = 0
-    if (size == null) {
-      switch (type) {
-        case 'width':
-          number = (percent * planSize.width) / 100
-          break
-        case 'height':
-          number = (percent * planSize.height) / 100
-          break
-        default:
-      }
-    } else {
-      switch (type) {
-        case 'width':
-          number = (percent * size.width) / 100
-          break
-        case 'height':
-          number = (percent * size.height) / 100
-          break
-        default:
-      }
+
+  const percentToPx = (percent: number, type: 'width' | 'height', size: PlanSize | null = null): number => {
+    const useSize = size || planSize
+    if (type === 'width') {
+      return (percent * useSize.width) / 100
     }
-    return number
+    return (percent * useSize.height) / 100
   }
+
   const onWindowResize = () => {
+    if (!planRef.current) return
     setLoading(true)
     setHeight(planRef.current.clientHeight * 0.0776)
-    const size = {
+    const size: PlanSize = {
       width: planRef.current.clientWidth,
       height: planRef.current.clientHeight,
     }
@@ -190,12 +200,13 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     })
     load()
   }
+
   const handleStart = () => {
     setPreviousPosition({ ...positionPercent })
     setDragState('dragging')
   }
 
-  const handleStop = async (event, data) => {
+  const handleStopAsync = async (event: DraggableEvent, data: DraggableData) => {
     event.preventDefault()
     setDragState('saving')
 
@@ -250,17 +261,21 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     }
   }
 
+  // Wrapper to satisfy Draggable's type requirement (sync handler)
+  const handleStop = (event: DraggableEvent, data: DraggableData) => {
+    handleStopAsync(event, data)
+  }
+
   useEffect(() => {
-    // loadPersonnes()
     setHeight(planSize.height * 0.0776)
 
     let personnesPresentes = 0
-    table.personnes.forEach((personne) => {
+    personnes.forEach((personne) => {
       if (personne.present) {
         personnesPresentes += 1
       }
     })
-    setPercentPresent((personnesPresentes * 100) / table.nombrePlacesMax)
+    setPercentPresent((personnesPresentes * 100) / nbMax)
   }, [])
 
   useEffect(() => {
@@ -269,7 +284,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       y: percentToPx(positionPercent.y, 'height'),
     })
 
-    let rafId = null
+    let rafId: number | null = null
     const handleResize = () => {
       if (rafId) cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(onWindowResize)
@@ -284,13 +299,6 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     }
   }, [positionPercent])
 
-  // useEffect(() => {
-  //   allPersonnes.forEach((item) => {
-  //     // eslint-disable-next-line no-param-reassign
-  //     item.fullname = `${item.prenom} ${item.nom}`
-  //   })
-  // }, [allPersonnes])
-
   return (
     !loading && (
       <>
@@ -300,7 +308,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
             y: positionPx.y,
           }}
           bounds="parent"
-          offsetParent={planRef.current}
+          offsetParent={planRef.current || undefined}
           onStart={handleStart}
           onStop={handleStop}
         >
@@ -317,7 +325,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
           >
             <CircularProgressbarWithChildren
               strokeWidth={4}
-              value={percentPresent}
+              value={percentPresent || 0}
               styles={{
                 path: {
                   stroke: '#000000',
@@ -429,7 +437,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
             <div className="px-2 py-1 max-h-40 overflow-y-auto">
               {personnes.length > 0 ? (
                 personnes.map((personne, index) => (
-                  <Personne key={index} personne={personne} />
+                  <PersonneItem key={index} personne={personne} />
                 ))
               ) : (
                 <p className="px-2 py-1 text-sm text-gray-500">Aucune personne</p>
@@ -502,7 +510,11 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   )
 }
 
-function Personne({ personne: { prenom, nom, id, present } }) {
+interface PersonneItemProps {
+  personne: PersonneType
+}
+
+function PersonneItem({ personne: { prenom, nom, id, present } }: PersonneItemProps) {
   return (
     <div className="flex items-center justify-between w-full py-1">
       <p className={`text-sm ${present ? 'text-green-600' : 'text-gray-900'}`}>

@@ -2,10 +2,14 @@ import React, { useEffect, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
-/**
- * Modal overlay backdrop
- */
-export function ModalOverlay({ className, onClick }) {
+type ModalSize = 'sm' | 'default' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full'
+
+interface ModalOverlayProps {
+  className?: string
+  onClick?: () => void
+}
+
+export function ModalOverlay({ className, onClick }: ModalOverlayProps) {
   return (
     <div
       className={cn(
@@ -19,16 +23,17 @@ export function ModalOverlay({ className, onClick }) {
   )
 }
 
-/**
- * Modal content container
- */
+interface ModalContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  size?: ModalSize
+}
+
 export function ModalContent({
   children,
   className,
   size = 'default',
   ...props
-}) {
-  const sizeClasses = {
+}: ModalContentProps) {
+  const sizeClasses: Record<ModalSize, string> = {
     sm: 'max-w-sm',
     default: 'max-w-md',
     lg: 'max-w-lg',
@@ -57,15 +62,19 @@ export function ModalContent({
   )
 }
 
-/**
- * Modal header with optional close button
- */
+interface ModalHeaderProps {
+  children: React.ReactNode
+  className?: string
+  onClose?: () => void
+  showClose?: boolean
+}
+
 export function ModalHeader({
   children,
   className,
   onClose,
   showClose = true
-}) {
+}: ModalHeaderProps) {
   return (
     <div
       className={cn(
@@ -88,10 +97,12 @@ export function ModalHeader({
   )
 }
 
-/**
- * Modal body content
- */
-export function ModalBody({ children, className }) {
+interface ModalBodyProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function ModalBody({ children, className }: ModalBodyProps) {
   return (
     <div className={cn('p-6', className)}>
       {children}
@@ -99,10 +110,12 @@ export function ModalBody({ children, className }) {
   )
 }
 
-/**
- * Modal footer for actions
- */
-export function ModalFooter({ children, className }) {
+interface ModalFooterProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
     <div
       className={cn(
@@ -115,18 +128,17 @@ export function ModalFooter({ children, className }) {
   )
 }
 
-/**
- * Main Modal component
- *
- * @example
- * <Modal open={isOpen} onClose={() => setIsOpen(false)} size="lg">
- *   <ModalHeader onClose={() => setIsOpen(false)}>Titre</ModalHeader>
- *   <ModalBody>Contenu</ModalBody>
- *   <ModalFooter>
- *     <Button onClick={() => setIsOpen(false)}>Fermer</Button>
- *   </ModalFooter>
- * </Modal>
- */
+interface ModalProps {
+  open: boolean
+  onClose?: () => void
+  children: React.ReactNode
+  size?: ModalSize
+  className?: string
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
+  title?: string
+}
+
 export function Modal({
   open,
   onClose,
@@ -135,9 +147,9 @@ export function Modal({
   className,
   closeOnOverlayClick = true,
   closeOnEscape = true,
-}) {
-  // Handle escape key
-  const handleEscape = useCallback((event) => {
+  title,
+}: ModalProps) {
+  const handleEscape = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape' && closeOnEscape) {
       onClose?.()
     }
@@ -161,15 +173,24 @@ export function Modal({
     <>
       <ModalOverlay onClick={closeOnOverlayClick ? onClose : undefined} />
       <ModalContent size={size} className={className}>
-        {children}
+        {title && <ModalHeader onClose={onClose}>{title}</ModalHeader>}
+        <ModalBody>{children}</ModalBody>
       </ModalContent>
     </>
   )
 }
 
-/**
- * Confirmation modal helper component
- */
+interface ConfirmModalProps {
+  open: boolean
+  onClose?: () => void
+  onConfirm?: () => void
+  title?: string
+  message?: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'default' | 'danger'
+}
+
 export function ConfirmModal({
   open,
   onClose,
@@ -178,8 +199,8 @@ export function ConfirmModal({
   message = 'Êtes-vous sûr ?',
   confirmText = 'Confirmer',
   cancelText = 'Annuler',
-  variant = 'default', // 'default' | 'danger'
-}) {
+  variant = 'default',
+}: ConfirmModalProps) {
   const confirmButtonClass = variant === 'danger'
     ? 'bg-red-600 hover:bg-red-700 text-white'
     : 'bg-blue-600 hover:bg-blue-700 text-white'

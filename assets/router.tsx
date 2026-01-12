@@ -27,6 +27,8 @@ export const router = createBrowserRouter([
       { path: 'evenement/edit', element: <Evenement /> },
       { path: 'hotesse', element: <Hotesse /> },
       { path: 'settings', element: <Settings /> },
+      // Catch-all: redirect unknown routes to /plan
+      { path: '*', element: <Navigate to="/plan" replace /> },
     ],
   },
 ]);

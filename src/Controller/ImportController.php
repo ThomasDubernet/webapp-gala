@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Civilite;
-use App\Entity\Evenement;
 use App\Entity\Personne;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
@@ -17,8 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImportController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
-        private readonly PdfController $pdfController
+        private readonly EntityManagerInterface $em
     ) {}
 
     #[Route('/import', name: 'import')]
@@ -62,10 +60,6 @@ class ImportController extends AbstractController
         $maxCellValue = $spreadsheet->getActiveSheet()->getHighestDataRow();
         $batchSize = 25;
 
-        $events = $this->em->getRepository(Evenement::class)->findAll();
-        $event = $events[0];
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
-
         $importPersonnes = [];
 
         for ($row = 2; $row <= $maxCellValue; $row++) {
@@ -94,20 +88,18 @@ class ImportController extends AbstractController
                     )
                     ->setAdresse($this->checkRichText($spreadsheet->getActiveSheet()->getCell('G' . $row)->getValue()))
                     ->setCodePostal($this->checkRichText($spreadsheet->getActiveSheet()->getCell('H' . $row)->getValue()))
-                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I' . $row)->getValue()))
-                    ->setMailEnvoye(null);
+                    ->setVille($this->checkRichText($spreadsheet->getActiveSheet()->getCell('I' . $row)->getValue()));
 
+                $this->em->persist($personne);
                 $importPersonnes[] = $personne;
             }
 
             if (($row % $batchSize) === 0) {
-                $this->pdfController->createMassTickets($importPersonnes, $event, $uploadDir);
                 $this->em->flush();
                 $this->em->clear();
                 $importPersonnes = [];
             }
         }
-        $this->pdfController->createMassTickets($importPersonnes, $event, $uploadDir);
         $this->em->flush();
         $this->em->clear();
 

@@ -21,7 +21,7 @@ function HotessePage() {
     limit: 500, // Charger toutes les personnes par défaut
   })
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStringToSearch(event.target.value)
   }
 

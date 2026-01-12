@@ -3,15 +3,20 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Put;
 use App\Repository\EvenementRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EvenementRepository::class)]
 #[ApiResource(
+    normalizationContext: ['groups' => ['admin']],
     operations: [
-        new GetCollection()
+        new GetCollection(),
+        new Get(),
+        new Put()
     ]
 )]
 class Evenement

@@ -6,14 +6,25 @@ import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { ConfirmModal } from './ui/modal'
+import type { Personne } from '../types/api'
 
-/**
- * Composant carte personne moderne avec Tailwind + Shadcn
- * Utilisé dans Search et HotesseSearch
- */
-export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'default' }) {
-  const [person, setPerson] = useState(initialPersonne)
-  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState(null)
+interface PersonCardProps {
+  personne: Personne
+  onRefresh?: () => void
+  variant?: 'default' | 'fullpage'
+}
+
+type PaymentStatus = 'paid' | 'partial' | 'unpaid'
+
+const paymentBadgeConfig: Record<PaymentStatus, { label: string; variant: 'success' | 'warning' | 'destructive'; icon: string }> = {
+  paid: { label: 'Payé', variant: 'success', icon: '✓' },
+  partial: { label: 'Partiel', variant: 'warning', icon: '⚠' },
+  unpaid: { label: 'Non payé', variant: 'destructive', icon: '✗' },
+}
+
+export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'default' }: PersonCardProps) {
+  const [person, setPerson] = useState<Personne>(initialPersonne)
+  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState<boolean | null>(null)
   const [openModal, setOpenModal] = useState(false)
 
   const {
@@ -34,21 +45,17 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
   } = useMemo(() => person, [person])
 
   // Calcul du statut de paiement
-  const paymentStatus = useMemo(() => {
-    if (montantBillet === null) return 'unpaid'
+  const paymentStatus: PaymentStatus = useMemo(() => {
+    if (montantBillet === null || montantBillet === undefined) return 'unpaid'
     if (montantBillet === montantPaye) return 'paid'
-    if (parseFloat(montantPaye) > 0) return 'partial'
+    if (montantPaye && parseFloat(String(montantPaye)) > 0) return 'partial'
     return 'unpaid'
   }, [montantBillet, montantPaye])
 
-  const paymentBadge = {
-    paid: { label: 'Payé', variant: 'success', icon: '✓' },
-    partial: { label: 'Partiel', variant: 'warning', icon: '⚠' },
-    unpaid: { label: 'Non payé', variant: 'destructive', icon: '✗' },
-  }[paymentStatus]
+  const paymentBadge = paymentBadgeConfig[paymentStatus]
 
   // Mise à jour de la présence
-  const updatePresence = async (presence, withSms) => {
+  const updatePresence = async (presence: boolean | null, withSms: boolean) => {
     try {
       const response = await fetch(`/api/personnes/${id}/update-presence`, {
         method: 'PUT',
@@ -72,7 +79,7 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
     }
   }
 
-  const handleCheckboxChange = async (event) => {
+  const handleCheckboxChange = async (event: { target: { checked: boolean } }) => {
     const newCheckValue = event.target.checked
 
     if (smsSended) {
@@ -84,7 +91,7 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
   }
 
   // Nom complet formaté
-  const fullName = [civilite?.libelle, prenom, nom?.toUpperCase()]
+  const fullName = [civilite?.nom, prenom, nom?.toUpperCase()]
     .filter(Boolean)
     .join(' ') || `${prenom} ${nom?.toUpperCase() || ''}`
 

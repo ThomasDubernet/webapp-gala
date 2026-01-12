@@ -1,29 +1,36 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDebounce } from './useDebounce'
+import type { Personne } from '../types/api'
 
 const API_URL = '/api/personnes/search'
 
+export interface PersonneWithFullname extends Personne {
+  fullname: string
+}
+
+interface UseSearchPersonnesOptions {
+  searchQuery?: string
+  debounceDelay?: number
+  minChars?: number
+  unassignedOnly?: boolean
+  page?: number
+  limit?: number
+  loadOnEmpty?: boolean
+}
+
+interface UseSearchPersonnesResult {
+  results: PersonneWithFullname[]
+  loading: boolean
+  error: Error | null
+  total: number
+  pages: number
+  currentPage: number
+  hasSearched: boolean
+  refresh: () => void
+}
+
 /**
  * Hook de recherche de personnes côté serveur
- *
- * @param {Object} options
- * @param {string} options.searchQuery - Terme de recherche
- * @param {number} options.debounceDelay - Délai de debounce en ms (défaut: 300)
- * @param {number} options.minChars - Nombre minimum de caractères pour déclencher la recherche (défaut: 2)
- * @param {boolean} options.unassignedOnly - Si true, retourne uniquement les personnes sans table
- * @param {number} options.page - Numéro de page (défaut: 1)
- * @param {number} options.limit - Nombre d'éléments par page (défaut: 50)
- * @param {boolean} options.loadOnEmpty - Si true, charge tous les résultats quand la recherche est vide (défaut: false)
- *
- * @returns {Object}
- *   - results: Array de personnes avec le champ fullname ajouté
- *   - loading: boolean
- *   - error: Error ou null
- *   - total: Nombre total de résultats
- *   - pages: Nombre total de pages
- *   - currentPage: Page actuelle
- *   - hasSearched: Si une recherche a été effectuée
- *   - refresh: Fonction pour forcer le rechargement
  */
 export const useSearchPersonnes = ({
   searchQuery = '',
@@ -33,10 +40,10 @@ export const useSearchPersonnes = ({
   page = 1,
   limit = 50,
   loadOnEmpty = false,
-} = {}) => {
-  const [results, setResults] = useState([])
+}: UseSearchPersonnesOptions = {}): UseSearchPersonnesResult => {
+  const [results, setResults] = useState<PersonneWithFullname[]>([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<Error | null>(null)
   const [total, setTotal] = useState(0)
   const [pages, setPages] = useState(0)
   const [hasSearched, setHasSearched] = useState(false)
@@ -45,7 +52,7 @@ export const useSearchPersonnes = ({
   const debouncedQuery = useDebounce(searchQuery, debounceDelay)
 
   const fetchResults = useCallback(
-    async (query) => {
+    async (query: string) => {
       setLoading(true)
       setError(null)
 
@@ -76,7 +83,7 @@ export const useSearchPersonnes = ({
         const data = await response.json()
 
         // Ajouter le champ fullname à chaque personne
-        const enrichedResults = (data.items || []).map((p) => ({
+        const enrichedResults: PersonneWithFullname[] = (data.items || []).map((p: Personne) => ({
           ...p,
           fullname: `${p.prenom || ''} ${p.nom || ''}`.trim(),
         }))
@@ -87,7 +94,7 @@ export const useSearchPersonnes = ({
         setHasSearched(true)
       } catch (err) {
         console.error('Erreur de recherche:', err)
-        setError(err)
+        setError(err instanceof Error ? err : new Error(String(err)))
         setResults([])
         setTotal(0)
         setPages(0)

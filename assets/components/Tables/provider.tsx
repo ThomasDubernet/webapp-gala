@@ -1,10 +1,21 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, RefObject } from 'react'
 import Table from './Table'
+import type { Table as TableType } from '../../types/api'
 
-function TableProvider(props) {
-  const { plan, load, tables } = props
-  const [planElement, setPlanElement] = useState(null)
-  const [planSize, setPlanSize] = useState(null)
+interface PlanSize {
+  width: number
+  height: number
+}
+
+interface TableProviderProps {
+  plan: RefObject<HTMLDivElement | null>
+  load: () => void
+  tables: TableType[]
+}
+
+function TableProvider({ plan, load, tables }: TableProviderProps) {
+  const [planElement, setPlanElement] = useState<HTMLDivElement | null>(null)
+  const [planSize, setPlanSize] = useState<PlanSize | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -14,7 +25,7 @@ function TableProvider(props) {
         setPlanElement(planCurrent)
       }, 100)
     }
-  }, [props])
+  }, [plan])
 
   useEffect(() => {
     if (
@@ -32,7 +43,7 @@ function TableProvider(props) {
 
   return (
     <div className="w-full h-full">
-      {!loading ? (
+      {!loading && planSize ? (
         tables.length > 0 ? (
           tables.map((table) => (
             <Table

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { X, Loader2 } from 'lucide-react'
 import { useSearchPersonnes } from '../hooks'
@@ -6,10 +6,17 @@ import { PersonCard } from './PersonCard'
 import { ConfirmModal } from './ui/modal'
 import { Checkbox } from './ui/checkbox'
 import { Badge } from './ui/badge'
+import type { Personne as PersonneType } from '../types/api'
 
-export function Personne({ isHotesse = false, personne, children }) {
-  const [person, setPerson] = useState(personne)
-  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState(null)
+interface PersonneProps {
+  isHotesse?: boolean
+  personne: PersonneType
+  children?: ReactNode
+}
+
+export function Personne({ isHotesse = false, personne, children }: PersonneProps) {
+  const [person, setPerson] = useState<PersonneType>(personne)
+  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState<boolean | null>(null)
   const {
     id,
     prenom,
@@ -28,11 +35,11 @@ export function Personne({ isHotesse = false, personne, children }) {
   const [openModal, setOpenModal] = useState(false)
 
   const isPayed = useMemo(
-    () => montantBillet !== null && montantBillet === montantPaye,
+    () => montantBillet !== null && montantBillet !== undefined && montantBillet === montantPaye,
     [montantBillet, montantPaye],
   )
 
-  const updatePresence = async (presence, withSms) => {
+  const updatePresence = async (presence: boolean | null, withSms: boolean) => {
     try {
       const response = await fetch(`/api/personnes/${id}/update-presence`, {
         method: 'PUT',
@@ -55,7 +62,7 @@ export function Personne({ isHotesse = false, personne, children }) {
     }
   }
 
-  const handleCheckboxChange = async (event) => {
+  const handleCheckboxChange = async (event: { target: { checked: boolean } }) => {
     const newCheckValue = event.target.checked
 
     if (smsSended) {
@@ -105,7 +112,7 @@ export function Personne({ isHotesse = false, personne, children }) {
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-gray-500">Table</dt>
-              <dd className="text-gray-900">{table !== null ? `Table n°${table.numero}` : 'Non assignée'}</dd>
+              <dd className="text-gray-900">{table ? `Table n°${table.numero}` : 'Non assignée'}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Email</dt>
@@ -139,8 +146,8 @@ export function Personne({ isHotesse = false, personne, children }) {
                 type="button"
                 className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={(e) => {
-                  const menu = e.currentTarget.nextElementSibling
-                  menu.classList.toggle('hidden')
+                  const menu = e.currentTarget.nextElementSibling as HTMLElement
+                  menu?.classList.toggle('hidden')
                 }}
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
@@ -176,7 +183,13 @@ export function Personne({ isHotesse = false, personne, children }) {
   )
 }
 
-export function PersonneProvider({ personne, load, isHotesse = false }) {
+interface PersonneProviderProps {
+  personne: PersonneType
+  load: () => void
+  isHotesse?: boolean
+}
+
+export function PersonneProvider({ personne, load, isHotesse = false }: PersonneProviderProps) {
   const handleChange = () => {
     const checked = !!personne.present
     fetch(`/api/personnes/${personne.id}`, {
@@ -227,7 +240,7 @@ function Search() {
     minChars: 2,
   })
 
-  const handleSearch = (event) => {
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setStringToSearch(event.target.value)
   }
 

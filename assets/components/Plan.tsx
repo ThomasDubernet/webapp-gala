@@ -3,11 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { Loader2 } from 'lucide-react'
 import { useGetMany } from '../hooks'
 import TableProvider from './Tables/provider'
+import type { Table, Evenement } from '../types/api'
 
 function Plan() {
-  const planRef = useRef(null)
-  const { items: tables, load, loading } = useGetMany('tables')
-  const { items: events, load: loadEvents } = useGetMany('evenements')
+  const planRef = useRef<HTMLDivElement>(null)
+  const { items: tables, load, loading } = useGetMany<Table>('tables')
+  const { items: events, load: loadEvents } = useGetMany<Evenement>('evenements')
 
   useEffect(() => {
     load()
@@ -16,7 +17,7 @@ function Plan() {
 
   return !loading ? (
     <div className="absolute top-0 left-0 w-screen h-[calc(100vh-64px)] flex items-center justify-center">
-      {events.length > 0 && (
+      {events.length > 0 && events[0].plan && (
         <div id="img-box" className="relative h-full" ref={planRef}>
           <img
             src={`${events[0].plan.contentUrl}`}
