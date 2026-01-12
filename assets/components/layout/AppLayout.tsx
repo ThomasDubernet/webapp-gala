@@ -17,14 +17,17 @@ function NavButton({
   to,
   children,
   className,
+  end = false,
 }: {
   to: string;
   children: React.ReactNode;
   className?: string;
+  end?: boolean;
 }) {
   return (
     <NavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         cn(
           'px-4 py-2 text-sm font-medium border rounded-lg transition-colors',
@@ -75,10 +78,10 @@ export function AppLayout() {
 
           {/* Desktop navigation */}
           <div className="hidden lg:flex lg:items-center lg:gap-2 lg:flex-1 lg:justify-center">
-            {!isHome && <NavButton to="/plan">Accès au plan</NavButton>}
-            <NavButton to="/tables/new">Créer une table</NavButton>
-            <NavButton to="/personnes/new">Créer une personne</NavButton>
-            <NavButton to="/personnes">Liste des personnes</NavButton>
+            {!isHome && <NavButton to="/plan" end>Accès au plan</NavButton>}
+            <NavButton to="/tables/new" end>Créer une table</NavButton>
+            <NavButton to="/personnes/new" end>Créer une personne</NavButton>
+            <NavButton to="/personnes" end>Liste des personnes</NavButton>
             <div className="mx-4">
               {/* Search component will be added here */}
               <input
