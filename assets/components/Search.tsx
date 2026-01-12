@@ -225,7 +225,7 @@ export function PersonneProvider({ personne, load, isHotesse = false }: Personne
   )
 }
 
-function Search() {
+export function SearchBar() {
   const [activeModal, setActiveModal] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
 
@@ -311,7 +311,7 @@ function Search() {
 class SearchElement extends HTMLElement {
   connectedCallback() {
     const root = createRoot(this)
-    root.render(<Search />)
+    root.render(<SearchBar />)
   }
 }
 

@@ -27,6 +27,14 @@ export const router = createBrowserRouter([
       { path: 'evenement/edit', element: <Evenement /> },
       { path: 'hotesse', element: <Hotesse /> },
       { path: 'settings', element: <Settings /> },
+      // Legacy URL redirects for backward compatibility
+      { path: 'personne', element: <Navigate to="/personnes" replace /> },
+      { path: 'personne/new', element: <Navigate to="/personnes/new" replace /> },
+      { path: 'personne/:id/edit', element: <PersonneEdit /> },
+      { path: 'personne/:id/conjoint', element: <PersonneEdit isConjoint /> },
+      { path: 'table', element: <Navigate to="/tables" replace /> },
+      { path: 'table/new', element: <Navigate to="/tables/new" replace /> },
+      { path: 'table/:id/edit', element: <TableEdit /> },
       // Catch-all: redirect unknown routes to /plan
       { path: '*', element: <Navigate to="/plan" replace /> },
     ],

@@ -6,12 +6,10 @@ import {
   Settings,
   User,
   LogOut,
-  Upload,
   Download,
-  RefreshCw,
-  Trash2,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { SearchBar } from '../Search';
 
 function NavButton({
   to,
@@ -47,7 +45,6 @@ export function AppLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [resetModalOpen, setResetModalOpen] = useState(false);
 
   const isHome = location.pathname === '/plan' || location.pathname === '/';
 
@@ -82,13 +79,8 @@ export function AppLayout() {
             <NavButton to="/tables/new" end>Créer une table</NavButton>
             <NavButton to="/personnes/new" end>Créer une personne</NavButton>
             <NavButton to="/personnes" end>Liste des personnes</NavButton>
-            <div className="mx-4">
-              {/* Search component will be added here */}
-              <input
-                type="search"
-                placeholder="Rechercher"
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+            <div className="mx-4 w-64">
+              <SearchBar />
             </div>
           </div>
 
@@ -112,7 +104,7 @@ export function AppLayout() {
                 <Settings className="h-5 w-5" />
               </button>
               {settingsOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                   <NavLink
                     to="/evenement/edit"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -120,41 +112,21 @@ export function AppLayout() {
                   >
                     Editer l'évènement
                   </NavLink>
-                  <div className="px-4 py-2 border-t border-gray-100">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Import file
-                    </label>
-                    <input
-                      type="file"
-                      className="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                  <NavLink
+                    to="/settings"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setSettingsOpen(false)}
                   >
-                    <RefreshCw className="h-4 w-4" />
-                    Sync avec BilletWeb
-                  </button>
+                    Import / Export / Reset
+                  </NavLink>
                   <a
                     href="/export"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                   >
                     <Download className="h-4 w-4" />
-                    Exporter
+                    Export rapide
                   </a>
                   <hr className="my-2 border-gray-200" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setResetModalOpen(true);
-                      setSettingsOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Réinitialiser
-                  </button>
                   <a
                     href="/logout"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
@@ -203,11 +175,7 @@ export function AppLayout() {
                 Liste des personnes
               </NavLink>
               <div className="pt-2">
-                <input
-                  type="search"
-                  placeholder="Rechercher"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <SearchBar />
               </div>
               <hr className="my-3 border-gray-200" />
               <div className="flex gap-2">
@@ -236,65 +204,6 @@ export function AppLayout() {
           </div>
         )}
       </nav>
-
-      {/* Reset modal */}
-      {resetModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50"
-          onClick={() => setResetModalOpen(false)}
-        >
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Réinitialiser l'évènement
-              </h3>
-              <button
-                type="button"
-                onClick={() => setResetModalOpen(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (
-                      confirm(
-                        'Etes-vous sur de vouloir supprimer les personnes sans table?'
-                      )
-                    ) {
-                      // TODO: Call API
-                    }
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Supprimer les personnes sans table
-                </button>
-              </div>
-              <div className="flex justify-center gap-4">
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  Garder la salle
-                </button>
-                <button
-                  type="button"
-                  className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  Tout réinitialiser
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Click outside to close settings */}
       {settingsOpen && (
