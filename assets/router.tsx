@@ -11,6 +11,16 @@ import { Hotesse } from './pages/Hotesse';
 import { Settings } from './pages/Settings';
 
 export const router = createBrowserRouter([
+  // Hotesse page without navbar (standalone)
+  {
+    path: '/hotesse',
+    element: (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <Hotesse />
+      </div>
+    ),
+  },
+  // Main app with navbar
   {
     path: '/',
     element: <AppLayout />,
@@ -25,7 +35,6 @@ export const router = createBrowserRouter([
       { path: 'tables/new', element: <TableEdit /> },
       { path: 'tables/:id/edit', element: <TableEdit /> },
       { path: 'evenement/edit', element: <Evenement /> },
-      { path: 'hotesse', element: <Hotesse /> },
       { path: 'settings', element: <Settings /> },
       // Legacy URL redirects for backward compatibility
       { path: 'personne', element: <Navigate to="/personnes" replace /> },

@@ -147,6 +147,36 @@ class TableApiTest extends WebTestCase
         $this->assertTrue(in_array($response->getStatusCode(), [400, 422, 500]));
     }
 
+    public function testPatchTablePositionOnly(): void
+    {
+        $client = $this->createAuthenticatedClient();
+
+        // Create a table first
+        $table = $this->createTestTable();
+        $originalNumero = $table->getNumero();
+        $originalNom = $table->getNom();
+
+        // PATCH with only position fields (like frontend does for drag & drop)
+        $patchData = [
+            'posX' => '80.00',
+            'posY' => '60.00',
+        ];
+
+        $response = $this->apiRequest($client, 'PATCH', '/api/tables/' . $table->getId(), $patchData);
+        $data = $this->assertJsonResponse($response, 200);
+
+        // Position should be updated
+        $this->assertEquals('80.00', $data['posX']);
+        $this->assertEquals('60.00', $data['posY']);
+
+        // Other fields should remain unchanged
+        $this->assertEquals($originalNumero, $data['numero']);
+        $this->assertEquals($originalNom, $data['nom']);
+
+        // Cleanup
+        $this->deleteTable($table->getId());
+    }
+
     public function testGetTableWithPersonnes(): void
     {
         $client = $this->createAuthenticatedClient();

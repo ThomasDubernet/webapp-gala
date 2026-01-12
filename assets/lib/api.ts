@@ -56,9 +56,11 @@ export async function apiRequest<T = unknown>(
   }
 
   // Set Content-Type for JSON requests
+  // Use merge-patch+json for PATCH requests (API Platform requirement)
   let body = options.body;
   if (body && typeof body === 'object' && !(body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
+    const contentType = method === 'PATCH' ? 'application/merge-patch+json' : 'application/json';
+    headers.set('Content-Type', contentType);
     body = JSON.stringify(body);
   }
 

@@ -26,8 +26,8 @@ export function TableEdit() {
     nom: '',
     numero: undefined,
     nombrePlacesMax: 10,
-    posX: 0,
-    posY: 0,
+    posX: '0',
+    posY: '0',
     categorie: undefined,
   });
 

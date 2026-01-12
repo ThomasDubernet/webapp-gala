@@ -84,8 +84,11 @@ trait ApiTestTrait
         array $data = [],
         array $headers = []
     ): \Symfony\Component\HttpFoundation\Response {
+        // Use merge-patch content type for PATCH requests (API Platform requirement)
+        $contentType = ($method === 'PATCH') ? 'application/merge-patch+json' : 'application/json';
+
         $defaultHeaders = [
-            'CONTENT_TYPE' => 'application/json',
+            'CONTENT_TYPE' => $contentType,
             'HTTP_ACCEPT' => 'application/json',
         ];
 

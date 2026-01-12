@@ -6,7 +6,7 @@ import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
 import { Badge } from '../ui/badge'
-import { apiPost, apiPut, apiDelete } from '../../lib/api'
+import { apiPost, apiPatch, apiDelete } from '../../lib/api'
 import type { Table as TableType, Personne as PersonneType } from '../../types/api'
 
 interface PlanSize {
@@ -94,7 +94,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
    */
   const [height, setHeight] = useState<number | null>(null)
   const [positionPx, setPositionPx] = useState<Position>({ x: 0, y: 0 })
-  const [positionPercent, setPositionPercent] = useState<Position>({ x: posX, y: posY })
+  const [positionPercent, setPositionPercent] = useState<Position>({ x: parseFloat(posX), y: parseFloat(posY) })
   const [planSize, setPlanSize] = useState<PlanSize>(baseSize)
 
   /**
@@ -200,14 +200,14 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     })
 
     try {
-      const responseData = await apiPut<TableType>(`/api/tables/${id}`, {
-        posX: percentX,
-        posY: percentY,
+      const responseData = await apiPatch<TableType>(`/api/tables/${id}`, {
+        posX: String(percentX.toFixed(2)),
+        posY: String(percentY.toFixed(2)),
       })
 
       setPositionPercent({
-        x: responseData.posX,
-        y: responseData.posY,
+        x: parseFloat(responseData.posX),
+        y: parseFloat(responseData.posY),
       })
       setDragState('saved')
       setTimeout(() => setDragState('idle'), 1200)

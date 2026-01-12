@@ -38,8 +38,8 @@ export interface Table {
   nom?: string;
   numero: number;
   nombrePlacesMax: number;
-  posX: number;
-  posY: number;
+  posX: string;
+  posY: string;
   categorie?: CategorieTable;
   personnes?: Personne[];
 }
