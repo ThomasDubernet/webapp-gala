@@ -20,10 +20,13 @@
       {% include "components/navigation.html.twig" %}
     {% endif %}
     {% if message is defined %}
-      <p class="notif-message bg-{{message.type}}">{{message.text}}</p>
+      <div class="fixed top-20 right-4 z-40 px-4 py-3 rounded-lg shadow-lg text-white animate-fade-out
+        {% if message.type == 'success' %}bg-green-500{% elseif message.type == 'danger' %}bg-red-500{% elseif message.type == 'warning' %}bg-amber-500{% else %}bg-blue-500{% endif %}">
+        {{ message.text }}
+      </div>
     {% endif %}
     {% for message in app.flashes('success') %}
-      <div class="alert alert-success">
+      <div class="fixed top-20 right-4 z-40 px-4 py-3 rounded-lg shadow-lg text-white bg-green-500 animate-fade-out">
         {{ message }}
       </div>
     {% endfor %}

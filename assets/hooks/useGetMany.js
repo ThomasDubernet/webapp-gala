@@ -2,7 +2,11 @@ import { useCallback, useState } from 'react'
 
 const apiUrl = '/api/'
 
-// eslint-disable-next-line import/prefer-default-export
+/**
+ * Hook pour récupérer une collection depuis l'API
+ * @param {string} path - Chemin de l'API (sans le préfixe /api/)
+ * @returns {Object} - { loading, load, items }
+ */
 export const useGetMany = (path) => {
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState([])

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
@@ -17,6 +18,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PersonneRepository::class)]
+#[ORM\Index(columns: ['nom'], name: 'idx_personne_nom')]
+#[ORM\Index(columns: ['email'], name: 'idx_personne_email')]
+#[ORM\Index(columns: ['telephone'], name: 'idx_personne_telephone')]
 #[ApiResource(
     normalizationContext: ['groups' => ['admin', 'personne']],
     operations: [
@@ -36,6 +40,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ]
 )]
 #[ApiFilter(ExistsFilter::class, properties: ['table'])]
+#[ApiFilter(SearchFilter::class, properties: [
+    'nom' => 'partial',
+    'prenom' => 'partial',
+    'email' => 'partial',
+    'telephone' => 'partial',
+    'ville' => 'partial'
+])]
 class Personne
 {
     #[ORM\Id]

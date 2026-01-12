@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Base styles */
+body {
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Custom elements */
+custom-plan {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+custom-searchbar {
+  display: block;
+  width: 100%;
+  min-width: 200px;
+}
+
+/* Flash notification animation */
+.animate-fade-out {
+  animation: fadeOut 7s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

@@ -1,0 +1,191 @@
+import React, { useMemo, useState } from 'react'
+import { Pencil, Phone, Mail, MapPin, Users } from 'lucide-react'
+import '../styles/tailwind.css'
+import { Card, CardHeader, CardContent, CardFooter } from './ui/card'
+import { Badge } from './ui/badge'
+import { Button } from './ui/button'
+import { Checkbox } from './ui/checkbox'
+import { ConfirmModal } from './ui/modal'
+
+/**
+ * Composant carte personne moderne avec Tailwind + Shadcn
+ * Utilisé dans Search et HotesseSearch
+ */
+export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'default' }) {
+  const [person, setPerson] = useState(initialPersonne)
+  const [awaitingCheckedValue, setAwaitingCheckedValue] = useState(null)
+  const [openModal, setOpenModal] = useState(false)
+
+  const {
+    id,
+    civilite,
+    prenom,
+    nom,
+    adresse,
+    codePostal,
+    ville,
+    email,
+    telephone,
+    table,
+    montantBillet,
+    montantPaye,
+    present: isPresent,
+    smsSended,
+  } = useMemo(() => person, [person])
+
+  // Calcul du statut de paiement
+  const paymentStatus = useMemo(() => {
+    if (montantBillet === null) return 'unpaid'
+    if (montantBillet === montantPaye) return 'paid'
+    if (parseFloat(montantPaye) > 0) return 'partial'
+    return 'unpaid'
+  }, [montantBillet, montantPaye])
+
+  const paymentBadge = {
+    paid: { label: 'Payé', variant: 'success', icon: '✓' },
+    partial: { label: 'Partiel', variant: 'warning', icon: '⚠' },
+    unpaid: { label: 'Non payé', variant: 'destructive', icon: '✗' },
+  }[paymentStatus]
+
+  // Mise à jour de la présence
+  const updatePresence = async (presence, withSms) => {
+    try {
+      const response = await fetch(`/api/personnes/${id}/update-presence`, {
+        method: 'PUT',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          present: presence ?? !isPresent,
+          withSms,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPerson(data)
+        onRefresh?.()
+      }
+    } catch (error) {
+      console.warn('ERROR_PRESENT_CHANGE_01', error)
+    }
+  }
+
+  const handleCheckboxChange = async (event) => {
+    const newCheckValue = event.target.checked
+
+    if (smsSended) {
+      setAwaitingCheckedValue(newCheckValue)
+      setOpenModal(true)
+    } else {
+      await updatePresence(newCheckValue, false)
+    }
+  }
+
+  // Nom complet formaté
+  const fullName = [civilite?.libelle, prenom, nom?.toUpperCase()]
+    .filter(Boolean)
+    .join(' ') || `${prenom} ${nom?.toUpperCase() || ''}`
+
+  return (
+    <>
+      {/* Modal de confirmation SMS */}
+      <ConfirmModal
+        open={openModal}
+        onClose={() => {
+          setAwaitingCheckedValue(null)
+          setOpenModal(false)
+        }}
+        onConfirm={() => {
+          updatePresence(awaitingCheckedValue, true)
+        }}
+        title="Confirmation"
+        message="Confirmer cette action ?"
+        confirmText="Oui"
+        cancelText="Non"
+      />
+
+      {/* Carte personne */}
+      <Card>
+        <CardHeader className="flex-row items-start justify-between space-y-0">
+          {/* Badges */}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant={paymentBadge.variant}>
+              <span>{paymentBadge.icon}</span>
+              {paymentBadge.label}
+            </Badge>
+            <Badge variant={table ? 'info' : 'warning'}>
+              <Users className="h-3 w-3" />
+              {table ? `Table ${table.numero}` : 'Sans table'}
+            </Badge>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-1">
+            <Button variant="ghost" size="icon" asChild>
+              <a href={`/personne/${id}/edit`} title="Modifier">
+                <Pencil className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          {/* Nom */}
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+            {fullName}
+          </h3>
+
+          {/* Infos */}
+          <div className="grid grid-cols-1 gap-2 text-sm">
+            <div className="flex items-center gap-2 text-gray-600">
+              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              {telephone ? (
+                <a href={`tel:${telephone}`} className="hover:text-blue-600">
+                  {telephone}
+                </a>
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              {email ? (
+                <a
+                  href={`mailto:${email}`}
+                  className="hover:text-blue-600 truncate"
+                  title={email}
+                >
+                  {email}
+                </a>
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
+            <div className="flex items-start gap-2 text-gray-600">
+              <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              {adresse ? (
+                <span>
+                  {adresse}, {codePostal} {ville}
+                </span>
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              checked={isPresent || false}
+              onChange={handleCheckboxChange}
+            />
+            <span className="text-sm text-gray-600">Présent</span>
+          </div>
+        </CardFooter>
+      </Card>
+    </>
+  )
+}

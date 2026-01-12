@@ -1,84 +1,82 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { useGetMany } from '../hooks'
-import { PersonneProvider } from './Search'
+import { Loader2 } from 'lucide-react'
+import { useSearchPersonnes } from '../hooks'
+import { PersonCard } from './PersonCard'
+import { Badge } from './ui/badge'
 
 function HotessePage() {
-  const { items, load } = useGetMany('personnes')
-  const [filteredPersonnes, setFilteredPersonnes] = useState([])
   const [stringToSearch, setStringToSearch] = useState('')
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  useEffect(() => {
-    items.forEach((item) => {
-      item.fullname = `${item.prenom} ${item.nom}`
-    })
-
-    if (stringToSearch !== '' && stringToSearch.length > 2) {
-      const searchLower = stringToSearch.toLowerCase()
-      const result = items.filter((personne) => {
-        const email = personne.email || ''
-        return (
-          personne.fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower)
-        )
-      })
-      setFilteredPersonnes(result)
-    } else {
-      // setFilteredPersonnes([])
-      setFilteredPersonnes(items)
-    }
-  }, [items])
+  const {
+    results: filteredPersonnes,
+    loading,
+    total,
+    hasSearched,
+    refresh,
+  } = useSearchPersonnes({
+    searchQuery: stringToSearch,
+    minChars: 2,
+    loadOnEmpty: true,
+    limit: 500, // Charger toutes les personnes par défaut
+  })
 
   const handleSearch = (event) => {
-    const { value } = event.target
-    setStringToSearch(value)
-    if (value.length > 2) {
-      const searchLower = value.toLowerCase()
-      const result = items.filter((personne) => {
-        const email = personne.email || ''
-        return (
-          personne.fullname.toLowerCase().includes(searchLower) ||
-          email.toLowerCase().includes(searchLower)
-        )
-      })
-      setFilteredPersonnes(result)
-    } else {
-      setFilteredPersonnes([])
-    }
+    setStringToSearch(event.target.value)
   }
 
   return (
-    <div id="hotesse-search">
-      <nav className="navbar-custom">
-        <div className="container-custom">
-          <img className="logo" src="/logo-2.jpeg" alt="logo" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <nav className="h-20 bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
+        <div className="h-full max-w-7xl mx-auto px-4 flex items-center gap-4">
+          <img className="h-14 flex-shrink-0" src="/logo-2.jpeg" alt="logo" />
           <input
-            className="form-control"
+            className="flex-1 max-w-md px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             type="search"
-            placeholder="Rechercher"
+            placeholder="Rechercher une personne..."
             aria-label="Rechercher"
             value={stringToSearch}
             onChange={handleSearch}
           />
         </div>
       </nav>
-      <div className="grid-personnes px-4">
-        {filteredPersonnes.length > 0
-          ? filteredPersonnes.map((personne) => (
-              <PersonneProvider
-                key={personne.id}
-                personne={personne}
-                load={load}
-                isHotesse
-              />
-            ))
-          : `Aucune personne ne correspond à votre recherches ${
-              window.innerWidth ?? '0000'
-            }px`}
+
+      {/* Stats bar */}
+      <div className="px-4 py-3 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          <Badge variant="secondary">
+            {total} résultat{total > 1 ? 's' : ''}
+          </Badge>
+          {loading && (
+            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+          )}
+        </div>
+      </div>
+
+      {/* Results grid */}
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
+          {filteredPersonnes.length > 0
+            ? filteredPersonnes.map((personne) => (
+                <PersonCard
+                  key={personne.id}
+                  personne={personne}
+                  onRefresh={refresh}
+                  variant="fullpage"
+                />
+              ))
+            : null}
+        </div>
+        {filteredPersonnes.length === 0 && (
+          <div className="text-center text-gray-500 py-12">
+            {hasSearched
+              ? 'Aucune personne ne correspond à votre recherche'
+              : stringToSearch.length > 0 && stringToSearch.length < 2
+                ? 'Tapez au moins 2 caractères pour rechercher'
+                : 'Aucune personne enregistrée'}
+          </div>
+        )}
       </div>
     </div>
   )
