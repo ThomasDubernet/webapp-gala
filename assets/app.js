@@ -6,23 +6,15 @@
  */
 
 // any CSS you import will output into a single css file (app.css in this case)
-import './styles/app.scss'
-
-// eslint-disable-next-line no-unused-vars
-import { Popover, Toast, Tooltip } from 'bootstrap'
-import 'bootstrap-icons/font/bootstrap-icons.css'
+import './styles/tailwind.css'
 
 import './components/Search'
 import './components/Plan'
 import './components/HotesseSearch'
 
-// Bootstrap components are imported for side effects (initializing Bootstrap JS)
-// eslint-disable-next-line no-unused-vars, no-underscore-dangle
-const _bootstrap = { Tooltip, Toast, Popover }
-
 const syncBilletWebData = async () => {
   const popup = document.getElementById('billet_web_sync_popup')
-  popup.classList.add('show')
+  popup.classList.remove('hidden')
 
   try {
     const response = await fetch('/api/billet-web/sync', {
@@ -39,7 +31,7 @@ const syncBilletWebData = async () => {
     // eslint-disable-next-line no-console
     console.error(e)
   } finally {
-    popup.classList.remove('show')
+    popup.classList.add('hidden')
   }
 }
 

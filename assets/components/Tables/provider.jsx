@@ -31,7 +31,7 @@ function TableProvider(props) {
   }, [planElement])
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div className="w-full h-full">
       {!loading ? (
         tables.length > 0 ? (
           tables.map((table) => (

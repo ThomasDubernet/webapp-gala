@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Box, Menu, Modal, Typography } from '@mui/material'
 import Draggable from 'react-draggable'
-
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
+import { X, ChevronRight, MoreHorizontal, Pencil, Loader2, Check } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
-import { CustomMenuItem } from './tablesStyles'
 import { useSearchPersonnes } from '../../hooks'
+import { Modal, ModalHeader, ModalBody } from '../ui/modal'
+import { Badge } from '../ui/badge'
 
 function Table({ table, load, planSize: baseSize, planRef }) {
   const submenu = useRef(null)
@@ -21,6 +21,12 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   } = table
 
   const [loading, setLoading] = useState(true)
+
+  /**
+   * Drag & Save state: 'idle' | 'dragging' | 'saving' | 'saved'
+   */
+  const [dragState, setDragState] = useState('idle')
+  const [previousPosition, setPreviousPosition] = useState(null)
 
   /**
    * Menus
@@ -184,29 +190,63 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     })
     load()
   }
+  const handleStart = () => {
+    setPreviousPosition({ ...positionPercent })
+    setDragState('dragging')
+  }
+
   const handleStop = async (event, data) => {
     event.preventDefault()
+    setDragState('saving')
+
     const { percentX, percentY } = pxToPercent({
       x: data.x,
       y: data.y,
     })
 
-    const response = await fetch(`/api/tables/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        posX: percentX,
-        posY: percentY,
-      }),
-    })
-    const responseData = await response.json()
-    if (response.ok) {
-      setPositionPercent({
-        x: responseData.posX,
-        y: responseData.posY,
+    try {
+      const response = await fetch(`/api/tables/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          posX: percentX,
+          posY: percentY,
+        }),
       })
+      const responseData = await response.json()
+
+      if (response.ok) {
+        setPositionPercent({
+          x: responseData.posX,
+          y: responseData.posY,
+        })
+        setDragState('saved')
+        setTimeout(() => setDragState('idle'), 1200)
+      } else {
+        // Rollback on error
+        if (previousPosition) {
+          setPositionPercent(previousPosition)
+          setPositionPx({
+            x: percentToPx(previousPosition.x, 'width'),
+            y: percentToPx(previousPosition.y, 'height'),
+          })
+        }
+        setDragState('idle')
+        console.error('Erreur lors de la sauvegarde:', responseData)
+      }
+    } catch (error) {
+      // Rollback on network error
+      if (previousPosition) {
+        setPositionPercent(previousPosition)
+        setPositionPx({
+          x: percentToPx(previousPosition.x, 'width'),
+          y: percentToPx(previousPosition.y, 'height'),
+        })
+      }
+      setDragState('idle')
+      console.error('Erreur réseau:', error)
     }
   }
 
@@ -228,11 +268,19 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       x: percentToPx(positionPercent.x, 'width'),
       y: percentToPx(positionPercent.y, 'height'),
     })
-    window.addEventListener('resize', onWindowResize)
+
+    let rafId = null
+    const handleResize = () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(onWindowResize)
+    }
+
+    window.addEventListener('resize', handleResize)
     setLoading(false)
 
     return () => {
-      window.removeEventListener('resize', onWindowResize)
+      if (rafId) cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', handleResize)
     }
   }, [positionPercent])
 
@@ -253,10 +301,13 @@ function Table({ table, load, planSize: baseSize, planRef }) {
           }}
           bounds="parent"
           offsetParent={planRef.current}
+          onStart={handleStart}
           onStop={handleStop}
         >
           <div
-            className={`custom-table table-window-${id}`}
+            className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
+              dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
+            }`}
             style={{
               background: couleur,
               width: `${height}px`,
@@ -273,151 +324,156 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                 },
               }}
             >
-              <p className="number">T{numero}</p>
-              <p className="number-max">
+              <p className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
+                T{numero}
+              </p>
+              <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
                 {personnes.length} / {nbMax}
               </p>
-              <p className="nom-table">{nom}</p>
+              <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-black text-center whitespace-nowrap">
+                {nom}
+              </p>
             </CircularProgressbarWithChildren>
+
+            {/* Overlay loader/check */}
+            {(dragState === 'saving' || dragState === 'saved') && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
+                {dragState === 'saving' && (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                )}
+                {dragState === 'saved' && (
+                  <div className="bg-green-500 rounded-full p-1 animate-bounce">
+                    <Check className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Draggable>
 
-        <Menu
-          open={contextMenu !== null}
-          onClose={handleMenuClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            contextMenu !== null
-              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-              : undefined
-          }
-        >
-          <CustomMenuItem ref={submenu} onClick={handleSubMenuOpen}>
-            <div className="d-flex align-items-center justify-content-between w-100">
+        {/* Context Menu */}
+        {contextMenu !== null && (
+          <div
+            className="fixed inset-0 z-40"
+            onClick={handleMenuClose}
+          />
+        )}
+        {contextMenu !== null && (
+          <div
+            className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-48"
+            style={{ top: contextMenu.mouseY, left: contextMenu.mouseX }}
+          >
+            <button
+              ref={submenu}
+              type="button"
+              onClick={handleSubMenuOpen}
+              className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+            >
               <span>Personnes</span>
-              <i className="bi bi-chevron-right" />
-            </div>
-          </CustomMenuItem>
-          {/* <CustomMenuItem><a className="no-style" href={"/table/" + id + "/pdf"} target="_blank">Imprimer la liste des personnes</a></CustomMenuItem> */}
-          <hr />
-          <CustomMenuItem>
-            <a className="no-style" href={`/table/${id}/edit`}>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <hr className="my-1 border-gray-200" />
+            <a
+              href={`/table/${id}/edit`}
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            >
               Editer la table
             </a>
-          </CustomMenuItem>
-          <div className="d-flex">
-            <button
-              style={{ fontSize: '14px' }}
-              onClick={() =>
-                window.confirm(
-                  'Êtes vous sûr de vouloir supprimer cette table ?',
-                ) && handleDelete()
-              }
-              className="btn btn-danger mx-auto"
-              disabled={personnes.length > 0}
-              type="button"
-            >
-              Supprimer la table
-            </button>
-          </div>
-        </Menu>
-
-        <Menu
-          open={openSubMenu}
-          onClose={handleMenuClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            submenu.current !== null
-              ? {
-                  top: submenu.current.getBoundingClientRect().top - 8,
-                  left: submenu.current.getBoundingClientRect().right,
+            <div className="px-2 py-2">
+              <button
+                type="button"
+                onClick={() =>
+                  window.confirm(
+                    'Êtes vous sûr de vouloir supprimer cette table ?',
+                  ) && handleDelete()
                 }
-              : null
-          }
-          PaperProps={{
-            style: {
-              minWidth: '200px',
-            },
-          }}
-        >
-          <CustomMenuItem
-            disabled={personnes.length >= nbMax}
-            onClick={handleOpen}
+                className="w-full px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={personnes.length > 0}
+              >
+                Supprimer la table
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Submenu Personnes */}
+        {openSubMenu && submenu.current && (
+          <div
+            className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-52"
+            style={{
+              top: submenu.current.getBoundingClientRect().top - 8,
+              left: submenu.current.getBoundingClientRect().right + 4,
+            }}
           >
-            Ajouter une personne
-          </CustomMenuItem>
-          <CustomMenuItem disabled={personnes.length >= nbMax}>
+            <button
+              type="button"
+              onClick={handleOpen}
+              disabled={personnes.length >= nbMax}
+              className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Ajouter une personne
+            </button>
             {personnes.length >= nbMax ? (
-              'Créer une personne'
+              <span className="block px-4 py-2 text-sm text-gray-400">
+                Créer une personne
+              </span>
             ) : (
-              <a href={`/personne/new?table=${id}`} className="no-style-link">
+              <a
+                href={`/personne/new?table=${id}`}
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
                 Créer une personne
               </a>
             )}
-          </CustomMenuItem>
-          <hr />
-          <CustomMenuItem
-            className="no-hover scrollable"
-            style={{
-              height:
-                personnes.length > 0 ? `${personnes.length * 25.5}px` : '50px',
-            }}
-          >
-            <div className="list-personne-scrollable">
+            <hr className="my-1 border-gray-200" />
+            <div className="px-2 py-1 max-h-40 overflow-y-auto">
               {personnes.length > 0 ? (
                 personnes.map((personne, index) => (
                   <Personne key={index} personne={personne} />
                 ))
               ) : (
-                <p style={{ padding: '.25rem .5rem' }}>Aucune personne</p>
+                <p className="px-2 py-1 text-sm text-gray-500">Aucune personne</p>
               )}
             </div>
-          </CustomMenuItem>
-        </Menu>
+          </div>
+        )}
 
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="modal-modal-title"
-          aria-describedby="modal-modal-description"
-        >
-          <Box className="modal-add-personne">
-            <div className="d-flex align-items-center justify-content-between">
-              <Typography id="modal-modal-title" variant="h6" component="h2">
-                Personnes non affectées
-                {searchTotal > 0 && (
-                  <span className="badge bg-secondary ms-2">{searchTotal}</span>
-                )}
-              </Typography>
+        {/* Modal Ajouter Personne */}
+        <Modal open={open} onClose={handleClose} size="4xl">
+          <ModalHeader onClose={handleClose}>
+            <div className="flex items-center gap-3">
+              <span>Personnes non affectées</span>
+              {searchTotal > 0 && (
+                <Badge variant="secondary">{searchTotal}</Badge>
+              )}
+            </div>
+          </ModalHeader>
+          <ModalBody className="h-[60vh] overflow-hidden flex flex-col">
+            <div className="mb-4">
               <input
-                className="form-control me-2 w-50"
                 type="search"
                 placeholder="Rechercher une personne"
                 aria-label="Rechercher"
                 value={stringToSearch}
                 onChange={handleSearch}
+                className="w-full md:w-1/2 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div className="mt-4 grid-search">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start overflow-y-auto flex-1">
               {searchLoading ? (
-                <div className="text-center py-3">
-                  <div
-                    className="spinner-border spinner-border-sm"
-                    role="status"
-                  >
-                    <span className="visually-hidden">Chargement...</span>
-                  </div>
+                <div className="col-span-full flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
                 </div>
               ) : filteredPersonnes.length > 0 ? (
                 filteredPersonnes.map((personne, index) => (
                   <SearchPersonne key={index} personne={personne}>
                     <button
                       type="button"
-                      className={`btn btn-sm btn-add ${
+                      className={`absolute bottom-3 right-3 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                         addedPersonneId === personne.id
-                          ? 'btn-success'
-                          : 'btn-outline-primary'
-                      }`}
+                          ? 'bg-green-600 text-white'
+                          : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
+                      } disabled:opacity-50`}
                       onClick={() => handleAddPersonne(personne.id)}
                       disabled={addingPersonneId === personne.id}
                     >
@@ -430,12 +486,16 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                   </SearchPersonne>
                 ))
               ) : hasSearched ? (
-                'Aucune personne ne correspond à votre recherche'
+                <div className="col-span-full text-center text-gray-500 py-8">
+                  Aucune personne ne correspond à votre recherche
+                </div>
               ) : (
-                'Tapez au moins 2 caractères pour rechercher'
+                <div className="col-span-full text-center text-gray-500 py-8">
+                  Tapez au moins 2 caractères pour rechercher
+                </div>
               )}
             </div>
-          </Box>
+          </ModalBody>
         </Modal>
       </>
     )
@@ -444,12 +504,15 @@ function Table({ table, load, planSize: baseSize, planRef }) {
 
 function Personne({ personne: { prenom, nom, id, present } }) {
   return (
-    <div className="d-flex align-items-center justify-content-between w-100 my-1 mx-0">
-      <p className="m-0" style={{ color: present ? '#008000' : '#000000' }}>
+    <div className="flex items-center justify-between w-full py-1">
+      <p className={`text-sm ${present ? 'text-green-600' : 'text-gray-900'}`}>
         {prenom !== null ? prenom : null} {nom}
       </p>
-      <a className="link-three-dots" href={`/personne/${id}/edit`}>
-        <i className="bi bi-three-dots" />
+      <a
+        href={`/personne/${id}/edit`}
+        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+      >
+        <MoreHorizontal className="h-4 w-4" />
       </a>
     </div>
   )

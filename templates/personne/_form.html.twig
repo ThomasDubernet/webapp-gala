@@ -1,88 +1,106 @@
 {{ form_start(form) }}
-<div class="row">
-  <div class="col-6">
-    <div class="row">
-      <div class="col-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  {# Left column - Personal info #}
+  <div class="space-y-4">
+    <div class="grid grid-cols-3 gap-4">
+      <div>
         {{ form_row(form.civilite) }}
       </div>
-      <div class="col-auto">
+      <div>
         {{ form_row(form.prenom) }}
       </div>
-      <div class="col-auto">
+      <div>
         {{ form_row(form.nom) }}
       </div>
     </div>
-    <div class="row">
-      <div class="col-6">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
         {{ form_row(form.email) }}
       </div>
-      <div class="col-6">
+      <div>
         {{ form_row(form.telephone) }}
       </div>
     </div>
     {{ form_row(form.adresse) }}
-    <div class="row">
-      <div class="col-6">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
         {{ form_row(form.codePostal) }}
       </div>
-      <div class="col-6">
+      <div>
         {{ form_row(form.ville) }}
       </div>
     </div>
   </div>
-  <div class="col-6">
-    <div class="row">
-      <div class="col-6">
+
+  {# Right column - Payment & assignment #}
+  <div class="space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
         {{ form_row(form.montantBillet) }}
       </div>
-      <div class="col-6">
+      <div>
         {{ form_row(form.montantPaye) }}
       </div>
     </div>
-    <div class="row">
-      <div class="col-6">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
         {{ form_row(form.dateReglement) }}
       </div>
-      <div class="col-6">
+      <div>
         {{ form_row(form.moyenPaiement) }}
       </div>
     </div>
+
+    {# Spouse section #}
     {% if (personne.conjoint is defined) and (personne.conjoint != null) %}
-      <div class="mb-3 d-flex flex-column">
-        <label class="form-label">Conjoint</label>
-        <a class="d-flex gap-2 link-secondary fw-bolder align-items-center" href="{{ path('personne_edit', {'id': personne.conjoint.id}) }}">
-          <span>
-            {{personne.conjoint.prenom}} {{personne.conjoint.nom}}
-          </span>
-          <i class="bi bi-box-arrow-up-right" style="font-size: 12px;"></i>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Conjoint</label>
+        <a class="inline-flex items-center gap-2 text-gray-600 font-semibold hover:text-blue-600 transition-colors" href="{{ path('personne_edit', {'id': personne.conjoint.id}) }}">
+          <span>{{ personne.conjoint.prenom }} {{ personne.conjoint.nom }}</span>
+          <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+          </svg>
         </a>
       </div>
     {% elseif (update == true) and (personne.conjoint == false) %}
-      <div class="mb-3 d-flex flex-column">
-        <label class="form-label">Conjoint</label>
-        <a class="btn btn-primary form-control w-50" href="{{ path('conjoint_new', {'id': personne.id}) }}">Créer le conjoint</a>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Conjoint</label>
+        <a class="inline-block px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors" href="{{ path('conjoint_new', {'id': personne.id}) }}">
+          Créer le conjoint
+        </a>
       </div>
     {% endif %}
-    <div class="row">
-      <div class="col-6">
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
         {{ form_row(form.categorie) }}
       </div>
-      <div class="col-6">
+      <div>
         {{ form_row(form.table) }}
       </div>
     </div>
   </div>
+</div>
+
+{# Presence checkbox #}
+<div class="mt-4">
   {{ form_row(form.present) }}
 </div>
 
-<div class="col-8 m-auto">
+{# Comment section #}
+<div class="max-w-2xl mx-auto mt-4">
   {{ form_row(form.commentaire) }}
 </div>
 
-<div class="d-flex align-items-center justify-content-center mt-4">
-  <input class="btn btn-primary mx-3" type="submit" name="action" value="{{conjoint is defined ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint'}}"/>
+{# Submit buttons #}
+<div class="flex items-center justify-center gap-4 mt-6">
+  <button type="submit" name="action" value="{{ conjoint is defined ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint' }}" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+    {{ conjoint is defined ? 'Créer' : update ? 'Sauvegarder' : 'Créer sans conjoint' }}
+  </button>
   {% if (update == false) and (conjoint == false) %}
-    <input class="btn btn-primary mx-3" type="submit" name="action" value="Créer avec un conjoint"/>
+    <button type="submit" name="action" value="Créer avec un conjoint" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+      Créer avec un conjoint
+    </button>
   {% endif %}
 </div>
 {{ form_end(form) }}
