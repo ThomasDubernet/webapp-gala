@@ -15,13 +15,13 @@ function Plan() {
   }, [])
 
   return !loading ? (
-    <div className="absolute top-0 left-0 w-screen h-[calc(100vh-64px)] flex items-center justify-center overflow-hidden">
+    <div className="absolute top-0 left-0 w-screen h-[calc(100vh-64px)] flex items-center justify-center">
       {events.length > 0 && (
-        <div id="img-box" className="relative max-w-full max-h-full" ref={planRef}>
+        <div id="img-box" className="relative h-full" ref={planRef}>
           <img
             src={`${events[0].plan.contentUrl}`}
             alt="plan"
-            className="max-w-full max-h-[calc(100vh-64px)] w-auto h-auto object-contain"
+            className="h-full w-auto object-contain"
           />
           <TableProvider tables={tables} plan={planRef} load={load} />
         </div>
