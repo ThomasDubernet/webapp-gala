@@ -14,7 +14,10 @@ const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
       role="checkbox"
       aria-checked={checked}
       ref={ref}
-      onClick={() => onChange?.({ target: { checked: !checked } })}
+      onClick={(e) => {
+        e.stopPropagation()
+        onChange?.({ target: { checked: !checked } })
+      }}
       className={cn(
         'h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-150',
         checked

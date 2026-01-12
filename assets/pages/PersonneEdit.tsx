@@ -253,12 +253,11 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
                 />
               </div>
               <div>
-                <Label htmlFor="telephone">Téléphone *</Label>
+                <Label htmlFor="telephone">Téléphone</Label>
                 <Input
                   id="telephone"
                   value={formData.telephone || ''}
                   onChange={(e) => handleChange('telephone', e.target.value)}
-                  required
                 />
               </div>
             </div>

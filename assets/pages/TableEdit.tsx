@@ -187,36 +187,6 @@ export function TableEdit() {
             </div>
           </div>
 
-          {/* Position on plan */}
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Position sur le plan</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              La position peut être ajustée en déplaçant la table sur le plan.
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="posX">Position X</Label>
-                <Input
-                  id="posX"
-                  type="number"
-                  step="0.01"
-                  value={formData.posX ?? 0}
-                  onChange={(e) => handleChange('posX', e.target.value ? parseFloat(e.target.value) : 0)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="posY">Position Y</Label>
-                <Input
-                  id="posY"
-                  type="number"
-                  step="0.01"
-                  value={formData.posY ?? 0}
-                  onChange={(e) => handleChange('posY', e.target.value ? parseFloat(e.target.value) : 0)}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* Actions */}
           <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
             <Button type="button" variant="outline" onClick={() => navigate('/tables')}>
