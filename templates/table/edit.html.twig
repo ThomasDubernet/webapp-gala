@@ -1,10 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reservations - Edition d'une personne{% endblock %}
+{% block title %}Reservations - Edition d'une table{% endblock %}
 
 {% block body %}
-  <div class="container">
-    <h1>Edition d'une table</h1>
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Edition d'une table</h1>
+
     {{ include('table/_form.html.twig', {'button_label': 'Mettre à jour', 'update': true}) }}
   </div>
 {% endblock %}

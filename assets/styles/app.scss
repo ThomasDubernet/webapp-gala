@@ -1,5 +1,4 @@
 @import "libs/index";
-@import "~bootstrap/scss/bootstrap";
 @import "pdf.scss";
 
 body {
@@ -12,7 +11,6 @@ body {
 td {
     position: relative;
 }
-
 
 .bubble {
     display: block;
@@ -33,46 +31,20 @@ a.no-style {
     text-decoration: none;
 }
 
-.notif-message {
-    position: absolute;
-    right: 0;
-    z-index: 999;
-    color: white;
-    padding: 15px;
-    margin: 15px;
-    border-radius: 7px;
-    opacity: 1;
-    display: block;
-    animation: remove 7s ease-in-out forwards;
+// Fade out animation for notifications
+.animate-fade-out {
+    animation: fadeOut 7s ease-in-out forwards;
 }
 
-.alert {
-    animation: remove 7s ease-in-out forwards;
-}
-
-@keyframes remove {
-    from {
-        display: block;
+@keyframes fadeOut {
+    0% {
         opacity: 1;
-        height: auto;
-        width: auto;
-        padding: 1rem 1rem;
-        margin-bottom: 1rem;
     }
-    75% {
-        display: block;
-        opacity: 0;
-        height: auto;
-        width: auto;
-        padding: 1rem 1rem;
-        margin-bottom: 1rem;
+    70% {
+        opacity: 1;
     }
-    to {
+    100% {
         opacity: 0;
-        display: none;
-        height: 0;
-        width: 0;
-        padding: 0;
-        margin-bottom: 10;
+        visibility: hidden;
     }
 }

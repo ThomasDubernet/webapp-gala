@@ -137,24 +137,24 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
       {/* Carte personne */}
       <Card>
-        <CardHeader className="tw:flex-row tw:items-start tw:justify-between tw:space-y-0">
+        <CardHeader className="flex-row items-start justify-between space-y-0">
           {/* Badges */}
-          <div className="tw:flex tw:flex-wrap tw:gap-2">
+          <div className="flex flex-wrap gap-2">
             <Badge variant={paymentBadge.variant}>
               <span>{paymentBadge.icon}</span>
               {paymentBadge.label}
             </Badge>
             <Badge variant={table ? 'info' : 'warning'}>
-              <Users className="tw:h-3 tw:w-3" />
+              <Users className="h-3 w-3" />
               {table ? `Table ${table.numero}` : 'Sans table'}
             </Badge>
           </div>
 
           {/* Actions */}
-          <div className="tw:flex tw:gap-1">
+          <div className="flex gap-1">
             <Button variant="ghost" size="icon" asChild>
               <a href={`/personne/${id}/edit`} title="Modifier">
-                <Pencil className="tw:h-4 tw:w-4" />
+                <Pencil className="h-4 w-4" />
               </a>
             </Button>
           </div>
@@ -162,26 +162,26 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
         <CardContent>
           {/* Nom */}
-          <h3 className="tw:text-lg tw:font-semibold tw:text-gray-900 tw:mb-3">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">
             {fullName}
           </h3>
 
           {/* Infos */}
-          <div className="tw:grid tw:grid-cols-1 tw:gap-2 tw:text-sm">
+          <div className="grid grid-cols-1 gap-2 text-sm">
             {telephone && (
-              <div className="tw:flex tw:items-center tw:gap-2 tw:text-gray-600">
-                <Phone className="tw:h-4 tw:w-4 tw:text-gray-400" />
-                <a href={`tel:${telephone}`} className="tw:hover:text-blue-600">
+              <div className="flex items-center gap-2 text-gray-600">
+                <Phone className="h-4 w-4 text-gray-400" />
+                <a href={`tel:${telephone}`} className="hover:text-blue-600">
                   {telephone}
                 </a>
               </div>
             )}
             {email && (
-              <div className="tw:flex tw:items-center tw:gap-2 tw:text-gray-600">
-                <Mail className="tw:h-4 tw:w-4 tw:text-gray-400" />
+              <div className="flex items-center gap-2 text-gray-600">
+                <Mail className="h-4 w-4 text-gray-400" />
                 <a
                   href={`mailto:${email}`}
-                  className="tw:hover:text-blue-600 tw:truncate"
+                  className="hover:text-blue-600 truncate"
                   title={email}
                 >
                   {email}
@@ -189,8 +189,8 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
               </div>
             )}
             {adresse && variant === 'fullpage' && (
-              <div className="tw:flex tw:items-start tw:gap-2 tw:text-gray-600">
-                <MapPin className="tw:h-4 tw:w-4 tw:text-gray-400 tw:mt-0.5" />
+              <div className="flex items-start gap-2 text-gray-600">
+                <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
                 <span>
                   {adresse}, {codePostal} {ville}
                 </span>
@@ -200,12 +200,12 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
         </CardContent>
 
         <CardFooter>
-          <div className="tw:flex tw:items-center tw:gap-2">
+          <div className="flex items-center gap-2">
             <Checkbox
               checked={isPresent || false}
               onChange={handleCheckboxChange}
             />
-            <span className="tw:text-sm tw:text-gray-600">Présent</span>
+            <span className="text-sm text-gray-600">Présent</span>
           </div>
         </CardFooter>
       </Card>

@@ -8,8 +8,4 @@ module.exports = {
     extend: {},
   },
   plugins: [],
-  // Important: évite les conflits avec Bootstrap existant
-  corePlugins: {
-    preflight: false,
-  },
 }

@@ -3,22 +3,22 @@ import { cva } from 'class-variance-authority'
 import { cn } from '../../lib/utils'
 
 const buttonVariants = cva(
-  'tw:inline-flex tw:items-center tw:justify-center tw:gap-2 tw:whitespace-nowrap tw:rounded-lg tw:text-sm tw:font-medium tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-2 tw:focus-visible:ring-offset-2 tw:disabled:pointer-events-none tw:disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: 'tw:bg-gray-900 tw:text-white tw:hover:bg-gray-800',
-        destructive: 'tw:bg-red-600 tw:text-white tw:hover:bg-red-700',
-        outline: 'tw:border tw:border-gray-300 tw:bg-transparent tw:hover:bg-gray-100',
-        secondary: 'tw:bg-gray-100 tw:text-gray-900 tw:hover:bg-gray-200',
-        ghost: 'tw:hover:bg-gray-100 tw:text-gray-700',
-        link: 'tw:text-blue-600 tw:underline-offset-4 tw:hover:underline',
+        default: 'bg-gray-900 text-white hover:bg-gray-800',
+        destructive: 'bg-red-600 text-white hover:bg-red-700',
+        outline: 'border border-gray-300 bg-transparent hover:bg-gray-100',
+        secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
+        ghost: 'hover:bg-gray-100 text-gray-700',
+        link: 'text-blue-600 underline-offset-4 hover:underline',
       },
       size: {
-        default: 'tw:h-10 tw:px-4 tw:py-2',
-        sm: 'tw:h-8 tw:px-3 tw:text-xs',
-        lg: 'tw:h-12 tw:px-6',
-        icon: 'tw:h-9 tw:w-9',
+        default: 'h-10 px-4 py-2',
+        sm: 'h-8 px-3 text-xs',
+        lg: 'h-12 px-6',
+        icon: 'h-9 w-9',
       },
     },
     defaultVariants: {
