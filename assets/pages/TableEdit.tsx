@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
+import { apiPost, apiPut } from '../lib/api';
 import type { Table, CategorieTable } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -79,21 +80,8 @@ export function TableEdit() {
       };
 
       const url = isNew ? '/api/tables' : `/api/tables/${id}`;
-      const method = isNew ? 'POST' : 'PUT';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/ld+json',
-          Accept: 'application/ld+json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData['hydra:description'] || errorData.message || 'Erreur lors de la sauvegarde');
-      }
+      const apiCall = isNew ? apiPost : apiPut;
+      await apiCall(url, payload);
 
       navigate('/tables');
     } catch (err) {

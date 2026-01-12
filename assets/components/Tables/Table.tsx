@@ -6,6 +6,7 @@ import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
 import { Badge } from '../ui/badge'
+import { apiPost, apiPut, apiDelete } from '../../lib/api'
 import type { Table as TableType, Personne as PersonneType } from '../../types/api'
 
 interface PlanSize {
@@ -126,22 +127,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     setAddingPersonneId(personneId)
 
     try {
-      const response = await fetch(`/personne/${personneId}/add_table/${id}`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!response.ok) {
-        const text = await response.text()
-        console.error('Erreur serveur:', response.status, text)
-        alert(`Erreur serveur: ${response.status}`)
-        return
-      }
-
-      const data = await response.json()
+      const data = await apiPost<{ success: boolean; error?: string }>(`/personne/${personneId}/add_table/${id}`)
 
       if (data.success) {
         // Rafraîchir la liste des personnes non assignées
@@ -195,9 +181,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
    * API events
    */
   async function handleDelete() {
-    await fetch(`/api/tables/${id}`, {
-      method: 'DELETE',
-    })
+    await apiDelete(`/api/tables/${id}`)
     load()
   }
 
@@ -216,39 +200,19 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     })
 
     try {
-      const response = await fetch(`/api/tables/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          posX: percentX,
-          posY: percentY,
-        }),
+      const responseData = await apiPut<TableType>(`/api/tables/${id}`, {
+        posX: percentX,
+        posY: percentY,
       })
-      const responseData = await response.json()
 
-      if (response.ok) {
-        setPositionPercent({
-          x: responseData.posX,
-          y: responseData.posY,
-        })
-        setDragState('saved')
-        setTimeout(() => setDragState('idle'), 1200)
-      } else {
-        // Rollback on error
-        if (previousPosition) {
-          setPositionPercent(previousPosition)
-          setPositionPx({
-            x: percentToPx(previousPosition.x, 'width'),
-            y: percentToPx(previousPosition.y, 'height'),
-          })
-        }
-        setDragState('idle')
-        console.error('Erreur lors de la sauvegarde:', responseData)
-      }
+      setPositionPercent({
+        x: responseData.posX,
+        y: responseData.posY,
+      })
+      setDragState('saved')
+      setTimeout(() => setDragState('idle'), 1200)
     } catch (error) {
-      // Rollback on network error
+      // Rollback on error
       if (previousPosition) {
         setPositionPercent(previousPosition)
         setPositionPx({
@@ -257,7 +221,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
         })
       }
       setDragState('idle')
-      console.error('Erreur réseau:', error)
+      console.error('Erreur lors de la sauvegarde:', error)
     }
   }
 

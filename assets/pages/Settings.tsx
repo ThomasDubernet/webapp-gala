@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Modal } from '../components/ui/modal';
+import { apiPost } from '../lib/api';
 import {
   Upload,
   Download,
@@ -36,20 +37,15 @@ export function Settings() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/import', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
+      const data = await apiPost<{ success: boolean; message?: string; error?: string }>('/api/import', formData);
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message });
+        setMessage({ type: 'success', text: data.message || 'Import réussi' });
       } else {
         setMessage({ type: 'error', text: data.error || 'Erreur lors de l\'importation' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Erreur lors de l\'importation' });
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de l\'importation' });
     } finally {
       setImporting(false);
       if (fileInputRef.current) {
@@ -94,19 +90,15 @@ export function Settings() {
     setMessage(null);
 
     try {
-      const response = await fetch(`/api/reset/${resetModal}`, {
-        method: 'POST',
-      });
-
-      const data = await response.json();
+      const data = await apiPost<{ success: boolean; message?: string; error?: string }>(`/api/reset/${resetModal}`);
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message });
+        setMessage({ type: 'success', text: data.message || 'Réinitialisation effectuée' });
       } else {
         setMessage({ type: 'error', text: data.error || 'Erreur lors de la réinitialisation' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Erreur lors de la réinitialisation' });
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la réinitialisation' });
     } finally {
       setResetting(false);
       setResetModal(null);

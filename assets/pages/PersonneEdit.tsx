@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
+import { apiPost, apiPut } from '../lib/api';
 import type { Personne, Civilite, CategoriePersonne, Table } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -140,36 +141,13 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
       };
 
       const url = isNew ? '/api/personnes' : `/api/personnes/${id}`;
-      const method = isNew ? 'POST' : 'PUT';
+      const apiCall = isNew ? apiPost : apiPut;
+      const savedPersonne = await apiCall<Personne>(url, payload);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/ld+json',
-          Accept: 'application/ld+json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData['hydra:description'] || errorData.message || 'Erreur lors de la sauvegarde');
-      }
-
-      const savedPersonne: Personne = await response.json();
-
-      // Handle conjoint case - redirect to create conjoint
+      // Handle conjoint case - link this new person as conjoint to the original person
       if (isConjoint && id) {
-        // Link this new person as conjoint to the original person
-        await fetch(`/api/personnes/${id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/ld+json',
-            Accept: 'application/ld+json',
-          },
-          body: JSON.stringify({
-            conjoint: `/api/personnes/${savedPersonne.id}`,
-          }),
+        await apiPut(`/api/personnes/${id}`, {
+          conjoint: `/api/personnes/${savedPersonne.id}`,
         });
       }
 

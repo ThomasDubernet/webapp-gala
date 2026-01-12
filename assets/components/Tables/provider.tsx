@@ -41,24 +41,22 @@ function TableProvider({ plan, load, tables }: TableProviderProps) {
     }
   }, [planElement])
 
+  if (loading || !planSize) {
+    return null
+  }
+
   return (
-    <div className="w-full h-full">
-      {!loading && planSize ? (
-        tables.length > 0 ? (
-          tables.map((table) => (
-            <Table
-              key={table.id}
-              table={table}
-              load={load}
-              planSize={planSize}
-              planRef={plan}
-            />
-          ))
-        ) : (
-          <p>Aucune table n&apos;a été créée.</p>
-        )
-      ) : null}
-    </div>
+    <>
+      {tables.map((table) => (
+        <Table
+          key={table.id}
+          table={table}
+          load={load}
+          planSize={planSize}
+          planRef={plan}
+        />
+      ))}
+    </>
   )
 }
 

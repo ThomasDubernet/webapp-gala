@@ -7,8 +7,11 @@ import {
   User,
   LogOut,
   Download,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { apiPost } from '../../lib/api';
 import { SearchBar } from '../Search';
 
 function NavButton({
@@ -45,8 +48,30 @@ export function AppLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const isHome = location.pathname === '/plan' || location.pathname === '/';
+
+  const handleBilletWebSync = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+
+    try {
+      const data = await apiPost<{ message: string; error?: string }>('/api/billet-web/sync');
+      if (data.error) {
+        setSyncMessage({ type: 'error', text: data.error });
+      } else {
+        setSyncMessage({ type: 'success', text: data.message });
+      }
+    } catch (err) {
+      setSyncMessage({ type: 'error', text: err instanceof Error ? err.message : 'Erreur de synchronisation' });
+    } finally {
+      setSyncing(false);
+      // Auto-hide message after 5 seconds
+      setTimeout(() => setSyncMessage(null), 5000);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,6 +111,21 @@ export function AppLayout() {
 
           {/* Right side buttons */}
           <div className="hidden lg:flex lg:items-center lg:gap-2">
+            {/* BilletWeb sync button */}
+            <button
+              type="button"
+              onClick={handleBilletWebSync}
+              disabled={syncing}
+              className="p-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Synchroniser avec BilletWeb"
+            >
+              {syncing ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-5 w-5" />
+              )}
+            </button>
+
             {/* Hostess button */}
             <NavLink
               to="/hotesse"
@@ -211,6 +251,28 @@ export function AppLayout() {
           className="fixed inset-0 z-30"
           onClick={() => setSettingsOpen(false)}
         />
+      )}
+
+      {/* Sync message toast */}
+      {syncMessage && (
+        <div
+          className={cn(
+            'fixed top-20 right-4 z-50 px-4 py-3 rounded-lg shadow-lg border max-w-sm',
+            syncMessage.type === 'success'
+              ? 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-red-50 border-red-200 text-red-700'
+          )}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm">{syncMessage.text}</span>
+            <button
+              onClick={() => setSyncMessage(null)}
+              className="text-current opacity-70 hover:opacity-100"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Main content */}

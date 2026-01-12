@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
+import { apiDelete } from '../lib/api';
 import type { Table } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -22,17 +23,9 @@ export function Tables() {
     setDeleting(true);
 
     try {
-      const response = await fetch(`/api/tables/${deleteId}`, {
-        method: 'DELETE',
-        headers: {
-          Accept: 'application/ld+json',
-        },
-      });
-
-      if (response.ok) {
-        load();
-        setDeleteId(null);
-      }
+      await apiDelete(`/api/tables/${deleteId}`);
+      load();
+      setDeleteId(null);
     } catch (error) {
       console.error('Error deleting table:', error);
     } finally {

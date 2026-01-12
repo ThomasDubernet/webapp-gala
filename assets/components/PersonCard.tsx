@@ -6,6 +6,7 @@ import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
 import { ConfirmModal } from './ui/modal'
+import { apiPut } from '../lib/api'
 import type { Personne } from '../types/api'
 
 interface PersonCardProps {
@@ -57,23 +58,12 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
   // Mise à jour de la présence
   const updatePresence = async (presence: boolean | null, withSms: boolean) => {
     try {
-      const response = await fetch(`/api/personnes/${id}/update-presence`, {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          present: presence ?? !isPresent,
-          withSms,
-        }),
+      const data = await apiPut<Personne>(`/api/personnes/${id}/update-presence`, {
+        present: presence ?? !isPresent,
+        withSms,
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        setPerson(data)
-        onRefresh?.()
-      }
+      setPerson(data)
+      onRefresh?.()
     } catch (error) {
       console.warn('ERROR_PRESENT_CHANGE_01', error)
     }

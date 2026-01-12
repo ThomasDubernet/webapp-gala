@@ -36,9 +36,11 @@ class Evenement
     private ?MediaObject $plan = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(['admin'])]
     private ?string $billetwebId = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['admin'])]
     private ?\DateTimeInterface $lastUpdateBilletWeb = null;
 
     public function getId(): ?int

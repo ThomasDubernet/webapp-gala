@@ -6,6 +6,7 @@ import { PersonCard } from './PersonCard'
 import { ConfirmModal } from './ui/modal'
 import { Checkbox } from './ui/checkbox'
 import { Badge } from './ui/badge'
+import { apiPut, apiRequest } from '../lib/api'
 import type { Personne as PersonneType } from '../types/api'
 
 interface PersonneProps {
@@ -41,22 +42,11 @@ export function Personne({ isHotesse = false, personne, children }: PersonneProp
 
   const updatePresence = async (presence: boolean | null, withSms: boolean) => {
     try {
-      const response = await fetch(`/api/personnes/${id}/update-presence`, {
-        method: 'PUT',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          present: presence ?? !isPresent,
-          withSms,
-        }),
+      const data = await apiPut<PersonneType>(`/api/personnes/${id}/update-presence`, {
+        present: presence ?? !isPresent,
+        withSms,
       })
-
-      if (response.ok) {
-        const data = await response.json()
-        setPerson(data)
-      }
+      setPerson(data)
     } catch (error) {
       console.warn('ERROR_PRESENT_CHANGE_01', error)
     }
@@ -190,24 +180,17 @@ interface PersonneProviderProps {
 }
 
 export function PersonneProvider({ personne, load, isHotesse = false }: PersonneProviderProps) {
-  const handleChange = () => {
+  const handleChange = async () => {
     const checked = !!personne.present
-    fetch(`/api/personnes/${personne.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        present: !checked,
-      }),
-    }).then((response) => {
-      if (response.ok) {
-        load()
-        if (!checked === true) {
-          fetch(`/api/personnes/${personne.id}/sms`)
-        }
+    try {
+      await apiPut(`/api/personnes/${personne.id}`, { present: !checked })
+      load()
+      if (!checked === true) {
+        await apiRequest(`/api/personnes/${personne.id}/sms`)
       }
-    })
+    } catch (error) {
+      console.warn('ERROR_PRESENCE_CHANGE', error)
+    }
   }
 
   return (

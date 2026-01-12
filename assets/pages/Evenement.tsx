@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
+import { apiPut, apiPost } from '../lib/api';
 import type { Evenement as EvenementType } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -21,6 +22,7 @@ export function Evenement() {
   const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nom: '',
+    billetwebId: '',
   });
   const [planUrl, setPlanUrl] = useState<string | null>(null);
 
@@ -32,9 +34,10 @@ export function Evenement() {
     if (event) {
       setFormData({
         nom: event.nom || '',
+        billetwebId: event.billetwebId || '',
       });
-      if (event.plan?.filePath) {
-        setPlanUrl(`/uploads/media/${event.plan.filePath}`);
+      if (event.plan?.contentUrl) {
+        setPlanUrl(event.plan.contentUrl);
       }
     }
   }, [event]);
@@ -48,22 +51,10 @@ export function Evenement() {
     setSuccess(null);
 
     try {
-      const response = await fetch(`/api/evenements/${event.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/ld+json',
-          Accept: 'application/ld+json',
-        },
-        body: JSON.stringify({
-          nom: formData.nom,
-        }),
+      await apiPut(`/api/evenements/${event.id}`, {
+        nom: formData.nom,
+        billetwebId: formData.billetwebId || null,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData['hydra:description'] || errorData.message || 'Erreur lors de la sauvegarde');
-      }
-
       setSuccess('Événement mis à jour avec succès');
       load();
     } catch (err) {
@@ -82,20 +73,10 @@ export function Evenement() {
     setSuccess(null);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const uploadData = new FormData();
+      uploadData.append('file', file);
 
-      const response = await fetch(`/api/evenements/${event.id}/plan`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Erreur lors de l\'upload');
-      }
-
-      const data = await response.json();
+      const data = await apiPost<{ plan: { contentUrl: string } }>(`/api/evenements/${event.id}/plan`, uploadData);
       setPlanUrl(data.plan.contentUrl);
       setSuccess('Plan mis à jour avec succès');
       load();
@@ -170,6 +151,23 @@ export function Evenement() {
                   placeholder="ex: Gala 2024"
                 />
               </div>
+              <div>
+                <Label htmlFor="billetwebId">ID BilletWeb</Label>
+                <Input
+                  id="billetwebId"
+                  value={formData.billetwebId}
+                  onChange={(e) => setFormData({ ...formData, billetwebId: e.target.value })}
+                  placeholder="ex: abc123"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  L'identifiant de l'événement sur BilletWeb pour la synchronisation des participants.
+                </p>
+              </div>
+              {event.lastUpdateBilletWeb && (
+                <div className="text-sm text-gray-500">
+                  Dernière synchronisation : {new Date(event.lastUpdateBilletWeb).toLocaleString('fr-FR')}
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button type="submit" disabled={saving}>
                   {saving ? (

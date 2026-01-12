@@ -58,6 +58,11 @@ Encore
     // enable React with TypeScript
     .enableReactPreset()
 
+    // Ignore output directory to prevent infinite watch loop
+    .configureWatchOptions((options) => {
+        options.ignored = /node_modules|public\/build/;
+    })
+
     // uncomment to get integrity="..." attributes on your script & link tags
     // requires WebpackEncoreBundle 1.4 or higher
     //.enableIntegrityHashes(Encore.isProduction())
