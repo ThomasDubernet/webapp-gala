@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Loader2 } from 'lucide-react'
 import { useGetMany } from '../hooks'
 import TableProvider from './Tables/provider'
 
@@ -14,16 +15,27 @@ function Plan() {
   }, [])
 
   return !loading ? (
-    <div className="plan-canvas">
+    <div className="absolute top-0 left-0 w-screen mt-0.5 flex items-start justify-center" style={{ height: 'calc(100vh - 62px)' }}>
       {events.length > 0 && (
-        <div id="img-box" className="img-box" ref={planRef}>
-          <img src={`${events[0].plan.contentUrl}`} alt="plan" />
+        <div
+          id="img-box"
+          className="max-h-full h-fit relative"
+          ref={planRef}
+        >
+          <img
+            src={`${events[0].plan.contentUrl}`}
+            alt="plan"
+            className="w-full h-full object-contain"
+          />
           <TableProvider tables={tables} plan={planRef} load={load} />
         </div>
       )}
     </div>
   ) : (
-    <p className="loading">Chargement...</p>
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-500">
+      <Loader2 className="h-5 w-5 animate-spin" />
+      <span>Chargement...</span>
+    </div>
   )
 }
 

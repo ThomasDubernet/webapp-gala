@@ -1,6 +1,7 @@
 @import "libs/index";
 @import "pdf.scss";
 
+// Base body styles
 body {
     padding: 0;
     margin: 0;
@@ -8,30 +9,7 @@ body {
     height: 100vh;
 }
 
-td {
-    position: relative;
-}
-
-.bubble {
-    display: block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-
-    &.bubble-list {
-        position: absolute;
-        top: 50%;
-        left: 30%;
-        transform: translate(-50%, -50%);
-    }
-}
-
-a.no-style {
-    color: inherit;
-    text-decoration: none;
-}
-
-// Fade out animation for notifications
+// Fade out animation for flash notifications
 .animate-fade-out {
     animation: fadeOut 7s ease-in-out forwards;
 }

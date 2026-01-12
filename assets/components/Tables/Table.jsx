@@ -256,7 +256,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
           onStop={handleStop}
         >
           <div
-            className={`custom-table table-window-${id}`}
+            className="absolute rounded-full text-white z-[1] mb-6 cursor-move"
             style={{
               background: couleur,
               width: `${height}px`,
@@ -273,11 +273,15 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                 },
               }}
             >
-              <p className="number">T{numero}</p>
-              <p className="number-max">
+              <p className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
+                T{numero}
+              </p>
+              <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
                 {personnes.length} / {nbMax}
               </p>
-              <p className="nom-table">{nom}</p>
+              <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-black text-center whitespace-nowrap">
+                {nom}
+              </p>
             </CircularProgressbarWithChildren>
           </div>
         </Draggable>

@@ -1,7 +1,5 @@
-@import './buttons.scss';
-@import './link.scss';
-@import './modal.scss';
-@import './nav.scss';
-@import './search.scss';
-@import './table.scss';
-@import './hotesse_search.scss';
+// Component styles - most migrated to Tailwind CSS
+// Only keeping files with essential non-Tailwind styles
+
+@import './table.scss';  // custom-plan element wrapper
+@import './search.scss'; // custom-searchbar element wrapper
