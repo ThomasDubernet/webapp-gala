@@ -139,17 +139,19 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
           {/* Infos */}
           <div className="grid grid-cols-1 gap-2 text-sm">
-            {telephone && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Phone className="h-4 w-4 text-gray-400" />
+            <div className="flex items-center gap-2 text-gray-600">
+              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              {telephone ? (
                 <a href={`tel:${telephone}`} className="hover:text-blue-600">
                   {telephone}
                 </a>
-              </div>
-            )}
-            {email && (
-              <div className="flex items-center gap-2 text-gray-600">
-                <Mail className="h-4 w-4 text-gray-400" />
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              {email ? (
                 <a
                   href={`mailto:${email}`}
                   className="hover:text-blue-600 truncate"
@@ -157,16 +159,20 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
                 >
                   {email}
                 </a>
-              </div>
-            )}
-            {adresse && variant === 'fullpage' && (
-              <div className="flex items-start gap-2 text-gray-600">
-                <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
+            <div className="flex items-start gap-2 text-gray-600">
+              <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+              {adresse ? (
                 <span>
                   {adresse}, {codePostal} {ville}
                 </span>
-              </div>
-            )}
+              ) : (
+                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+              )}
+            </div>
           </div>
         </CardContent>
 

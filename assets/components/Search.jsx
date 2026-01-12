@@ -249,14 +249,14 @@ function Search() {
         onChange={handleSearch}
       />
       {activeModal && (
-        <div className="fixed inset-6 bg-white z-50 rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col">
-          <button
-            className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-            onClick={handleClose}
-            type="button"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="fixed top-20 left-6 right-6 bottom-6 bg-white z-[100] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col border border-gray-200">
+            <button
+              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 bg-white border border-gray-300 hover:bg-gray-100 rounded-full transition-colors shadow-sm"
+              onClick={handleClose}
+              type="button"
+            >
+              <X className="h-5 w-5" />
+            </button>
           <h3 className="text-xl font-bold text-gray-900 text-center mb-6">
             Personnes
             {total > 0 && (
@@ -265,7 +265,7 @@ function Search() {
               </Badge>
             )}
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start overflow-y-auto flex-1">
             {loading ? (
               <div className="col-span-full flex justify-center py-8">
                 <Loader2 className="h-6 w-6 animate-spin text-blue-600" />

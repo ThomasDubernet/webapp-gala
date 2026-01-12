@@ -394,7 +394,7 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                 className="w-full md:w-1/2 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start overflow-y-auto flex-1">
               {searchLoading ? (
                 <div className="col-span-full flex justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
