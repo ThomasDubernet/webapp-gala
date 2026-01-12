@@ -1,0 +1,29 @@
+import React from 'react';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { AppLayout } from './components/layout/AppLayout';
+import { Dashboard } from './pages/Dashboard';
+import { Personnes } from './pages/Personnes';
+import { PersonneEdit } from './pages/PersonneEdit';
+import { Tables } from './pages/Tables';
+import { Evenement } from './pages/Evenement';
+import { Hotesse } from './pages/Hotesse';
+import { Settings } from './pages/Settings';
+
+export const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      { index: true, element: <Navigate to="/plan" replace /> },
+      { path: 'plan', element: <Dashboard /> },
+      { path: 'personnes', element: <Personnes /> },
+      { path: 'personnes/new', element: <PersonneEdit /> },
+      { path: 'personnes/:id/edit', element: <PersonneEdit /> },
+      { path: 'personnes/:id/conjoint', element: <PersonneEdit isConjoint /> },
+      { path: 'tables', element: <Tables /> },
+      { path: 'evenement/edit', element: <Evenement /> },
+      { path: 'hotesse', element: <Hotesse /> },
+      { path: 'settings', element: <Settings /> },
+    ],
+  },
+]);
