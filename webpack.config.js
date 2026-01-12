@@ -51,10 +51,10 @@ Encore
     // enables PostCSS (for Tailwind CSS)
     .enablePostCssLoader()
 
-    // uncomment if you use TypeScript
-    //.enableTypeScriptLoader()
+    // enable TypeScript
+    .enableTypeScriptLoader()
 
-    // uncomment if you use React
+    // enable React with TypeScript
     .enableReactPreset()
 
     // uncomment to get integrity="..." attributes on your script & link tags
