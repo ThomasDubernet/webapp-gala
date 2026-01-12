@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Personnes } from './pages/Personnes';
 import { PersonneEdit } from './pages/PersonneEdit';
 import { Tables } from './pages/Tables';
+import { TableEdit } from './pages/TableEdit';
 import { Evenement } from './pages/Evenement';
 import { Hotesse } from './pages/Hotesse';
 import { Settings } from './pages/Settings';
@@ -21,6 +22,8 @@ export const router = createBrowserRouter([
       { path: 'personnes/:id/edit', element: <PersonneEdit /> },
       { path: 'personnes/:id/conjoint', element: <PersonneEdit isConjoint /> },
       { path: 'tables', element: <Tables /> },
+      { path: 'tables/new', element: <TableEdit /> },
+      { path: 'tables/:id/edit', element: <TableEdit /> },
       { path: 'evenement/edit', element: <Evenement /> },
       { path: 'hotesse', element: <Hotesse /> },
       { path: 'settings', element: <Settings /> },
