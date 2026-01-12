@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Draggable from 'react-draggable'
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
-import { X, ChevronRight, MoreHorizontal, Pencil, Loader2 } from 'lucide-react'
+import { X, ChevronRight, MoreHorizontal, Pencil, Loader2, Check } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
@@ -21,6 +21,12 @@ function Table({ table, load, planSize: baseSize, planRef }) {
   } = table
 
   const [loading, setLoading] = useState(true)
+
+  /**
+   * Drag & Save state: 'idle' | 'dragging' | 'saving' | 'saved'
+   */
+  const [dragState, setDragState] = useState('idle')
+  const [previousPosition, setPreviousPosition] = useState(null)
 
   /**
    * Menus
@@ -184,29 +190,63 @@ function Table({ table, load, planSize: baseSize, planRef }) {
     })
     load()
   }
+  const handleStart = () => {
+    setPreviousPosition({ ...positionPercent })
+    setDragState('dragging')
+  }
+
   const handleStop = async (event, data) => {
     event.preventDefault()
+    setDragState('saving')
+
     const { percentX, percentY } = pxToPercent({
       x: data.x,
       y: data.y,
     })
 
-    const response = await fetch(`/api/tables/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        posX: percentX,
-        posY: percentY,
-      }),
-    })
-    const responseData = await response.json()
-    if (response.ok) {
-      setPositionPercent({
-        x: responseData.posX,
-        y: responseData.posY,
+    try {
+      const response = await fetch(`/api/tables/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          posX: percentX,
+          posY: percentY,
+        }),
       })
+      const responseData = await response.json()
+
+      if (response.ok) {
+        setPositionPercent({
+          x: responseData.posX,
+          y: responseData.posY,
+        })
+        setDragState('saved')
+        setTimeout(() => setDragState('idle'), 1200)
+      } else {
+        // Rollback on error
+        if (previousPosition) {
+          setPositionPercent(previousPosition)
+          setPositionPx({
+            x: percentToPx(previousPosition.x, 'width'),
+            y: percentToPx(previousPosition.y, 'height'),
+          })
+        }
+        setDragState('idle')
+        console.error('Erreur lors de la sauvegarde:', responseData)
+      }
+    } catch (error) {
+      // Rollback on network error
+      if (previousPosition) {
+        setPositionPercent(previousPosition)
+        setPositionPx({
+          x: percentToPx(previousPosition.x, 'width'),
+          y: percentToPx(previousPosition.y, 'height'),
+        })
+      }
+      setDragState('idle')
+      console.error('Erreur réseau:', error)
     }
   }
 
@@ -228,11 +268,19 @@ function Table({ table, load, planSize: baseSize, planRef }) {
       x: percentToPx(positionPercent.x, 'width'),
       y: percentToPx(positionPercent.y, 'height'),
     })
-    window.addEventListener('resize', onWindowResize)
+
+    let rafId = null
+    const handleResize = () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(onWindowResize)
+    }
+
+    window.addEventListener('resize', handleResize)
     setLoading(false)
 
     return () => {
-      window.removeEventListener('resize', onWindowResize)
+      if (rafId) cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', handleResize)
     }
   }, [positionPercent])
 
@@ -253,10 +301,13 @@ function Table({ table, load, planSize: baseSize, planRef }) {
           }}
           bounds="parent"
           offsetParent={planRef.current}
+          onStart={handleStart}
           onStop={handleStop}
         >
           <div
-            className="absolute rounded-full text-white z-[1] mb-6 cursor-move"
+            className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
+              dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
+            }`}
             style={{
               background: couleur,
               width: `${height}px`,
@@ -283,6 +334,20 @@ function Table({ table, load, planSize: baseSize, planRef }) {
                 {nom}
               </p>
             </CircularProgressbarWithChildren>
+
+            {/* Overlay loader/check */}
+            {(dragState === 'saving' || dragState === 'saved') && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
+                {dragState === 'saving' && (
+                  <Loader2 className="h-6 w-6 text-white animate-spin" />
+                )}
+                {dragState === 'saved' && (
+                  <div className="bg-green-500 rounded-full p-1 animate-bounce">
+                    <Check className="h-5 w-5 text-white" />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </Draggable>
 
