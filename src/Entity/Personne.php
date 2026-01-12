@@ -52,27 +52,27 @@ class Personne
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['personne', 'table', 'ticket'])]
+    #[Groups(['personne', 'table'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['personne', 'table', 'ticket'])]
+    #[Groups(['personne', 'table'])]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['personne', 'table', 'ticket'])]
+    #[Groups(['personne', 'table'])]
     private ?string $prenom = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $adresse = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $telephone = null;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $email = null;
 
     #[ORM\Column(type: 'decimal', precision: 6, scale: 2, nullable: true)]
@@ -94,31 +94,27 @@ class Personne
     private ?string $moyenPaiement = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $commentaire = null;
 
     #[ORM\ManyToOne(targetEntity: CategoriePersonne::class)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?CategoriePersonne $categorie = null;
 
     #[ORM\ManyToOne(targetEntity: Table::class, inversedBy: 'personnes', fetch: 'EAGER')]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?Table $table = null;
 
     #[ORM\OneToOne(targetEntity: Personne::class, cascade: ['persist', 'remove'], fetch: 'EAGER')]
     #[Groups(['personne'])]
     private ?Personne $conjoint = null;
 
-    #[ORM\OneToOne(targetEntity: Ticket::class, mappedBy: 'personne', cascade: ['persist', 'remove'], fetch: 'EAGER')]
-    #[Groups(['personne'])]
-    private ?Ticket $ticket = null;
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $codePostal = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['personne', 'ticket'])]
+    #[Groups(['personne'])]
     private ?string $ville = null;
 
     #[ORM\Column(type: 'boolean', nullable: true)]
@@ -126,14 +122,11 @@ class Personne
     private ?bool $present = null;
 
     #[ORM\ManyToOne(targetEntity: Civilite::class, fetch: 'EAGER')]
-    #[Groups(['admin', 'personne', 'table', 'ticket'])]
+    #[Groups(['admin', 'personne', 'table'])]
     private ?Civilite $civilite = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $idCerfa = null;
-
-    #[ORM\Column(type: 'boolean', nullable: true)]
-    private ?bool $mailEnvoye = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $billetWebTicketId = null;
@@ -306,23 +299,6 @@ class Personne
         return $this;
     }
 
-    public function getTicket(): ?Ticket
-    {
-        return $this->ticket;
-    }
-
-    public function setTicket(Ticket $ticket): self
-    {
-        // set the owning side of the relation if necessary
-        if ($ticket->getPersonne() !== $this) {
-            $ticket->setPersonne($this);
-        }
-
-        $this->ticket = $ticket;
-
-        return $this;
-    }
-
     public function getCodePostal(): ?string
     {
         return $this->codePostal;
@@ -379,18 +355,6 @@ class Personne
     public function setIdCerfa(?string $idCerfa): self
     {
         $this->idCerfa = $idCerfa;
-
-        return $this;
-    }
-
-    public function getMailEnvoye(): ?bool
-    {
-        return $this->mailEnvoye;
-    }
-
-    public function setMailEnvoye(?bool $mailEnvoye): self
-    {
-        $this->mailEnvoye = $mailEnvoye;
 
         return $this;
     }

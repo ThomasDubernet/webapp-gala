@@ -6,7 +6,6 @@ use App\Entity\Evenement;
 use App\Entity\MediaObject;
 use App\Entity\Personne;
 use App\Entity\Table;
-use App\Entity\Ticket;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
@@ -50,14 +49,6 @@ class ResetController extends AbstractController
                     $this->em->persist($event);
                     $this->em->flush();
                 }
-                if ($event->getImageTicket() !== null) {
-                    $imagePath = $event->getImageTicket()->filePath;
-                    $event->setImageTicket(null);
-
-                    $fs->remove($uploadDir . "/" . $imagePath);
-                    $this->em->persist($event);
-                    $this->em->flush();
-                }
                 $this->em->remove($event);
                 $this->em->flush();
             }
@@ -83,9 +74,6 @@ class ResetController extends AbstractController
     {
         $personnes = $this->em->getRepository(Personne::class)->findAll();
         $tables = $this->em->getRepository(Table::class)->findAll();
-        $tickets = $this->em->getRepository(Ticket::class)->findAll();
-        $fs = new Filesystem();
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
 
         $this->em->beginTransaction();
 
@@ -111,13 +99,6 @@ class ResetController extends AbstractController
             foreach ($tables as $table) {
                 $this->em->remove($table);
             }
-            if (count($tickets) > 0) {
-                foreach ($tickets as $ticket) {
-                    $fichier = $ticket->getFichier();
-                    $fs->remove($uploadDir . "/" . $fichier);
-                    $this->em->remove($ticket);
-                }
-            }
 
             $this->em->flush();
             $this->em->commit();
@@ -133,16 +114,8 @@ class ResetController extends AbstractController
     {
         $personnes = $this->em->getRepository(Personne::class)->findBy(['table' => null]);
 
-        $tickets = [];
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public' . $this->getParameter('upload_directory');
-        $fs = new Filesystem();
-
         try {
             foreach ($personnes as $personne) {
-                if ($personne->getTicket() !== null) {
-                    $tickets[] = $personne->getTicket();
-                }
-
                 $conjoint = $personne->getConjoint();
                 $primary = $this->em->getRepository(Personne::class)->findOneBy(['conjoint' => $personne->getId()]);
 
@@ -160,22 +133,7 @@ class ResetController extends AbstractController
                 $this->em->persist($personne);
                 $this->em->flush();
 
-                // Récupération du ticket
-                if ($personne->getTicket() !== null) {
-                    $tickets[] = $personne->getTicket();
-                }
-
                 $this->em->remove($personne);
-            }
-            $this->em->flush();
-
-            // Suppression des tickets
-            if (count($tickets) > 0) {
-                foreach ($tickets as $ticket) {
-                    $fichier = $ticket->getFichier();
-                    $fs->remove($uploadDir . "/" . $fichier);
-                    $this->em->remove($ticket);
-                }
             }
             $this->em->flush();
             $this->addFlash('success', "Suppression terminée !");

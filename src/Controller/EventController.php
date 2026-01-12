@@ -40,14 +40,6 @@ class EventController extends AbstractController
                         $this->em->remove($oldPlan);
                     }
                 }
-                if (isset($eventFiles['imageTicketFile']) && $eventFiles['imageTicketFile'] instanceof UploadedFile) {
-                    $oldImageTicket = $event->getImageTicket();
-                    $imageTicket = $this->mediaObjectController->create($eventFiles['imageTicketFile']);
-                    $event->setImageTicket($imageTicket);
-                    if ($oldImageTicket !== null) {
-                        $this->em->remove($oldImageTicket);
-                    }
-                }
             }
             $this->em->persist($event);
             $this->em->flush();
@@ -65,18 +57,11 @@ class EventController extends AbstractController
     {
         $allEvents = $this->em->getRepository(Evenement::class)->findAll();
 
-        if ($allEvents[0] instanceof Evenement) {
+        if (isset($allEvents[0]) && $allEvents[0] instanceof Evenement) {
             $event = $allEvents[0];
             $infosToVerify = [
                 "Nom",
-                "NomSalle",
-                "Date",
-                "Adresse",
-                "CodePostal",
-                "Ville",
                 "Plan",
-                "ImageTicket",
-                "TextEmail"
             ];
 
             foreach ($infosToVerify as $value) {

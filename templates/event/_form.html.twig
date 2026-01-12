@@ -1,51 +1,18 @@
 {{ form_start(form) }}
 <div class="space-y-6">
-  {# Event info #}
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="space-y-4">
-      {{ form_row(form.nom) }}
-      {{ form_row(form.nomSalle) }}
-    </div>
-    <div>
-      {{ form_row(form.date) }}
-    </div>
+  {# Event name #}
+  <div class="max-w-md">
+    {{ form_row(form.nom) }}
   </div>
 
-  {# Address #}
-  {{ form_row(form.adresse) }}
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div>
-      {{ form_row(form.codePostal) }}
-    </div>
-    <div>
-      {{ form_row(form.ville) }}
-    </div>
-  </div>
-
-  {# Email text #}
-  {{ form_row(form.textEmail) }}
-
-  {# Images #}
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    {# Plan image #}
-    <div class="space-y-4">
-      {% if event.plan != null %}
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-          <img class="w-full h-auto" src="{{ vich_uploader_asset(event.plan) }}" alt="{{ event.plan.filePath }}">
-        </div>
-      {% endif %}
-      {{ form_row(form.planFile) }}
-    </div>
-
-    {# Ticket image #}
-    <div class="space-y-4">
-      {% if event.imageTicket != null %}
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-          <img class="w-full h-auto" src="{{ vich_uploader_asset(event.imageTicket) }}" alt="{{ event.imageTicket.filePath }}">
-        </div>
-      {% endif %}
-      {{ form_row(form.imageTicketFile) }}
-    </div>
+  {# Plan image #}
+  <div class="space-y-4 max-w-md">
+    {% if event.plan != null %}
+      <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <img class="w-full h-auto" src="{{ vich_uploader_asset(event.plan) }}" alt="{{ event.plan.filePath }}">
+      </div>
+    {% endif %}
+    {{ form_row(form.planFile) }}
   </div>
 
   {# BilletWeb ID #}
@@ -56,7 +23,7 @@
   {# Submit button #}
   <div class="pt-4">
     <button type="submit" class="px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-      {{ button_label|default('Créer') }}
+      {{ button_label|default('Enregistrer') }}
     </button>
   </div>
 </div>
