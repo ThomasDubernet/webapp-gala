@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react'
-import { Box, Button as MuiButton, Modal, Typography } from '@mui/material'
 import { Pencil, Phone, Mail, MapPin, Users } from 'lucide-react'
 import '../styles/tailwind.css'
 import { Card, CardHeader, CardContent, CardFooter } from './ui/card'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { Checkbox } from './ui/checkbox'
+import { ConfirmModal } from './ui/modal'
 
 /**
  * Composant carte personne moderne avec Tailwind + Shadcn
@@ -90,50 +90,21 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
   return (
     <>
-      {/* Modal de confirmation SMS (garde MUI pour compatibilité) */}
-      <Modal
+      {/* Modal de confirmation SMS */}
+      <ConfirmModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
-        aria-labelledby="modal-confirmation"
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography sx={{ mb: 3 }}>Confirmer cette action ?</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <MuiButton
-              variant="outlined"
-              color="inherit"
-              onClick={() => {
-                setAwaitingCheckedValue(null)
-                setOpenModal(false)
-              }}
-            >
-              Non
-            </MuiButton>
-            <MuiButton
-              variant="contained"
-              color="success"
-              onClick={() => {
-                updatePresence(awaitingCheckedValue, true)
-                setOpenModal(false)
-              }}
-            >
-              Oui
-            </MuiButton>
-          </Box>
-        </Box>
-      </Modal>
+        onClose={() => {
+          setAwaitingCheckedValue(null)
+          setOpenModal(false)
+        }}
+        onConfirm={() => {
+          updatePresence(awaitingCheckedValue, true)
+        }}
+        title="Confirmation"
+        message="Confirmer cette action ?"
+        confirmText="Oui"
+        cancelText="Non"
+      />
 
       {/* Carte personne */}
       <Card>

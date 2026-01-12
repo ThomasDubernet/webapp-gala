@@ -1,4 +1,6 @@
 import * as React from 'react'
+import { Check } from 'lucide-react'
+import { cn } from '../../lib/utils'
 
 const Checkbox = React.forwardRef(({ className, checked, onChange, ...props }, ref) => (
   <button
@@ -7,34 +9,17 @@ const Checkbox = React.forwardRef(({ className, checked, onChange, ...props }, r
     aria-checked={checked}
     ref={ref}
     onClick={() => onChange?.({ target: { checked: !checked } })}
-    style={{
-      width: '20px',
-      height: '20px',
-      borderRadius: '4px',
-      border: checked ? '2px solid #16a34a' : '2px solid #d1d5db',
-      backgroundColor: checked ? '#16a34a' : '#ffffff',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      transition: 'all 0.15s ease',
-      padding: 0,
-    }}
+    className={cn(
+      'h-5 w-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all duration-150',
+      checked
+        ? 'border-green-600 bg-green-600'
+        : 'border-gray-300 bg-white hover:border-gray-400',
+      className
+    )}
     {...props}
   >
     {checked && (
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        strokeWidth={3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 13l4 4L19 7" />
-      </svg>
+      <Check className="h-3.5 w-3.5 text-white" strokeWidth={3} />
     )}
   </button>
 ))
