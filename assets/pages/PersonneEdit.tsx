@@ -10,7 +10,7 @@ import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
 import { Card } from '../components/ui/card';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, UserPlus } from 'lucide-react';
 
 interface PersonneEditProps {
   isConjoint?: boolean;
@@ -114,32 +114,32 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
     }
   }, [searchParams, tables]);
 
+  const buildPayload = (): Record<string, unknown> => ({
+    nom: formData.nom,
+    prenom: formData.prenom || null,
+    email: formData.email,
+    telephone: formData.telephone,
+    adresse: formData.adresse || null,
+    codePostal: formData.codePostal || null,
+    ville: formData.ville || null,
+    montantBillet: formData.montantBillet?.toString() || null,
+    montantPaye: formData.montantPaye?.toString() || null,
+    dateReglement: formData.dateReglement || null,
+    moyenPaiement: formData.moyenPaiement || null,
+    commentaire: formData.commentaire || null,
+    present: formData.present || false,
+    civilite: formData.civilite ? `/api/civilites/${formData.civilite.id}` : null,
+    categorie: formData.categorie ? `/api/categorie_personnes/${formData.categorie.id}` : null,
+    table: formData.table ? `/api/tables/${formData.table.id}` : null,
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
 
     try {
-      // Build API payload
-      const payload: Record<string, unknown> = {
-        nom: formData.nom,
-        prenom: formData.prenom || null,
-        email: formData.email,
-        telephone: formData.telephone,
-        adresse: formData.adresse || null,
-        codePostal: formData.codePostal || null,
-        ville: formData.ville || null,
-        montantBillet: formData.montantBillet?.toString() || null,
-        montantPaye: formData.montantPaye?.toString() || null,
-        dateReglement: formData.dateReglement || null,
-        moyenPaiement: formData.moyenPaiement || null,
-        commentaire: formData.commentaire || null,
-        present: formData.present || false,
-        civilite: formData.civilite ? `/api/civilites/${formData.civilite.id}` : null,
-        categorie: formData.categorie ? `/api/categorie_personnes/${formData.categorie.id}` : null,
-        table: formData.table ? `/api/tables/${formData.table.id}` : null,
-      };
-
+      const payload = buildPayload();
       const url = isNew ? '/api/personnes' : `/api/personnes/${id}`;
       const apiCall = isNew ? apiPost : apiPut;
       const savedPersonne = await apiCall<Personne>(url, payload);
@@ -152,6 +152,24 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
       }
 
       navigate('/personnes');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSubmitWithConjoint = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      const payload = buildPayload();
+      const savedPersonne = await apiPost<Personne>('/api/personnes', payload);
+
+      // Redirect to create conjoint for this person
+      navigate(`/personnes/${savedPersonne.id}/conjoint`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
@@ -431,6 +449,26 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
             <Button type="button" variant="outline" onClick={() => navigate('/personnes')}>
               Annuler
             </Button>
+            {isNew && !isConjoint && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={saving}
+                onClick={handleSubmitWithConjoint}
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Enregistrer avec conjoint
+                  </>
+                )}
+              </Button>
+            )}
             <Button type="submit" disabled={saving}>
               {saving ? (
                 <>
