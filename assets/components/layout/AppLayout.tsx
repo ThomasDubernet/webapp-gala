@@ -33,8 +33,8 @@ function NavButton({
         cn(
           'px-4 py-2 text-sm font-medium border rounded-lg transition-colors',
           isActive
-            ? 'text-white bg-blue-600 border-blue-600'
-            : 'text-blue-600 border-blue-600 hover:bg-blue-50',
+            ? 'text-primary-foreground bg-primary border-primary'
+            : 'text-primary border-primary hover:bg-primary/10',
           className
         )
       }
@@ -74,9 +74,9 @@ export function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Navbar */}
-      <nav className="h-16 bg-white border-b border-gray-200 shadow-sm relative z-40">
+      <nav className="h-16 bg-card border-b border-border shadow-sm relative z-40">
         <div className="h-full max-w-full mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
           <NavLink to="/plan" className="flex-shrink-0">
@@ -87,7 +87,7 @@ export function AppLayout() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
             aria-expanded={mobileMenuOpen}
           >
             <span className="sr-only">Ouvrir le menu</span>
@@ -116,7 +116,7 @@ export function AppLayout() {
               type="button"
               onClick={handleBilletWebSync}
               disabled={syncing}
-              className="p-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Synchroniser avec BilletWeb"
             >
               {syncing ? (
@@ -129,7 +129,7 @@ export function AppLayout() {
             {/* Hostess button */}
             <NavLink
               to="/hotesse"
-              className="p-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+              className="p-2 text-primary border border-primary rounded-lg hover:bg-primary/10 transition-colors"
             >
               <User className="h-5 w-5" />
             </NavLink>
@@ -139,37 +139,37 @@ export function AppLayout() {
               <button
                 type="button"
                 onClick={() => setSettingsOpen(!settingsOpen)}
-                className="p-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 text-muted-foreground border border-input rounded-lg hover:bg-accent transition-colors"
               >
                 <Settings className="h-5 w-5" />
               </button>
               {settingsOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border py-2 z-50">
                   <NavLink
                     to="/evenement/edit"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
                     onClick={() => setSettingsOpen(false)}
                   >
                     Editer l'évènement
                   </NavLink>
                   <NavLink
                     to="/settings"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
                     onClick={() => setSettingsOpen(false)}
                   >
                     Import / Export / Reset
                   </NavLink>
                   <a
                     href="/export"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent flex items-center gap-2"
                   >
                     <Download className="h-4 w-4" />
                     Export rapide
                   </a>
-                  <hr className="my-2 border-gray-200" />
+                  <hr className="my-2 border-border" />
                   <a
                     href="/logout"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent flex items-center gap-2"
                   >
                     <LogOut className="h-4 w-4" />
                     Déconnexion
@@ -182,12 +182,12 @@ export function AppLayout() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+          <div className="lg:hidden absolute top-16 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
             <div className="px-4 py-3 space-y-2">
               {!isHome && (
                 <NavLink
                   to="/plan"
-                  className="block px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-center"
+                  className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Accès au plan
@@ -195,21 +195,21 @@ export function AppLayout() {
               )}
               <NavLink
                 to="/tables/new"
-                className="block px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-center"
+                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Créer une table
               </NavLink>
               <NavLink
                 to="/personnes/new"
-                className="block px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-center"
+                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Créer une personne
               </NavLink>
               <NavLink
                 to="/personnes"
-                className="block px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-center"
+                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Liste des personnes
@@ -217,18 +217,18 @@ export function AppLayout() {
               <div className="pt-2">
                 <SearchBar />
               </div>
-              <hr className="my-3 border-gray-200" />
+              <hr className="my-3 border-border" />
               <div className="flex gap-2">
                 <NavLink
                   to="/hotesse"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 text-center"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Hôtesse
                 </NavLink>
                 <NavLink
                   to="/evenement/edit"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-accent text-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Paramètres
@@ -236,7 +236,7 @@ export function AppLayout() {
               </div>
               <a
                 href="/logout"
-                className="block px-4 py-2 text-sm font-medium text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
+                className="block px-4 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-accent text-center"
               >
                 Déconnexion
               </a>
@@ -259,8 +259,8 @@ export function AppLayout() {
           className={cn(
             'fixed top-20 right-4 z-50 px-4 py-3 rounded-lg shadow-lg border max-w-sm',
             syncMessage.type === 'success'
-              ? 'bg-green-50 border-green-200 text-green-700'
-              : 'bg-red-50 border-red-200 text-red-700'
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
+              : 'bg-destructive/10 border-destructive/20 text-destructive'
           )}
         >
           <div className="flex items-center justify-between gap-2">

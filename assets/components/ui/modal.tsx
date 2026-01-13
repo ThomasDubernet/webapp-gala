@@ -48,7 +48,7 @@ export function ModalContent({
     <div
       className={cn(
         'fixed left-1/2 top-1/2 z-[100] w-full -translate-x-1/2 -translate-y-1/2',
-        'bg-white rounded-xl shadow-xl',
+        'bg-card text-card-foreground rounded-xl shadow-xl',
         'animate-in fade-in-0 zoom-in-95',
         sizeClasses[size] || sizeClasses.default,
         className
@@ -78,16 +78,16 @@ export function ModalHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between px-6 py-4 border-b border-gray-200',
+        'flex items-center justify-between px-6 py-4 border-b border-border',
         className
       )}
     >
-      <div className="text-lg font-semibold text-gray-900">{children}</div>
+      <div className="text-lg font-semibold text-foreground">{children}</div>
       {showClose && onClose && (
         <button
           type="button"
           onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+          className="p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-accent transition-colors"
         >
           <X className="h-5 w-5" />
           <span className="sr-only">Fermer</span>
@@ -119,7 +119,7 @@ export function ModalFooter({ children, className }: ModalFooterProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl',
+        'flex items-center justify-end gap-3 px-6 py-4 border-t border-border bg-muted rounded-b-xl',
         className
       )}
     >
@@ -202,20 +202,20 @@ export function ConfirmModal({
   variant = 'default',
 }: ConfirmModalProps) {
   const confirmButtonClass = variant === 'danger'
-    ? 'bg-red-600 hover:bg-red-700 text-white'
-    : 'bg-blue-600 hover:bg-blue-700 text-white'
+    ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
 
   return (
     <Modal open={open} onClose={onClose} size="sm">
       <ModalHeader onClose={onClose}>{title}</ModalHeader>
       <ModalBody>
-        <p className="text-gray-600">{message}</p>
+        <p className="text-muted-foreground">{message}</p>
       </ModalBody>
       <ModalFooter>
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-input rounded-lg hover:bg-accent transition-colors"
         >
           {cancelText}
         </button>

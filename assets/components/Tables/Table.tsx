@@ -34,6 +34,7 @@ interface TableProps {
 }
 
 function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
+  const nodeRef = useRef<HTMLDivElement>(null)
   const submenu = useRef<HTMLButtonElement>(null)
   const {
     id,
@@ -267,6 +268,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     !loading && (
       <>
         <Draggable
+          nodeRef={nodeRef}
           defaultPosition={{
             x: positionPx.x,
             y: positionPx.y,
@@ -277,6 +279,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
           onStop={handleStop}
         >
           <div
+            ref={nodeRef}
             className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
               dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
             }`}
@@ -292,7 +295,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
               value={percentPresent || 0}
               styles={{
                 path: {
-                  stroke: '#000000',
+                  stroke: 'oklch(var(--foreground))',
                 },
               }}
             >
@@ -302,7 +305,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
               <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
                 {personnes.length} / {nbMax}
               </p>
-              <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-black text-center whitespace-nowrap">
+              <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-foreground text-center whitespace-nowrap">
                 {nom}
               </p>
             </CircularProgressbarWithChildren>
@@ -332,22 +335,22 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
         )}
         {contextMenu !== null && (
           <div
-            className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-48"
+            className="fixed z-50 bg-popover rounded-lg shadow-lg border border-border py-1 min-w-48"
             style={{ top: contextMenu.mouseY, left: contextMenu.mouseX }}
           >
             <button
               ref={submenu}
               type="button"
               onClick={handleSubMenuOpen}
-              className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 flex items-center justify-between"
+              className="w-full px-4 py-2 text-sm text-left text-popover-foreground hover:bg-accent flex items-center justify-between"
             >
               <span>Personnes</span>
               <ChevronRight className="h-4 w-4" />
             </button>
-            <hr className="my-1 border-gray-200" />
+            <hr className="my-1 border-border" />
             <a
               href={`/table/${id}/edit`}
-              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
             >
               Editer la table
             </a>
@@ -359,7 +362,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
                     'Êtes vous sûr de vouloir supprimer cette table ?',
                   ) && handleDelete()
                 }
-                className="w-full px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-3 py-1.5 text-sm font-medium text-destructive-foreground bg-destructive rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={personnes.length > 0}
               >
                 Supprimer la table
@@ -371,7 +374,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
         {/* Submenu Personnes */}
         {openSubMenu && submenu.current && (
           <div
-            className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-52"
+            className="fixed z-50 bg-popover rounded-lg shadow-lg border border-border py-1 min-w-52"
             style={{
               top: submenu.current.getBoundingClientRect().top - 8,
               left: submenu.current.getBoundingClientRect().right + 4,
@@ -381,30 +384,30 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
               type="button"
               onClick={handleOpen}
               disabled={personnes.length >= nbMax}
-              className="w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 text-sm text-left text-popover-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Ajouter une personne
             </button>
             {personnes.length >= nbMax ? (
-              <span className="block px-4 py-2 text-sm text-gray-400">
+              <span className="block px-4 py-2 text-sm text-muted-foreground">
                 Créer une personne
               </span>
             ) : (
               <a
                 href={`/personne/new?table=${id}`}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
               >
                 Créer une personne
               </a>
             )}
-            <hr className="my-1 border-gray-200" />
+            <hr className="my-1 border-border" />
             <div className="px-2 py-1 max-h-40 overflow-y-auto">
               {personnes.length > 0 ? (
                 personnes.map((personne, index) => (
                   <PersonneItem key={index} personne={personne} />
                 ))
               ) : (
-                <p className="px-2 py-1 text-sm text-gray-500">Aucune personne</p>
+                <p className="px-2 py-1 text-sm text-muted-foreground">Aucune personne</p>
               )}
             </div>
           </div>
@@ -428,13 +431,13 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
                 aria-label="Rechercher"
                 value={stringToSearch}
                 onChange={handleSearch}
-                className="w-full md:w-1/2 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full md:w-1/2 px-3 py-2 text-sm border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start overflow-y-auto flex-1">
               {searchLoading ? (
                 <div className="col-span-full flex justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : filteredPersonnes.length > 0 ? (
                 filteredPersonnes.map((personne, index) => (
@@ -444,7 +447,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
                       className={`absolute bottom-3 right-3 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                         addedPersonneId === personne.id
                           ? 'bg-green-600 text-white'
-                          : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
+                          : 'border border-primary text-primary hover:bg-primary/10'
                       } disabled:opacity-50`}
                       onClick={() => handleAddPersonne(personne.id)}
                       disabled={addingPersonneId === personne.id}
@@ -458,11 +461,11 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
                   </SearchPersonne>
                 ))
               ) : hasSearched ? (
-                <div className="col-span-full text-center text-gray-500 py-8">
+                <div className="col-span-full text-center text-muted-foreground py-8">
                   Aucune personne ne correspond à votre recherche
                 </div>
               ) : (
-                <div className="col-span-full text-center text-gray-500 py-8">
+                <div className="col-span-full text-center text-muted-foreground py-8">
                   Tapez au moins 2 caractères pour rechercher
                 </div>
               )}
@@ -481,12 +484,12 @@ interface PersonneItemProps {
 function PersonneItem({ personne: { prenom, nom, id, present } }: PersonneItemProps) {
   return (
     <div className="flex items-center justify-between w-full py-1">
-      <p className={`text-sm ${present ? 'text-green-600' : 'text-gray-900'}`}>
+      <p className={`text-sm ${present ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
         {prenom !== null ? prenom : null} {nom}
       </p>
       <a
         href={`/personne/${id}/edit`}
-        className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors"
+        className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
       >
         <MoreHorizontal className="h-4 w-4" />
       </a>

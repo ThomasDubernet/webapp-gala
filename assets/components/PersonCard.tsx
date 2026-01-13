@@ -130,44 +130,44 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
         <CardContent>
           {/* Nom */}
-          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+          <h3 className="text-lg font-semibold text-foreground mb-3">
             {fullName}
           </h3>
 
           {/* Infos */}
           <div className="grid grid-cols-1 gap-2 text-sm">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Phone className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Phone className="h-4 w-4 text-muted-foreground/70 flex-shrink-0" />
               {telephone ? (
-                <a href={`tel:${telephone}`} className="hover:text-blue-600">
+                <a href={`tel:${telephone}`} className="hover:text-primary">
                   {telephone}
                 </a>
               ) : (
-                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+                <span className="text-muted-foreground/50 italic">Non renseigné</span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <Mail className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Mail className="h-4 w-4 text-muted-foreground/70 flex-shrink-0" />
               {email ? (
                 <a
                   href={`mailto:${email}`}
-                  className="hover:text-blue-600 truncate"
+                  className="hover:text-primary truncate"
                   title={email}
                 >
                   {email}
                 </a>
               ) : (
-                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+                <span className="text-muted-foreground/50 italic">Non renseigné</span>
               )}
             </div>
-            <div className="flex items-start gap-2 text-gray-600">
-              <MapPin className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <MapPin className="h-4 w-4 text-muted-foreground/70 mt-0.5 flex-shrink-0" />
               {adresse ? (
                 <span>
                   {adresse}, {codePostal} {ville}
                 </span>
               ) : (
-                <span className="text-gray-400 italic opacity-60">Non renseigné</span>
+                <span className="text-muted-foreground/50 italic">Non renseigné</span>
               )}
             </div>
           </div>
@@ -179,7 +179,7 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
               checked={isPresent || false}
               onChange={handleCheckboxChange}
             />
-            <span className="text-sm text-gray-600">Présent</span>
+            <span className="text-sm text-muted-foreground">Présent</span>
           </div>
         </CardFooter>
       </Card>
