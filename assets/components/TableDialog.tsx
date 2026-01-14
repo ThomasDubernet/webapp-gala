@@ -33,8 +33,8 @@ export function TableDialog() {
     nom: '',
     numero: undefined,
     nombrePlacesMax: 10,
-    posX: '0',
-    posY: '0',
+    posX: '50',
+    posY: '50',
     categorie: undefined,
   })
 
@@ -67,13 +67,13 @@ export function TableDialog() {
             setLoading(false)
           })
       } else {
-        // New mode - reset form
+        // New mode - reset form with center position
         setFormData({
           nom: '',
           numero: undefined,
           nombrePlacesMax: 10,
-          posX: '0',
-          posY: '0',
+          posX: '50',
+          posY: '50',
           categorie: undefined,
         })
         setLoading(false)
