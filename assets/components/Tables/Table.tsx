@@ -230,6 +230,18 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     setPercentPresent((personnesPresentes * 100) / nbMax)
   }, [])
 
+  // React to planSize prop changes (e.g., when sidebar collapses/expands)
+  useEffect(() => {
+    if (baseSize.width !== planSize.width || baseSize.height !== planSize.height) {
+      setPlanSize(baseSize)
+      setHeight(baseSize.height * 0.0776)
+      setPositionPx({
+        x: (positionPercent.x * baseSize.width) / 100,
+        y: (positionPercent.y * baseSize.height) / 100,
+      })
+    }
+  }, [baseSize.width, baseSize.height])
+
   useEffect(() => {
     setPositionPx({
       x: percentToPx(positionPercent.x, 'width'),
@@ -257,13 +269,16 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
         <ContextMenu>
           <Draggable
             nodeRef={nodeRef}
-            defaultPosition={{
+            position={{
               x: positionPx.x,
               y: positionPx.y,
             }}
             bounds="parent"
             offsetParent={planRef.current || undefined}
             onStart={handleStart}
+            onDrag={(e, data) => {
+              setPositionPx({ x: data.x, y: data.y })
+            }}
             onStop={handleStop}
           >
             <div

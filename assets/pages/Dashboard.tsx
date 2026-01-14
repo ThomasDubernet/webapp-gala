@@ -7,6 +7,7 @@ import { Card } from '../components/ui/card';
 import type { Table, Evenement } from '../types/api';
 
 export function Dashboard() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const planRef = useRef<HTMLDivElement>(null);
   const { items: tables, load: loadTables, loading: loadingTables } = useGetMany<Table>('tables');
   const { items: events, load: loadEvents, loading: loadingEvents } = useGetMany<Evenement>('evenements');
@@ -23,7 +24,7 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-12rem)]">
+      <div className="h-full flex items-center justify-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span>Chargement...</span>
@@ -34,7 +35,7 @@ export function Dashboard() {
 
   if (!hasPlan) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center">
+      <div className="h-full flex flex-col items-center justify-center text-center p-4">
         <Card className="p-8 max-w-md">
           <h2 className="text-xl font-semibold text-foreground mb-2">Aucun plan configuré</h2>
           <p className="text-muted-foreground mb-4">
@@ -51,14 +52,14 @@ export function Dashboard() {
   }
 
   return (
-    <div className="h-[calc(100vh-10rem)] flex items-center justify-center">
-      <div id="img-box" className="relative h-full" ref={planRef}>
+    <div ref={containerRef} className="h-full w-full flex items-center justify-center overflow-hidden">
+      <div id="img-box" className="relative h-full max-h-full" ref={planRef}>
         <img
           src={planUrl!}
           alt="Plan de salle"
           className="h-full w-auto object-contain"
         />
-        <TableProvider tables={tables} plan={planRef} load={loadTables} />
+        <TableProvider tables={tables} plan={planRef} load={loadTables} container={containerRef} />
       </div>
     </div>
   );

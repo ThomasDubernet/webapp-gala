@@ -1,4 +1,4 @@
-import React, { useEffect, useState, RefObject } from 'react'
+import React, { useEffect, useState, useRef, useCallback, RefObject } from 'react'
 import Table from './Table'
 import type { Table as TableType } from '../../types/api'
 
@@ -9,37 +9,65 @@ interface PlanSize {
 
 interface TableProviderProps {
   plan: RefObject<HTMLDivElement | null>
+  container?: RefObject<HTMLDivElement | null>
   load: () => void
   tables: TableType[]
 }
 
-function TableProvider({ plan, load, tables }: TableProviderProps) {
-  const [planElement, setPlanElement] = useState<HTMLDivElement | null>(null)
+function TableProvider({ plan, container, load, tables }: TableProviderProps) {
   const [planSize, setPlanSize] = useState<PlanSize | null>(null)
   const [loading, setLoading] = useState(true)
+  const resizeTimeoutRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    if (plan.current !== null) {
-      const planCurrent = plan.current
-      setTimeout(() => {
-        setPlanElement(planCurrent)
-      }, 100)
-    }
-  }, [plan])
-
-  useEffect(() => {
-    if (
-      planElement !== null &&
-      planElement.clientWidth !== 0 &&
-      planElement.clientHeight !== 0
-    ) {
+  // Function to update plan size
+  const updatePlanSize = useCallback(() => {
+    if (plan.current && plan.current.clientWidth !== 0 && plan.current.clientHeight !== 0) {
       setPlanSize({
-        width: planElement.clientWidth,
-        height: planElement.clientHeight,
+        width: plan.current.clientWidth,
+        height: plan.current.clientHeight,
       })
       setLoading(false)
     }
-  }, [planElement])
+  }, [plan])
+
+  // Initial size calculation with a small delay to ensure DOM is ready
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updatePlanSize()
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [updatePlanSize])
+
+  // ResizeObserver to detect container/plan size changes (e.g., sidebar collapse)
+  useEffect(() => {
+    const elementToObserve = container?.current || plan.current
+    if (!elementToObserve) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      // Debounce the resize handling
+      if (resizeTimeoutRef.current) {
+        cancelAnimationFrame(resizeTimeoutRef.current)
+      }
+      resizeTimeoutRef.current = requestAnimationFrame(() => {
+        updatePlanSize()
+      })
+    })
+
+    resizeObserver.observe(elementToObserve)
+
+    // Also observe the plan element if container is different
+    if (container?.current && plan.current && container.current !== plan.current) {
+      resizeObserver.observe(plan.current)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+      if (resizeTimeoutRef.current) {
+        cancelAnimationFrame(resizeTimeoutRef.current)
+      }
+    }
+  }, [container, plan, updatePlanSize])
 
   if (loading || !planSize) {
     return null

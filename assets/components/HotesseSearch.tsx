@@ -30,7 +30,7 @@ function HotessePage() {
       {/* Navigation */}
       <nav className="h-20 bg-card border-b border-border shadow-sm sticky top-0 z-40">
         <div className="h-full max-w-7xl mx-auto px-4 flex items-center gap-4">
-          <img className="h-14 flex-shrink-0" src="/logo-2.jpeg" alt="logo" />
+          <img className="h-14 flex-shrink-0" src="/logo-2.png" alt="logo" />
           <input
             className="flex-1 max-w-md px-4 py-2 text-sm border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             type="search"
@@ -48,9 +48,7 @@ function HotessePage() {
           <Badge variant="secondary">
             {total} résultat{total > 1 ? 's' : ''}
           </Badge>
-          {loading && (
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          )}
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
         </div>
       </div>
 
