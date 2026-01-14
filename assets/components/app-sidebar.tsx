@@ -1,13 +1,23 @@
 import * as React from "react"
+import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
+import { toast } from "sonner"
 import {
   LayoutDashboard,
   Users,
+  UserPlus,
   Table2,
+  TableProperties,
   Calendar,
-  Settings,
   Sparkles,
+  RefreshCw,
+  Loader2,
+  User,
+  Download,
+  LogOut,
+  FileInput,
 } from "lucide-react"
+import { apiPost } from "@/lib/api"
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 const navItems = [
@@ -38,29 +49,46 @@ const navItems = [
     url: "/tables",
     icon: Table2,
   },
-  {
-    title: "Événement",
-    url: "/evenement/edit",
-    icon: Calendar,
-  },
 ]
 
-const footerItems = [
+const quickActions = [
   {
-    title: "Paramètres",
-    url: "/settings",
-    icon: Settings,
+    title: "Créer une personne",
+    url: "/personnes/new",
+    icon: UserPlus,
+  },
+  {
+    title: "Créer une table",
+    url: "/tables/new",
+    icon: TableProperties,
   },
 ]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation()
+  const [syncing, setSyncing] = useState(false)
 
   const isActive = (url: string) => {
     if (url === "/plan") {
       return location.pathname === "/plan" || location.pathname === "/"
     }
-    return location.pathname.startsWith(url)
+    return location.pathname === url
+  }
+
+  const handleBilletWebSync = async () => {
+    setSyncing(true)
+    try {
+      const data = await apiPost<{ message: string; error?: string }>("/api/billet-web/sync")
+      if (data.error) {
+        toast.error(data.error)
+      } else {
+        toast.success(data.message)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur de synchronisation")
+    } finally {
+      setSyncing(false)
+    }
   }
 
   return (
@@ -78,6 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Navigation principale */}
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -95,20 +124,107 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Actions rapides */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Actions rapides</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {quickActions.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                    <NavLink to={item.url}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Actions */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Actions</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleBilletWebSync}
+                  disabled={syncing}
+                  className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20"
+                >
+                  {syncing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span>Sync BilletWeb</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/hotesse" target="_blank">
+                    <User className="h-4 w-4" />
+                    <span>Mode Hôtesse</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href="/export">
+                    <Download className="h-4 w-4" />
+                    <span>Export rapide</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Paramètres */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/evenement/edit")}>
+                  <NavLink to="/evenement/edit">
+                    <Calendar className="h-4 w-4" />
+                    <span>Éditer l'évènement</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/settings")}>
+                  <NavLink to="/settings">
+                    <FileInput className="h-4 w-4" />
+                    <span>Import / Export / Reset</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
         <SidebarMenu>
-          {footerItems.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                <NavLink to={item.url}>
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.title}</span>
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href="/logout">
+                <LogOut className="h-4 w-4" />
+                <span>Déconnexion</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
 
