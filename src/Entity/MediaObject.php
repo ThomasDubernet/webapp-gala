@@ -17,6 +17,7 @@ class MediaObject
     #[Groups(['admin'])]
     private ?int $id = null;
 
+    #[Groups(['admin'])]
     public ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]

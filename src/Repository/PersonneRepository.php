@@ -47,8 +47,7 @@ class PersonneRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.table', 't')
             ->leftJoin('p.categorie', 'cat')
-            ->leftJoin('p.civilite', 'civ')
-            ->leftJoin('p.ticket', 'tick');
+            ->leftJoin('p.civilite', 'civ');
 
         // Recherche multi-champs avec OR
         if (!empty($query)) {
