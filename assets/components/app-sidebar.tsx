@@ -1,23 +1,24 @@
-import * as React from "react"
-import { useState } from "react"
-import { NavLink, useLocation } from "react-router-dom"
-import { toast } from "sonner"
+import * as React from 'react'
+import { useState } from 'react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
+  Calendar,
+  Download,
+  FileInput,
   LayoutDashboard,
-  Users,
-  UserPlus,
+  Loader2,
+  LogOut,
+  RefreshCw,
+  Sparkles,
   Table2,
   TableProperties,
-  Calendar,
-  Sparkles,
-  RefreshCw,
-  Loader2,
   User,
-  Download,
-  LogOut,
-  FileInput,
-} from "lucide-react"
-import { apiPost } from "@/lib/api"
+  UserPlus,
+  Users,
+} from 'lucide-react'
+import { apiPost } from '@/lib/api'
+import { queryClient } from '@/lib/query-client'
 import {
   Sidebar,
   SidebarContent,
@@ -31,35 +32,35 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar'
 
 const navItems = [
   {
-    title: "Plan de salle",
-    url: "/plan",
+    title: 'Plan de salle',
+    url: '/plan',
     icon: LayoutDashboard,
   },
   {
-    title: "Personnes",
-    url: "/personnes",
+    title: 'Personnes',
+    url: '/personnes',
     icon: Users,
   },
   {
-    title: "Tables",
-    url: "/tables",
+    title: 'Tables',
+    url: '/tables',
     icon: Table2,
   },
 ]
 
 const quickActions = [
   {
-    title: "Créer une personne",
-    url: "/personnes/new",
+    title: 'Créer une personne',
+    url: '/personnes/new',
     icon: UserPlus,
   },
   {
-    title: "Créer une table",
-    url: "/tables/new",
+    title: 'Créer une table',
+    url: '/tables/new',
     icon: TableProperties,
   },
 ]
@@ -69,8 +70,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [syncing, setSyncing] = useState(false)
 
   const isActive = (url: string) => {
-    if (url === "/plan") {
-      return location.pathname === "/plan" || location.pathname === "/"
+    if (url === '/plan') {
+      return location.pathname === '/plan' || location.pathname === '/'
     }
     return location.pathname === url
   }
@@ -78,14 +79,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const handleBilletWebSync = async () => {
     setSyncing(true)
     try {
-      const data = await apiPost<{ message: string; error?: string }>("/api/billet-web/sync")
+      const data = await apiPost<{ message: string; error?: string }>(
+        '/api/billet-web/sync',
+      )
       if (data.error) {
         toast.error(data.error)
       } else {
         toast.success(data.message)
+        // Invalidate personnes queries to trigger refetch
+        queryClient.invalidateQueries({ queryKey: ['personnes'] })
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur de synchronisation")
+      toast.error(
+        err instanceof Error ? err.message : 'Erreur de synchronisation',
+      )
     } finally {
       setSyncing(false)
     }
@@ -99,8 +106,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold">Reservation Berth</span>
-            <span className="text-xs text-muted-foreground">Gestion de gala</span>
+            <span className="text-sm font-semibold">Reservation Beth Rivkah</span>
+            <span className="text-xs text-muted-foreground">
+              Gestion de gala
+            </span>
           </div>
         </div>
       </SidebarHeader>
@@ -195,7 +204,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/evenement/edit")}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/evenement/edit')}
+                >
                   <NavLink to="/evenement/edit">
                     <Calendar className="h-4 w-4" />
                     <span>Éditer l'évènement</span>
@@ -203,7 +215,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/settings")}>
+                <SidebarMenuButton asChild isActive={isActive('/settings')}>
                   <NavLink to="/settings">
                     <FileInput className="h-4 w-4" />
                     <span>Import / Export / Reset</span>

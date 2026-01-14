@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useMemo } from 'react'
 import { useDebounce } from './useDebounce'
 import type { Personne } from '../types/api'
 
@@ -29,8 +30,46 @@ interface UseSearchPersonnesResult {
   refresh: () => void
 }
 
+interface SearchResponse {
+  items: Personne[]
+  total: number
+  pages: number
+}
+
+async function fetchPersonnes(
+  query: string,
+  unassignedOnly: boolean,
+  page: number,
+  limit: number
+): Promise<SearchResponse> {
+  const params = new URLSearchParams()
+
+  if (query) {
+    params.append('q', query)
+  }
+
+  if (unassignedOnly) {
+    params.append('unassigned', 'true')
+  }
+
+  params.append('page', page.toString())
+  params.append('limit', limit.toString())
+
+  const response = await fetch(`${API_URL}?${params}`, {
+    headers: {
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Erreur API: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 /**
- * Hook de recherche de personnes côté serveur
+ * Hook de recherche de personnes côté serveur avec TanStack Query
  */
 export const useSearchPersonnes = ({
   searchQuery = '',
@@ -41,102 +80,42 @@ export const useSearchPersonnes = ({
   limit = 50,
   loadOnEmpty = false,
 }: UseSearchPersonnesOptions = {}): UseSearchPersonnesResult => {
-  const [results, setResults] = useState<PersonneWithFullname[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
-  const [total, setTotal] = useState(0)
-  const [pages, setPages] = useState(0)
-  const [hasSearched, setHasSearched] = useState(false)
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
-
+  const queryClient = useQueryClient()
   const debouncedQuery = useDebounce(searchQuery, debounceDelay)
 
-  const fetchResults = useCallback(
-    async (query: string) => {
-      setLoading(true)
-      setError(null)
+  // Determine if we should fetch
+  const shouldFetch = loadOnEmpty || (debouncedQuery.length >= minChars)
 
-      try {
-        const params = new URLSearchParams()
+  const queryKey = ['personnes', 'search', debouncedQuery, unassignedOnly, page, limit] as const
 
-        if (query) {
-          params.append('q', query)
-        }
+  const { data, isLoading, error, isFetched } = useQuery({
+    queryKey,
+    queryFn: () => fetchPersonnes(debouncedQuery, unassignedOnly, page, limit),
+    enabled: shouldFetch,
+  })
 
-        if (unassignedOnly) {
-          params.append('unassigned', 'true')
-        }
-
-        params.append('page', page.toString())
-        params.append('limit', limit.toString())
-
-        const response = await fetch(`${API_URL}?${params}`, {
-          headers: {
-            Accept: 'application/json',
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error(`Erreur API: ${response.status}`)
-        }
-
-        const data = await response.json()
-
-        // Ajouter le champ fullname à chaque personne
-        const enrichedResults: PersonneWithFullname[] = (data.items || []).map((p: Personne) => ({
-          ...p,
-          fullname: `${p.prenom || ''} ${p.nom || ''}`.trim(),
-        }))
-
-        setResults(enrichedResults)
-        setTotal(data.total || 0)
-        setPages(data.pages || 0)
-        setHasSearched(true)
-      } catch (err) {
-        console.error('Erreur de recherche:', err)
-        setError(err instanceof Error ? err : new Error(String(err)))
-        setResults([])
-        setTotal(0)
-        setPages(0)
-      } finally {
-        setLoading(false)
-      }
-    },
-    [unassignedOnly, page, limit],
-  )
-
-  useEffect(() => {
-    // Si la recherche est vide
-    if (!debouncedQuery || debouncedQuery.length < minChars) {
-      if (loadOnEmpty) {
-        // Charger tous les résultats si loadOnEmpty est activé
-        fetchResults('')
-      } else {
-        // Sinon, réinitialiser les résultats
-        setResults([])
-        setTotal(0)
-        setPages(0)
-        setHasSearched(false)
-      }
-      return
-    }
-
-    // Recherche avec le terme debounced
-    fetchResults(debouncedQuery)
-  }, [debouncedQuery, minChars, loadOnEmpty, fetchResults, refreshTrigger])
+  // Enrich results with fullname
+  const results = useMemo<PersonneWithFullname[]>(() => {
+    if (!data?.items) return []
+    return data.items.map((p) => ({
+      ...p,
+      fullname: `${p.prenom || ''} ${p.nom || ''}`.trim(),
+    }))
+  }, [data?.items])
 
   const refresh = useCallback(() => {
-    setRefreshTrigger((prev) => prev + 1)
-  }, [])
+    // Invalidate all personnes queries to force refetch
+    queryClient.invalidateQueries({ queryKey: ['personnes'] })
+  }, [queryClient])
 
   return {
-    results,
-    loading,
-    error,
-    total,
-    pages,
+    results: shouldFetch ? results : [],
+    loading: isLoading,
+    error: error as Error | null,
+    total: data?.total || 0,
+    pages: data?.pages || 0,
     currentPage: page,
-    hasSearched,
+    hasSearched: shouldFetch && isFetched,
     refresh,
   }
 }
