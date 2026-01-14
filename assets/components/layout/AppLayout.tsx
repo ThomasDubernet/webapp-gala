@@ -1,258 +1,161 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { toast } from 'sonner';
-import {
-  Menu,
-  X,
-  Settings,
-  User,
-  LogOut,
-  Download,
-  RefreshCw,
-  Loader2,
-} from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { apiPost } from '../../lib/api';
-import { SearchBar } from '../Search';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
+import React, { useCallback, useEffect, useState } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
+import { Loader2, Search, X } from 'lucide-react'
+import { AppSidebar } from '../app-sidebar'
+import { useSearchPersonnes } from '../../hooks'
+import { PersonCard } from '../PersonCard'
+import { Badge } from '../ui/badge'
+import { Input } from '../ui/input'
+import { Separator } from '../ui/separator'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
 
-function NavButton({
-  to,
-  children,
-  className,
-  end = false,
+// Search Modal Component
+function SearchModal({
+  open,
+  onClose,
 }: {
-  to: string;
-  children: React.ReactNode;
-  className?: string;
-  end?: boolean;
+  open: boolean
+  onClose: () => void
 }) {
+  const [stringToSearch, setStringToSearch] = useState('')
+
+  const {
+    results: filteredStudents,
+    loading,
+    total,
+    hasSearched,
+    refresh,
+  } = useSearchPersonnes({
+    searchQuery: stringToSearch,
+    minChars: 2,
+  })
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setStringToSearch(event.target.value)
+  }
+
+  const handleClose = () => {
+    refresh()
+    onClose()
+    setStringToSearch('')
+  }
+
+  if (!open) return null
+
   return (
-    <NavLink
-      to={to}
-      end={end}
-      className={({ isActive }) =>
-        cn(
-          'px-4 py-2 text-sm font-medium border rounded-lg transition-colors',
-          isActive
-            ? 'text-primary-foreground bg-primary border-primary'
-            : 'text-primary border-primary hover:bg-primary/10',
-          className
-        )
-      }
-    >
-      {children}
-    </NavLink>
-  );
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/50 z-50" onClick={handleClose} />
+
+      {/* Modal */}
+      <div className="fixed top-20 left-6 right-6 bottom-6 bg-card z-[100] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col border border-border">
+        <button
+          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground bg-background border border-input hover:bg-accent rounded-full transition-colors shadow-sm"
+          onClick={handleClose}
+          type="button"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        {/* Search input */}
+        <div className="mb-6">
+          <Input
+            type="search"
+            placeholder="Rechercher une personne..."
+            aria-label="Rechercher"
+            value={stringToSearch}
+            onChange={handleSearch}
+            autoFocus
+            className="text-lg"
+          />
+        </div>
+
+        <h3 className="text-xl font-bold text-foreground text-center mb-6">
+          Personnes
+          {total > 0 && (
+            <Badge variant="secondary" className="ml-2">
+              {total} résultat{total > 1 ? 's' : ''}
+            </Badge>
+          )}
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start overflow-y-auto flex-1">
+          {loading ? (
+            <div className="col-span-full flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : filteredStudents.length > 0 ? (
+            filteredStudents.map((personne) => (
+              <PersonCard
+                key={personne.id}
+                personne={personne}
+                onRefresh={refresh}
+                variant="default"
+              />
+            ))
+          ) : hasSearched ? (
+            <div className="col-span-full text-center text-muted-foreground py-8">
+              Aucune personne ne correspond à votre recherche
+            </div>
+          ) : (
+            <div className="col-span-full text-center text-muted-foreground py-8">
+              Tapez au moins 2 caractères pour rechercher
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
 }
 
 export function AppLayout() {
-  const location = useLocation();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const location = useLocation()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const isPlanPage = location.pathname === '/plan' || location.pathname === '/'
 
-  const isHome = location.pathname === '/plan' || location.pathname === '/';
-
-  const handleBilletWebSync = async () => {
-    setSyncing(true);
-
-    try {
-      const data = await apiPost<{ message: string; error?: string }>('/api/billet-web/sync');
-      if (data.error) {
-        toast.error(data.error);
-      } else {
-        toast.success(data.message);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erreur de synchronisation');
-    } finally {
-      setSyncing(false);
+  // Keyboard shortcut ⌘+K to open search
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+      event.preventDefault()
+      setSearchOpen(true)
     }
-  };
+  }, [])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <nav className="h-16 bg-card border-b border-border shadow-sm relative z-40">
-        <div className="h-full max-w-full mx-auto px-4 flex items-center justify-between">
-          {/* Logo */}
-          <NavLink to="/plan" className="flex-shrink-0">
-            <img className="h-11" src="/logo-2.jpeg" alt="logo" />
-          </NavLink>
-
-          {/* Mobile menu button */}
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          {/* Search input */}
           <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
-            aria-expanded={mobileMenuOpen}
+            onClick={() => setSearchOpen(true)}
+            className="flex flex-1 items-center gap-2 h-9 max-w-md rounded-md border border-input bg-background px-3 text-sm text-muted-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
           >
-            <span className="sr-only">Ouvrir le menu</span>
-            {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            <Search className="h-4 w-4" />
+            <span className="flex-1 text-left">Rechercher...</span>
+            <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+              <span className="text-xs">⌘</span>K
+            </kbd>
           </button>
+        </header>
 
-          {/* Desktop navigation */}
-          <div className="hidden lg:flex lg:items-center lg:gap-2 lg:flex-1 lg:justify-center">
-            {!isHome && <NavButton to="/plan" end>Accès au plan</NavButton>}
-            <NavButton to="/tables/new" end>Créer une table</NavButton>
-            <NavButton to="/personnes/new" end>Créer une personne</NavButton>
-            <NavButton to="/tables" end>Tables</NavButton>
-            <NavButton to="/personnes" end>Personnes</NavButton>
-            <div className="mx-4 w-64">
-              <SearchBar />
-            </div>
-          </div>
-
-          {/* Right side buttons */}
-          <div className="hidden lg:flex lg:items-center lg:gap-2">
-            {/* BilletWeb sync button */}
-            <button
-              type="button"
-              onClick={handleBilletWebSync}
-              disabled={syncing}
-              className="p-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Synchroniser avec BilletWeb"
-            >
-              {syncing ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <RefreshCw className="h-5 w-5" />
-              )}
-            </button>
-
-            {/* Hostess button */}
-            <NavLink
-              to="/hotesse"
-              className="p-2 text-primary border border-primary rounded-lg hover:bg-primary/10 transition-colors"
-            >
-              <User className="h-5 w-5" />
-            </NavLink>
-
-            {/* Settings dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="p-2 text-muted-foreground border border-input rounded-lg hover:bg-accent transition-colors"
-                >
-                  <Settings className="h-5 w-5" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <NavLink to="/evenement/edit">
-                    Editer l'évènement
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/settings">
-                    Import / Export / Reset
-                  </NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <a href="/export" className="flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    Export rapide
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <a href="/logout" className="flex items-center gap-2">
-                    <LogOut className="h-4 w-4" />
-                    Déconnexion
-                  </a>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+        <div className={'flex flex-1 flex-col gap-4 p-4'}>
+          <Outlet />
         </div>
+      </SidebarInset>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-16 left-0 right-0 bg-card border-t border-border shadow-lg z-50">
-            <div className="px-4 py-3 space-y-2">
-              {!isHome && (
-                <NavLink
-                  to="/plan"
-                  className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Accès au plan
-                </NavLink>
-              )}
-              <NavLink
-                to="/tables/new"
-                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Créer une table
-              </NavLink>
-              <NavLink
-                to="/personnes/new"
-                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Créer une personne
-              </NavLink>
-              <NavLink
-                to="/tables"
-                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Tables
-              </NavLink>
-              <NavLink
-                to="/personnes"
-                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Personnes
-              </NavLink>
-              <div className="pt-2">
-                <SearchBar />
-              </div>
-              <hr className="my-3 border-border" />
-              <div className="flex gap-2">
-                <NavLink
-                  to="/hotesse"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Hôtesse
-                </NavLink>
-                <NavLink
-                  to="/evenement/edit"
-                  className="flex-1 px-4 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-accent text-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Paramètres
-                </NavLink>
-              </div>
-              <a
-                href="/logout"
-                className="block px-4 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-accent text-center"
-              >
-                Déconnexion
-              </a>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Main content */}
-      <main className="pt-4 px-4">
-        <Outlet />
-      </main>
-    </div>
-  );
+      {/* Search Modal */}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </SidebarProvider>
+  )
 }
