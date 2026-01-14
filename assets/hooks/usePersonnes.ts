@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useApiMutation } from './useApiMutation';
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api';
 import type { Personne, PaginatedResponse } from '../types';
 
@@ -54,9 +55,10 @@ export function usePersonne(id: number | undefined) {
 export function useCreatePersonne() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: (data: Partial<Personne>) =>
       apiPost<Personne>('/api/personnes', data),
+    successMessage: 'Personne créée avec succès',
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: personneKeys.lists() });
     },
@@ -67,9 +69,10 @@ export function useCreatePersonne() {
 export function useUpdatePersonne() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Personne> }) =>
       apiPut<Personne>(`/api/personnes/${id}`, data),
+    successMessage: 'Personne mise à jour avec succès',
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: personneKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: personneKeys.lists() });
@@ -81,8 +84,9 @@ export function useUpdatePersonne() {
 export function useDeletePersonne() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: (id: number) => apiDelete(`/api/personnes/${id}`),
+    successMessage: 'Personne supprimée avec succès',
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: personneKeys.lists() });
     },
@@ -93,7 +97,7 @@ export function useDeletePersonne() {
 export function useUpdatePresence() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({
       id,
       present,
@@ -107,6 +111,8 @@ export function useUpdatePresence() {
         present,
         withSms,
       }),
+    // No success message - presence toggle is a quick action
+    showErrorToast: true,
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: personneKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: personneKeys.lists() });

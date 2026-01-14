@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useApiMutation } from './useApiMutation';
 import { apiGet, apiPost, apiPut, apiDelete } from '../lib/api';
 import type { Table, PaginatedResponse } from '../types';
 
@@ -33,8 +34,9 @@ export function useTable(id: number | undefined) {
 export function useCreateTable() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: (data: Partial<Table>) => apiPost<Table>('/api/tables', data),
+    successMessage: 'Table créée avec succès',
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tableKeys.lists() });
     },
@@ -45,9 +47,11 @@ export function useCreateTable() {
 export function useUpdateTable() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<Table> }) =>
       apiPut<Table>(`/api/tables/${id}`, data),
+    // No success message for position updates (frequent action)
+    showErrorToast: true,
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: tableKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: tableKeys.lists() });
@@ -59,8 +63,9 @@ export function useUpdateTable() {
 export function useDeleteTable() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useApiMutation({
     mutationFn: (id: number) => apiDelete(`/api/tables/${id}`),
+    successMessage: 'Table supprimée avec succès',
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: tableKeys.lists() });
     },
