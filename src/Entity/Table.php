@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\TableRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -20,7 +22,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(),
         new Get(),
+        new Post(),
         new Put(),
+        new Patch(),
         new Delete()
     ]
 )]

@@ -14,15 +14,12 @@ class EvenementUnitTest extends TestCase
 
         $event = new Evenement();
         $event->setNom('Event test')
-              ->setNomSalle('salle')
-              ->setDate($datetime)
-              ->setAdresse('adresse');
+              ->setBilletwebId('12345')
+              ->setLastUpdateBilletWeb($datetime);
 
         $this->assertTrue($event->getNom() === 'Event test');
-        $this->assertTrue($event->getNomSalle() === 'salle');
-        $this->assertTrue($event->getDate() === $datetime);
-        $this->assertTrue($event->getAdresse() === 'adresse');
-
+        $this->assertTrue($event->getBilletwebId() === '12345');
+        $this->assertTrue($event->getLastUpdateBilletWeb() === $datetime);
     }
 
     public function testIsFalse(): void
@@ -32,14 +29,12 @@ class EvenementUnitTest extends TestCase
 
         $event = new Evenement();
         $event->setNom('Event test')
-              ->setNomSalle('salle')
-              ->setDate($datetime1)
-              ->setAdresse('adresse');
+              ->setBilletwebId('12345')
+              ->setLastUpdateBilletWeb($datetime1);
 
         $this->assertFalse($event->getNom() === 'false test');
-        $this->assertFalse($event->getNomSalle() === 'false');
-        $this->assertFalse($event->getDate() === $datetime2);
-        $this->assertFalse($event->getAdresse() === 'false');
+        $this->assertFalse($event->getBilletwebId() === '00000');
+        $this->assertFalse($event->getLastUpdateBilletWeb() === $datetime2);
     }
 
     public function testIsEmpty(): void
@@ -47,9 +42,8 @@ class EvenementUnitTest extends TestCase
         $event = new Evenement();
 
         $this->assertEmpty($event->getNom());
-        $this->assertEmpty($event->getNomSalle());
-        $this->assertEmpty($event->getDate());
-        $this->assertEmpty($event->getAdresse());
-
+        $this->assertEmpty($event->getBilletwebId());
+        $this->assertEmpty($event->getLastUpdateBilletWeb());
+        $this->assertEmpty($event->getPlan());
     }
 }

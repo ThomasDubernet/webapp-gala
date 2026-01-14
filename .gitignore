@@ -33,3 +33,4 @@ node_modules
 ###> Custom ###
 deploy.sh
 ###< Custom ###
+.playwright-mcp/

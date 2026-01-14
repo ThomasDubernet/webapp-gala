@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\CategoriePersonneRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CategoriePersonneRepository::class)]
+#[ApiResource(
+    operations: [new GetCollection()]
+)]
 class CategoriePersonne
 {
     #[ORM\Id]

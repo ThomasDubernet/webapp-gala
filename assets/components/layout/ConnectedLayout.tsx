@@ -1,0 +1,41 @@
+import { Outlet } from 'react-router-dom'
+import { AppSidebar } from '@/components/app-sidebar'
+import { SearchBar } from '@/components/Search'
+import { Separator } from '@/components/ui/separator'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
+import { DialogProvider } from '@/contexts/DialogContext'
+import { PersonneDialog } from '@/components/PersonneDialog'
+import { TableDialog } from '@/components/TableDialog'
+
+export default function ConnectedLayout() {
+  return (
+    <DialogProvider>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
+            />
+            <div className="flex-1 max-w-md">
+              <SearchBar />
+            </div>
+          </header>
+          <div className="flex flex-1 flex-col gap-4 p-4">
+            <Outlet />
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+
+      {/* Global dialogs - always mounted, controlled by DialogContext */}
+      <PersonneDialog />
+      <TableDialog />
+    </DialogProvider>
+  )
+}
