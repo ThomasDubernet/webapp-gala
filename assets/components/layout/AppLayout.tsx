@@ -1,21 +1,27 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { Loader2, Search, X } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { AppSidebar } from '../app-sidebar'
 import { useSearchPersonnes } from '../../hooks'
 import { PersonCard } from '../PersonCard'
 import { Badge } from '../ui/badge'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../ui/dialog'
 import { Input } from '../ui/input'
 import { Separator } from '../ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '../ui/sidebar'
 
-// Search Modal Component
+// Search Modal Component using Shadcn Dialog
 function SearchModal({
   open,
-  onClose,
+  onOpenChange,
 }: {
   open: boolean
-  onClose: () => void
+  onOpenChange: (open: boolean) => void
 }) {
   const [stringToSearch, setStringToSearch] = useState('')
 
@@ -34,31 +40,31 @@ function SearchModal({
     setStringToSearch(event.target.value)
   }
 
-  const handleClose = () => {
-    refresh()
-    onClose()
-    setStringToSearch('')
+  // Reset search when dialog closes
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      refresh()
+      setStringToSearch('')
+    }
+    onOpenChange(isOpen)
   }
 
-  if (!open) return null
-
   return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={handleClose} />
-
-      {/* Modal */}
-      <div className="fixed top-20 left-6 right-6 bottom-6 bg-card z-[100] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col border border-border">
-        <button
-          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground bg-background border border-input hover:bg-accent rounded-full transition-colors shadow-sm"
-          onClick={handleClose}
-          type="button"
-        >
-          <X className="h-5 w-5" />
-        </button>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="max-w-6xl max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center">
+            Recherche de personnes
+            {total > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {total} résultat{total > 1 ? 's' : ''}
+              </Badge>
+            )}
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Search input */}
-        <div className="mb-6">
+        <div className="mb-4">
           <Input
             type="search"
             placeholder="Rechercher une personne..."
@@ -70,16 +76,8 @@ function SearchModal({
           />
         </div>
 
-        <h3 className="text-xl font-bold text-foreground text-center mb-6">
-          Personnes
-          {total > 0 && (
-            <Badge variant="secondary" className="ml-2">
-              {total} résultat{total > 1 ? 's' : ''}
-            </Badge>
-          )}
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start overflow-y-auto flex-1">
+        {/* Results */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start overflow-y-auto flex-1 min-h-0">
           {loading ? (
             <div className="col-span-full flex justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -103,8 +101,8 @@ function SearchModal({
             </div>
           )}
         </div>
-      </div>
-    </>
+      </DialogContent>
+    </Dialog>
   )
 }
 
@@ -155,7 +153,7 @@ export function AppLayout() {
       </SidebarInset>
 
       {/* Search Modal */}
-      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </SidebarProvider>
   )
 }
