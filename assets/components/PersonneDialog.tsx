@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useGetMany } from '../hooks/useGetMany'
+import { usePersonne } from '../hooks/usePersonnes'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
@@ -40,8 +41,10 @@ export function PersonneDialog() {
   const { items: categories, load: loadCategories } = useGetMany<CategoriePersonne>('categorie_personnes')
   const { items: tables, load: loadTables } = useGetMany<Table>('tables')
 
+  // Fetch existing personne using TanStack Query
+  const { data: existingPersonne, isLoading: loadingPersonne, error: fetchError } = usePersonne(id)
+
   // Form state
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<Partial<Personne>>({
@@ -63,71 +66,66 @@ export function PersonneDialog() {
     table: undefined,
   })
 
-  // Reset form when dialog opens/closes
+  // Load reference data when dialog opens
   useEffect(() => {
     if (open) {
       loadCivilites()
       loadCategories()
       loadTables()
-
-      if (id) {
-        // Edit mode - load existing personne
-        setLoading(true)
-        fetch(`/api/personnes/${id}`)
-          .then((res) => {
-            if (!res.ok) throw new Error('Personne non trouvée')
-            return res.json()
-          })
-          .then((data: Personne) => {
-            setFormData({
-              nom: data.nom || '',
-              prenom: data.prenom || '',
-              email: data.email || '',
-              telephone: data.telephone || '',
-              adresse: data.adresse || '',
-              codePostal: data.codePostal || '',
-              ville: data.ville || '',
-              montantBillet: data.montantBillet,
-              montantPaye: data.montantPaye,
-              dateReglement: data.dateReglement?.split('T')[0],
-              moyenPaiement: data.moyenPaiement || '',
-              commentaire: data.commentaire || '',
-              present: data.present || false,
-              civilite: data.civilite,
-              categorie: data.categorie,
-              table: data.table,
-            })
-            setLoading(false)
-          })
-          .catch((err) => {
-            setError(err.message)
-            setLoading(false)
-          })
-      } else {
-        // New mode - reset form
-        setFormData({
-          nom: '',
-          prenom: '',
-          email: '',
-          telephone: '',
-          adresse: '',
-          codePostal: '',
-          ville: '',
-          montantBillet: undefined,
-          montantPaye: undefined,
-          dateReglement: undefined,
-          moyenPaiement: '',
-          commentaire: '',
-          present: false,
-          civilite: undefined,
-          categorie: undefined,
-          table: undefined,
-        })
-        setLoading(false)
-      }
       setError(null)
     }
-  }, [open, id, loadCivilites, loadCategories, loadTables])
+  }, [open, loadCivilites, loadCategories, loadTables])
+
+  // Populate form when existing personne is loaded
+  useEffect(() => {
+    if (existingPersonne && open) {
+      setFormData({
+        nom: existingPersonne.nom || '',
+        prenom: existingPersonne.prenom || '',
+        email: existingPersonne.email || '',
+        telephone: existingPersonne.telephone || '',
+        adresse: existingPersonne.adresse || '',
+        codePostal: existingPersonne.codePostal || '',
+        ville: existingPersonne.ville || '',
+        montantBillet: existingPersonne.montantBillet,
+        montantPaye: existingPersonne.montantPaye,
+        dateReglement: existingPersonne.dateReglement?.split('T')[0],
+        moyenPaiement: existingPersonne.moyenPaiement || '',
+        commentaire: existingPersonne.commentaire || '',
+        present: existingPersonne.present || false,
+        civilite: existingPersonne.civilite,
+        categorie: existingPersonne.categorie,
+        table: existingPersonne.table,
+      })
+    } else if (!id && open) {
+      // New mode - reset form
+      setFormData({
+        nom: '',
+        prenom: '',
+        email: '',
+        telephone: '',
+        adresse: '',
+        codePostal: '',
+        ville: '',
+        montantBillet: undefined,
+        montantPaye: undefined,
+        dateReglement: undefined,
+        moyenPaiement: '',
+        commentaire: '',
+        present: false,
+        civilite: undefined,
+        categorie: undefined,
+        table: undefined,
+      })
+    }
+  }, [existingPersonne, id, open])
+
+  // Handle fetch error
+  useEffect(() => {
+    if (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : 'Personne non trouvée')
+    }
+  }, [fetchError])
 
   // Pre-fill table if specified
   useEffect(() => {
@@ -233,7 +231,7 @@ export function PersonneDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
+        {loadingPersonne && id ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>

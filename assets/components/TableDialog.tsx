@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useGetMany } from '../hooks/useGetMany'
+import { useTable } from '../hooks/useTables'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
@@ -25,8 +26,10 @@ export function TableDialog() {
   // Reference data
   const { items: categories, load: loadCategories } = useGetMany<CategorieTable>('categorie_tables')
 
+  // Fetch existing table using TanStack Query
+  const { data: existingTable, isLoading: loadingTable, error: fetchError } = useTable(id)
+
   // Form state
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<Partial<Table>>({
@@ -38,49 +41,44 @@ export function TableDialog() {
     categorie: undefined,
   })
 
-  // Reset form when dialog opens/closes
+  // Load reference data when dialog opens
   useEffect(() => {
     if (open) {
       loadCategories()
-
-      if (id) {
-        // Edit mode - load existing table
-        setLoading(true)
-        fetch(`/api/tables/${id}`)
-          .then((res) => {
-            if (!res.ok) throw new Error('Table non trouvée')
-            return res.json()
-          })
-          .then((data: Table) => {
-            setFormData({
-              nom: data.nom || '',
-              numero: data.numero,
-              nombrePlacesMax: data.nombrePlacesMax,
-              posX: data.posX,
-              posY: data.posY,
-              categorie: data.categorie,
-            })
-            setLoading(false)
-          })
-          .catch((err) => {
-            setError(err.message)
-            setLoading(false)
-          })
-      } else {
-        // New mode - reset form with center position
-        setFormData({
-          nom: '',
-          numero: undefined,
-          nombrePlacesMax: 10,
-          posX: '50',
-          posY: '50',
-          categorie: undefined,
-        })
-        setLoading(false)
-      }
       setError(null)
     }
-  }, [open, id, loadCategories])
+  }, [open, loadCategories])
+
+  // Populate form when existing table is loaded
+  useEffect(() => {
+    if (existingTable && open) {
+      setFormData({
+        nom: existingTable.nom || '',
+        numero: existingTable.numero,
+        nombrePlacesMax: existingTable.nombrePlacesMax,
+        posX: existingTable.posX,
+        posY: existingTable.posY,
+        categorie: existingTable.categorie,
+      })
+    } else if (!id && open) {
+      // New mode - reset form with center position
+      setFormData({
+        nom: '',
+        numero: undefined,
+        nombrePlacesMax: 10,
+        posX: '50',
+        posY: '50',
+        categorie: undefined,
+      })
+    }
+  }, [existingTable, id, open])
+
+  // Handle fetch error
+  useEffect(() => {
+    if (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : 'Table non trouvée')
+    }
+  }, [fetchError])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -127,7 +125,7 @@ export function TableDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
+        {loadingTable && id ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
