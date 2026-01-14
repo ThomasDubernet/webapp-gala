@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Reservation Berth is a Symfony 6.4 application for managing event reservations and table seating. It handles guest registration, table assignments, ticket management, payment tracking, and attendance for events (galas). The application integrates with BilletWeb for ticket synchronization and OVH for SMS notifications.
+Reservation Beth Rivkah is a Symfony 6.4 application for managing event reservations and table seating. It handles guest registration, table assignments, ticket management, payment tracking, and attendance for events (galas). The application integrates with BilletWeb for ticket synchronization and OVH for SMS notifications.
 
 ## Common Commands
 
