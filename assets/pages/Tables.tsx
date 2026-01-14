@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
 import { apiDelete } from '../lib/api';
+import { useDialogs } from '../contexts/DialogContext';
 import type { Table } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -13,6 +13,7 @@ export function Tables() {
   const { items: tables, load, loading } = useGetMany<Table>('tables');
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const { openTableDialog } = useDialogs();
 
   useEffect(() => {
     load();
@@ -53,23 +54,19 @@ export function Tables() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Tables</h1>
-        <Link to="/tables/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle table
-          </Button>
-        </Link>
+        <Button onClick={() => openTableDialog()}>
+          <Plus className="w-4 h-4 mr-2" />
+          Nouvelle table
+        </Button>
       </div>
 
       {tables.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground mb-4">Aucune table pour le moment.</p>
-          <Link to="/tables/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Créer une table
-            </Button>
-          </Link>
+          <Button onClick={() => openTableDialog()}>
+            <Plus className="w-4 h-4 mr-2" />
+            Créer une table
+          </Button>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -130,12 +127,15 @@ export function Tables() {
                   )}
 
                   <div className="flex items-center gap-2 pt-2 border-t border-border">
-                    <Link to={`/tables/${table.id}/edit`} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Edit2 className="w-3 h-3 mr-1" />
-                        Modifier
-                      </Button>
-                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => openTableDialog(table.id)}
+                    >
+                      <Edit2 className="w-3 h-3 mr-1" />
+                      Modifier
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"

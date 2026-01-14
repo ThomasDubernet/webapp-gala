@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { apiPost } from '@/lib/api'
 import { queryClient } from '@/lib/query-client'
+import { useDialogs } from '@/contexts/DialogContext'
 import {
   Sidebar,
   SidebarContent,
@@ -52,22 +53,10 @@ const navItems = [
   },
 ]
 
-const quickActions = [
-  {
-    title: 'Créer une personne',
-    url: '/personnes/new',
-    icon: UserPlus,
-  },
-  {
-    title: 'Créer une table',
-    url: '/tables/new',
-    icon: TableProperties,
-  },
-]
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation()
   const [syncing, setSyncing] = useState(false)
+  const { openPersonneDialog, openTableDialog } = useDialogs()
 
   const isActive = (url: string) => {
     if (url === '/plan') {
@@ -141,16 +130,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Actions rapides</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {quickActions.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => openPersonneDialog()}>
+                  <UserPlus className="h-4 w-4" />
+                  <span>Créer une personne</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => openTableDialog()}>
+                  <TableProperties className="h-4 w-4" />
+                  <span>Créer une table</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

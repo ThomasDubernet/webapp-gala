@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Loader2, Plus, Search, Pencil, Users, UserCheck } from 'lucide-react';
 import { useSearchPersonnes } from '../hooks';
+import { useDialogs } from '../contexts/DialogContext';
 import { Badge } from '../components/ui/badge';
 import { Checkbox } from '../components/ui/checkbox';
 import { Button } from '../components/ui/button';
@@ -10,6 +10,7 @@ import { Input } from '../components/ui/input';
 export function Personnes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [unassignedOnly, setUnassignedOnly] = useState(false);
+  const { openPersonneDialog } = useDialogs();
 
   const {
     results: personnes,
@@ -60,11 +61,9 @@ export function Personnes() {
             {stats.present} présent{stats.present > 1 ? 's' : ''}
           </Badge>
         </div>
-        <Button asChild>
-          <Link to="/personnes/new">
-            <Plus className="h-4 w-4" />
-            Nouvelle personne
-          </Link>
+        <Button onClick={() => openPersonneDialog()}>
+          <Plus className="h-4 w-4" />
+          Nouvelle personne
         </Button>
       </div>
 
@@ -164,11 +163,9 @@ export function Personnes() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/personnes/${personne.id}/edit`}>
-                            <Pencil className="h-3 w-3" />
-                            Modifier
-                          </Link>
+                        <Button variant="ghost" size="sm" onClick={() => openPersonneDialog(personne.id)}>
+                          <Pencil className="h-3 w-3" />
+                          Modifier
                         </Button>
                       </td>
                     </tr>
@@ -185,11 +182,9 @@ export function Personnes() {
       ) : (
         <div className="text-center py-12">
           <p className="text-muted-foreground">Aucune personne enregistrée</p>
-          <Button variant="link" asChild className="mt-4">
-            <Link to="/personnes/new">
-              <Plus className="h-4 w-4" />
-              Ajouter une personne
-            </Link>
+          <Button variant="link" className="mt-4" onClick={() => openPersonneDialog()}>
+            <Plus className="h-4 w-4" />
+            Ajouter une personne
           </Button>
         </div>
       )}

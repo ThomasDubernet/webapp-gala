@@ -4,6 +4,7 @@ import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
 import { MoreHorizontal, Loader2, Check, Users, UserPlus, Pencil, Trash2 } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
+import { useDialogs } from '../../contexts/DialogContext'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
 import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
@@ -42,6 +43,7 @@ interface TableProps {
 
 function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
   const nodeRef = useRef<HTMLDivElement>(null)
+  const { openPersonneDialog, openTableDialog } = useDialogs()
   const {
     id,
     nom,
@@ -348,17 +350,18 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
                   <UserPlus className="h-4 w-4 mr-2" />
                   Ajouter une personne
                 </ContextMenuItem>
-                <ContextMenuItem asChild disabled={personnes.length >= nbMax}>
-                  <a href={`/personne/new?table=${id}`}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Créer une personne
-                  </a>
+                <ContextMenuItem
+                  onClick={() => openPersonneDialog(undefined, { tableId: id })}
+                  disabled={personnes.length >= nbMax}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Créer une personne
                 </ContextMenuItem>
                 <ContextMenuSeparator />
                 <div className="px-2 py-1 max-h-40 overflow-y-auto">
                   {personnes.length > 0 ? (
                     personnes.map((personne, index) => (
-                      <PersonneItem key={index} personne={personne} />
+                      <PersonneItem key={index} personne={personne} onEdit={openPersonneDialog} />
                     ))
                   ) : (
                     <p className="px-2 py-1 text-sm text-muted-foreground">Aucune personne</p>
@@ -367,11 +370,9 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
               </ContextMenuSubContent>
             </ContextMenuSub>
             <ContextMenuSeparator />
-            <ContextMenuItem asChild>
-              <a href={`/table/${id}/edit`}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Editer la table
-              </a>
+            <ContextMenuItem onClick={() => openTableDialog(id)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Editer la table
             </ContextMenuItem>
             <ContextMenuSeparator />
             <ContextMenuItem
@@ -453,20 +454,22 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
 
 interface PersonneItemProps {
   personne: PersonneType
+  onEdit: (id: number) => void
 }
 
-function PersonneItem({ personne: { prenom, nom, id, present } }: PersonneItemProps) {
+function PersonneItem({ personne: { prenom, nom, id, present }, onEdit }: PersonneItemProps) {
   return (
     <div className="flex items-center justify-between w-full py-1">
       <p className={`text-sm ${present ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
         {prenom !== null ? prenom : null} {nom}
       </p>
-      <a
-        href={`/personne/${id}/edit`}
+      <button
+        type="button"
+        onClick={() => onEdit(id)}
         className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
       >
         <MoreHorizontal className="h-4 w-4" />
-      </a>
+      </button>
     </div>
   )
 }
