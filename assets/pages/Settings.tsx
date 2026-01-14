@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Modal } from '../components/ui/modal';
 import { apiPost } from '../lib/api';
+import { queryClient } from '../lib/query-client';
 import {
   Upload,
   Download,
@@ -38,6 +39,8 @@ export function Settings() {
 
       if (data.success) {
         toast.success(data.message || 'Import réussi');
+        // Invalidate personnes cache to refresh lists
+        queryClient.invalidateQueries({ queryKey: ['personnes'] });
       } else {
         toast.error(data.error || 'Erreur lors de l\'importation');
       }
@@ -89,6 +92,9 @@ export function Settings() {
 
       if (data.success) {
         toast.success(data.message || 'Réinitialisation effectuée');
+        // Invalidate caches to refresh all lists
+        queryClient.invalidateQueries({ queryKey: ['personnes'] });
+        queryClient.invalidateQueries({ queryKey: ['tables'] });
       } else {
         toast.error(data.error || 'Erreur lors de la réinitialisation');
       }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
 import { apiPost, apiPut } from '../lib/api';
+import { queryClient } from '../lib/query-client';
 import type { Personne, Civilite, CategoriePersonne, Table } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -152,6 +153,9 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
         });
       }
 
+      // Invalidate personnes cache to refresh lists
+      queryClient.invalidateQueries({ queryKey: ['personnes'] });
+
       navigate('/personnes');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
@@ -168,6 +172,9 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
     try {
       const payload = buildPayload();
       const savedPersonne = await apiPost<Personne>('/api/personnes', payload);
+
+      // Invalidate personnes cache
+      queryClient.invalidateQueries({ queryKey: ['personnes'] });
 
       // Redirect to create conjoint for this person
       navigate(`/personnes/${savedPersonne.id}/conjoint`);

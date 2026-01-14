@@ -18,6 +18,7 @@ import {
   ContextMenuTrigger,
 } from '../ui/context-menu'
 import { apiPost, apiPatch, apiDelete } from '../../lib/api'
+import { queryClient } from '../../lib/query-client'
 import type { Table as TableType, Personne as PersonneType } from '../../types/api'
 
 interface PlanSize {
@@ -118,6 +119,8 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
       const data = await apiPost<{ success: boolean; error?: string }>(`/personne/${personneId}/add_table/${id}`)
 
       if (data.success) {
+        // Invalidate personnes cache
+        queryClient.invalidateQueries({ queryKey: ['personnes'] })
         // Rafraîchir la liste des personnes non assignées
         refreshSearch()
         // Feedback visuel bref
@@ -170,6 +173,8 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
    */
   async function handleDelete() {
     await apiDelete(`/api/tables/${id}`)
+    // Invalidate tables cache
+    queryClient.invalidateQueries({ queryKey: ['tables'] })
     load()
   }
 

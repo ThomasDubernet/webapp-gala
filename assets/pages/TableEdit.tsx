@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetMany } from '../hooks/useGetMany';
 import { apiPost, apiPut } from '../lib/api';
+import { queryClient } from '../lib/query-client';
 import type { Table, CategorieTable } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -82,6 +83,9 @@ export function TableEdit() {
       const url = isNew ? '/api/tables' : `/api/tables/${id}`;
       const apiCall = isNew ? apiPost : apiPut;
       await apiCall(url, payload);
+
+      // Invalidate tables cache to refresh lists
+      queryClient.invalidateQueries({ queryKey: ['tables'] });
 
       navigate('/tables');
     } catch (err) {
