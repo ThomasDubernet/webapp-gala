@@ -290,13 +290,15 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
           >
             <div
               ref={nodeRef}
-              className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
+              className={`absolute rounded-full text-white z-10 mb-6 cursor-move transition-opacity duration-200 ${
                 dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
               }`}
               style={{
                 background: couleur,
                 width: `${height}px`,
                 height: `${height}px`,
+                top: 0,
+                left: 0,
               }}
             >
               <ContextMenuTrigger className="block w-full h-full">

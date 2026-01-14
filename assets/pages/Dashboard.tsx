@@ -53,11 +53,11 @@ export function Dashboard() {
 
   return (
     <div ref={containerRef} className="h-full w-full flex items-center justify-center overflow-hidden">
-      <div id="img-box" className="relative h-full max-h-full" ref={planRef}>
+      <div id="img-box" className="relative" ref={planRef}>
         <img
           src={planUrl!}
           alt="Plan de salle"
-          className="h-full w-auto object-contain"
+          className="block max-h-[calc(100vh-120px)] max-w-full h-auto w-auto relative z-0"
         />
         <TableProvider tables={tables} plan={planRef} load={loadTables} container={containerRef} />
       </div>

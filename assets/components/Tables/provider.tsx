@@ -17,7 +17,6 @@ interface TableProviderProps {
 function TableProvider({ plan, container, load, tables }: TableProviderProps) {
   const [planSize, setPlanSize] = useState<PlanSize | null>(null)
   const [loading, setLoading] = useState(true)
-  const resizeTimeoutRef = useRef<number | null>(null)
 
   // Function to update plan size
   const updatePlanSize = useCallback(() => {
@@ -44,14 +43,17 @@ function TableProvider({ plan, container, load, tables }: TableProviderProps) {
     const elementToObserve = container?.current || plan.current
     if (!elementToObserve) return
 
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
     const resizeObserver = new ResizeObserver(() => {
-      // Debounce the resize handling
-      if (resizeTimeoutRef.current) {
-        cancelAnimationFrame(resizeTimeoutRef.current)
+      // Debounce with a delay longer than the sidebar animation (200ms)
+      // to ensure we capture the final size after transitions complete
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
       }
-      resizeTimeoutRef.current = requestAnimationFrame(() => {
+      debounceTimer = setTimeout(() => {
         updatePlanSize()
-      })
+      }, 250)
     })
 
     resizeObserver.observe(elementToObserve)
@@ -63,8 +65,8 @@ function TableProvider({ plan, container, load, tables }: TableProviderProps) {
 
     return () => {
       resizeObserver.disconnect()
-      if (resizeTimeoutRef.current) {
-        cancelAnimationFrame(resizeTimeoutRef.current)
+      if (debounceTimer) {
+        clearTimeout(debounceTimer)
       }
     }
   }, [container, plan, updatePlanSize])
