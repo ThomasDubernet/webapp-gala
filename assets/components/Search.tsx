@@ -1,6 +1,6 @@
-import React, { useMemo, useState, ReactNode } from 'react'
+import React, { useMemo, useState, useEffect, useCallback, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { X, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { X, Loader2, MoreHorizontal, Pencil, Trash2, Search } from 'lucide-react'
 import { useSearchPersonnes } from '../hooks'
 import { PersonCard } from './PersonCard'
 import { ConfirmModal } from './ui/modal'
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
 import { apiPut, apiRequest } from '../lib/api'
+import { Kbd } from './ui/kbd'
 import type { Personne as PersonneType } from '../types/api'
 
 interface PersonneProps {
@@ -214,6 +215,9 @@ export function SearchBar() {
   const [activeModal, setActiveModal] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
 
+  // Detect if user is on Mac
+  const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0
+
   const {
     results: filteredStudents,
     loading,
@@ -229,22 +233,44 @@ export function SearchBar() {
     setStringToSearch(event.target.value)
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     refresh()
     setActiveModal(false)
     setStringToSearch('')
-  }
+  }, [refresh])
+
+  const handleOpen = useCallback(() => {
+    setActiveModal(true)
+  }, [])
+
+  // Keyboard shortcut ⌘+K to open search
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault()
+        setActiveModal((prev) => !prev)
+      }
+      // Close on Escape
+      if (event.key === 'Escape' && activeModal) {
+        handleClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [activeModal, handleClose])
 
   return (
     <>
-      <Input
-        type="search"
-        placeholder="Rechercher"
-        aria-label="Rechercher"
-        value={stringToSearch}
-        onFocus={() => setActiveModal(true)}
-        onChange={handleSearch}
-      />
+      <button
+        type="button"
+        onClick={handleOpen}
+        className="flex w-full items-center gap-2 h-9 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+      >
+        <Search className="h-4 w-4" />
+        <span className="flex-1 text-left">Rechercher...</span>
+        <Kbd>{isMac ? '⌘K' : 'Ctrl+K'}</Kbd>
+      </button>
       {activeModal && (
           <div className="fixed top-20 left-6 right-6 bottom-6 bg-card z-[100] rounded-2xl shadow-2xl p-6 overflow-hidden flex flex-col border border-border">
             <button
@@ -254,6 +280,20 @@ export function SearchBar() {
             >
               <X className="h-5 w-5" />
             </button>
+
+          {/* Search input in modal */}
+          <div className="mb-6">
+            <Input
+              type="search"
+              placeholder="Rechercher une personne..."
+              aria-label="Rechercher"
+              value={stringToSearch}
+              onChange={handleSearch}
+              autoFocus
+              className="text-lg"
+            />
+          </div>
+
           <h3 className="text-xl font-bold text-foreground text-center mb-6">
             Personnes
             {total > 0 && (
