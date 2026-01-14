@@ -28,7 +28,7 @@ export function Hotesse() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Interface Hôtesse</h1>
+        <h1 className="text-2xl font-bold text-foreground">Interface Hôtesse</h1>
         <Badge variant="secondary">
           {total} personne{total > 1 ? 's' : ''}
         </Badge>
@@ -46,11 +46,11 @@ export function Hotesse() {
             className="flex-1"
           />
           {loading && (
-            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
           )}
         </div>
         {stringToSearch.length > 0 && stringToSearch.length < 2 && (
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             Tapez au moins 2 caractères pour rechercher
           </p>
         )}
@@ -71,7 +71,7 @@ export function Hotesse() {
       </div>
 
       {filteredPersonnes.length === 0 && !loading && (
-        <div className="text-center text-gray-500 py-12 bg-white rounded-lg border border-gray-200">
+        <div className="text-center text-muted-foreground py-12 bg-card rounded-lg border border-border">
           {hasSearched
             ? 'Aucune personne ne correspond à votre recherche'
             : 'Aucune personne enregistrée'}

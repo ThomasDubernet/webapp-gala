@@ -15,7 +15,7 @@ export const router = createBrowserRouter([
   {
     path: '/hotesse',
     element: (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-muted p-6">
         <Hotesse />
       </div>
     ),

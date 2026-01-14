@@ -10,6 +10,7 @@ import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { Checkbox } from '../components/ui/checkbox';
 import { Card } from '../components/ui/card';
+import { DatePicker } from '../components/ui/date-picker';
 import { ArrowLeft, Save, Loader2, UserPlus } from 'lucide-react';
 
 interface PersonneEditProps {
@@ -184,7 +185,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -196,7 +197,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           {isNew
             ? 'Nouvelle personne'
             : isConjoint
@@ -206,7 +207,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           {error}
         </div>
       )}
@@ -215,7 +216,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
         <Card className="p-6 space-y-6">
           {/* Identity section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Identité</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Identité</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="civilite">Civilité *</Label>
@@ -258,7 +259,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
 
           {/* Contact section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Contact</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="email">Email *</Label>
@@ -283,7 +284,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
 
           {/* Address section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Adresse</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Adresse</h2>
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <Label htmlFor="adresse">Adresse postale</Label>
@@ -316,7 +317,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
 
           {/* Payment section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Paiement</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Paiement</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="montantBillet">Montant du billet</Label>
@@ -344,11 +345,20 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
               </div>
               <div>
                 <Label htmlFor="dateReglement">Date de paiement</Label>
-                <Input
+                <DatePicker
                   id="dateReglement"
-                  type="date"
-                  value={formData.dateReglement || ''}
-                  onChange={(e) => handleChange('dateReglement', e.target.value)}
+                  value={formData.dateReglement}
+                  onChange={(date) => {
+                    if (date) {
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, '0');
+                      const dd = String(date.getDate()).padStart(2, '0');
+                      handleChange('dateReglement', `${yyyy}-${mm}-${dd}`);
+                    } else {
+                      handleChange('dateReglement', undefined);
+                    }
+                  }}
+                  placeholder="Sélectionner une date"
                 />
               </div>
               <div>
@@ -371,7 +381,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
 
           {/* Assignment section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Affectation</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Affectation</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="categorie">Catégorie</Label>
@@ -420,7 +430,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
 
           {/* Presence & comment section */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Présence et commentaire</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Présence et commentaire</h2>
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -445,7 +455,7 @@ export function PersonneEdit({ isConjoint = false }: PersonneEditProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-4 pt-4 border-t border-border">
             <Button type="button" variant="outline" onClick={() => navigate('/personnes')}>
               Annuler
             </Button>

@@ -29,7 +29,7 @@ function Plan() {
       )}
     </div>
   ) : (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-gray-500">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-muted-foreground">
       <Loader2 className="h-5 w-5 animate-spin" />
       <span>Chargement...</span>
     </div>

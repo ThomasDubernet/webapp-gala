@@ -98,7 +98,7 @@ export function TableEdit() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -110,13 +110,13 @@ export function TableEdit() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           {isNew ? 'Créer une table' : 'Modifier la table'}
         </h1>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
           {error}
         </div>
       )}
@@ -125,7 +125,7 @@ export function TableEdit() {
         <Card className="p-6 space-y-6">
           {/* Basic info */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Informations</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Informations</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="numero">Numéro *</Label>
@@ -152,7 +152,7 @@ export function TableEdit() {
 
           {/* Capacity & category */}
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Capacité et catégorie</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">Capacité et catégorie</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="nombrePlacesMax">Nombre de places *</Label>
@@ -188,7 +188,7 @@ export function TableEdit() {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+          <div className="flex justify-end gap-4 pt-4 border-t border-border">
             <Button type="button" variant="outline" onClick={() => navigate('/tables')}>
               Annuler
             </Button>
