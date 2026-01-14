@@ -77,16 +77,7 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
 export function useDialogs() {
   const context = useContext(DialogContext)
   if (!context) {
-    // Return no-op functions when outside DialogProvider
-    // This allows components to render even if they're outside the provider
-    return {
-      personneDialogState: { open: false },
-      openPersonneDialog: () => console.warn('DialogProvider not found'),
-      closePersonneDialog: () => {},
-      tableDialogState: { open: false },
-      openTableDialog: () => console.warn('DialogProvider not found'),
-      closeTableDialog: () => {},
-    }
+    throw new Error('useDialogs must be used within a DialogProvider')
   }
   return context
 }

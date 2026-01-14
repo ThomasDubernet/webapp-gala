@@ -9,6 +9,10 @@ export const queryClient = new QueryClient({
       retry: 2,
       // Refetch on window focus
       refetchOnWindowFocus: true,
+      // Refetch when network reconnects
+      refetchOnReconnect: true,
+      // Garbage collection after 5 minutes of inactivity
+      gcTime: 5 * 60 * 1000,
     },
     mutations: {
       // Retry failed mutations once
