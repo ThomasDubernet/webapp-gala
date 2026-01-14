@@ -1,14 +1,14 @@
-import React from 'react';
-import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { AppLayout } from './components/layout/AppLayout';
-import { Dashboard } from './pages/Dashboard';
-import { Personnes } from './pages/Personnes';
-import { PersonneEdit } from './pages/PersonneEdit';
-import { Tables } from './pages/Tables';
-import { TableEdit } from './pages/TableEdit';
-import { Evenement } from './pages/Evenement';
-import { Hotesse } from './pages/Hotesse';
-import { Settings } from './pages/Settings';
+import React from 'react'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { Dashboard } from './pages/Dashboard'
+import { Personnes } from './pages/Personnes'
+import { PersonneEdit } from './pages/PersonneEdit'
+import { Tables } from './pages/Tables'
+import { TableEdit } from './pages/TableEdit'
+import { Evenement } from './pages/Evenement'
+import { Hotesse } from './pages/Hotesse'
+import { Settings } from './pages/Settings'
+import ConnectedLayout from '@/components/layout/ConnectedLayout'
 
 export const router = createBrowserRouter([
   // Hotesse page without navbar (standalone)
@@ -23,7 +23,8 @@ export const router = createBrowserRouter([
   // Main app with navbar
   {
     path: '/',
-    element: <AppLayout />,
+    // element: <AppLayout />,
+    element: <ConnectedLayout />,
     children: [
       { index: true, element: <Navigate to="/plan" replace /> },
       { path: 'plan', element: <Dashboard /> },
@@ -38,7 +39,10 @@ export const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
       // Legacy URL redirects for backward compatibility
       { path: 'personne', element: <Navigate to="/personnes" replace /> },
-      { path: 'personne/new', element: <Navigate to="/personnes/new" replace /> },
+      {
+        path: 'personne/new',
+        element: <Navigate to="/personnes/new" replace />,
+      },
       { path: 'personne/:id/edit', element: <PersonneEdit /> },
       { path: 'personne/:id/conjoint', element: <PersonneEdit isConjoint /> },
       { path: 'table', element: <Navigate to="/tables" replace /> },
@@ -48,4 +52,4 @@ export const router = createBrowserRouter([
       { path: '*', element: <Navigate to="/plan" replace /> },
     ],
   },
-]);
+])
