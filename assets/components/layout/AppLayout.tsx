@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Menu,
   X,
@@ -13,6 +14,13 @@ import {
 import { cn } from '../../lib/utils';
 import { apiPost } from '../../lib/api';
 import { SearchBar } from '../Search';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 
 function NavButton({
   to,
@@ -47,29 +55,24 @@ function NavButton({
 export function AppLayout() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const isHome = location.pathname === '/plan' || location.pathname === '/';
 
   const handleBilletWebSync = async () => {
     setSyncing(true);
-    setSyncMessage(null);
 
     try {
       const data = await apiPost<{ message: string; error?: string }>('/api/billet-web/sync');
       if (data.error) {
-        setSyncMessage({ type: 'error', text: data.error });
+        toast.error(data.error);
       } else {
-        setSyncMessage({ type: 'success', text: data.message });
+        toast.success(data.message);
       }
     } catch (err) {
-      setSyncMessage({ type: 'error', text: err instanceof Error ? err.message : 'Erreur de synchronisation' });
+      toast.error(err instanceof Error ? err.message : 'Erreur de synchronisation');
     } finally {
       setSyncing(false);
-      // Auto-hide message after 5 seconds
-      setTimeout(() => setSyncMessage(null), 5000);
     }
   };
 
@@ -135,48 +138,41 @@ export function AppLayout() {
             </NavLink>
 
             {/* Settings dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(!settingsOpen)}
-                className="p-2 text-muted-foreground border border-input rounded-lg hover:bg-accent transition-colors"
-              >
-                <Settings className="h-5 w-5" />
-              </button>
-              {settingsOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-popover rounded-lg shadow-lg border border-border py-2 z-50">
-                  <NavLink
-                    to="/evenement/edit"
-                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
-                    onClick={() => setSettingsOpen(false)}
-                  >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="p-2 text-muted-foreground border border-input rounded-lg hover:bg-accent transition-colors"
+                >
+                  <Settings className="h-5 w-5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <NavLink to="/evenement/edit">
                     Editer l'évènement
                   </NavLink>
-                  <NavLink
-                    to="/settings"
-                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
-                    onClick={() => setSettingsOpen(false)}
-                  >
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/settings">
                     Import / Export / Reset
                   </NavLink>
-                  <a
-                    href="/export"
-                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent flex items-center gap-2"
-                  >
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href="/export" className="flex items-center gap-2">
                     <Download className="h-4 w-4" />
                     Export rapide
                   </a>
-                  <hr className="my-2 border-border" />
-                  <a
-                    href="/logout"
-                    className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent flex items-center gap-2"
-                  >
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <a href="/logout" className="flex items-center gap-2">
                     <LogOut className="h-4 w-4" />
                     Déconnexion
                   </a>
-                </div>
-              )}
-            </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -244,36 +240,6 @@ export function AppLayout() {
           </div>
         )}
       </nav>
-
-      {/* Click outside to close settings */}
-      {settingsOpen && (
-        <div
-          className="fixed inset-0 z-30"
-          onClick={() => setSettingsOpen(false)}
-        />
-      )}
-
-      {/* Sync message toast */}
-      {syncMessage && (
-        <div
-          className={cn(
-            'fixed top-20 right-4 z-50 px-4 py-3 rounded-lg shadow-lg border max-w-sm',
-            syncMessage.type === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400'
-              : 'bg-destructive/10 border-destructive/20 text-destructive'
-          )}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm">{syncMessage.text}</span>
-            <button
-              onClick={() => setSyncMessage(null)}
-              className="text-current opacity-70 hover:opacity-100"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Main content */}
       <main className="pt-4 px-4">

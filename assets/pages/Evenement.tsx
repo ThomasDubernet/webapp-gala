@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useGetMany } from '../hooks/useGetMany';
 import { apiPut, apiPost } from '../lib/api';
 import type { Evenement as EvenementType } from '../types/api';
@@ -7,7 +8,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card } from '../components/ui/card';
-import { ArrowLeft, Save, Upload, Loader2, Image, X } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Loader2, Image } from 'lucide-react';
 
 export function Evenement() {
   const navigate = useNavigate();
@@ -18,8 +19,6 @@ export function Evenement() {
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     nom: '',
     billetwebId: '',
@@ -47,18 +46,16 @@ export function Evenement() {
     if (!event) return;
 
     setSaving(true);
-    setError(null);
-    setSuccess(null);
 
     try {
       await apiPut(`/api/evenements/${event.id}`, {
         nom: formData.nom,
         billetwebId: formData.billetwebId || null,
       });
-      setSuccess('Événement mis à jour avec succès');
+      toast.success('Événement mis à jour avec succès');
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      toast.error(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setSaving(false);
     }
@@ -69,8 +66,6 @@ export function Evenement() {
     if (!file || !event) return;
 
     setUploading(true);
-    setError(null);
-    setSuccess(null);
 
     try {
       const uploadData = new FormData();
@@ -78,10 +73,10 @@ export function Evenement() {
 
       const data = await apiPost<{ plan: { contentUrl: string } }>(`/api/evenements/${event.id}/plan`, uploadData);
       setPlanUrl(data.plan.contentUrl);
-      setSuccess('Plan mis à jour avec succès');
+      toast.success('Plan mis à jour avec succès');
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue');
+      toast.error(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -93,7 +88,7 @@ export function Evenement() {
   if (loadingEvents) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -102,7 +97,7 @@ export function Evenement() {
     return (
       <div className="max-w-2xl mx-auto">
         <Card className="p-8 text-center">
-          <p className="text-gray-500">Aucun événement configuré.</p>
+          <p className="text-muted-foreground">Aucun événement configuré.</p>
         </Card>
       </div>
     );
@@ -115,31 +110,13 @@ export function Evenement() {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Configuration de l'événement</h1>
+        <h1 className="text-2xl font-bold text-foreground">Configuration de l'événement</h1>
       </div>
-
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center justify-between">
-          <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 flex items-center justify-between">
-          <span>{success}</span>
-          <button onClick={() => setSuccess(null)} className="text-green-500 hover:text-green-700">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       <div className="space-y-6">
         {/* Event name form */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Informations générales</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Informations générales</h2>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
@@ -159,12 +136,12 @@ export function Evenement() {
                   onChange={(e) => setFormData({ ...formData, billetwebId: e.target.value })}
                   placeholder="ex: abc123"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   L'identifiant de l'événement sur BilletWeb pour la synchronisation des participants.
                 </p>
               </div>
               {event.lastUpdateBilletWeb && (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   Dernière synchronisation : {new Date(event.lastUpdateBilletWeb).toLocaleString('fr-FR')}
                 </div>
               )}
@@ -189,20 +166,20 @@ export function Evenement() {
 
         {/* Plan upload */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Plan de salle</h2>
-          <p className="text-sm text-gray-500 mb-4">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Plan de salle</h2>
+          <p className="text-sm text-muted-foreground mb-4">
             Téléchargez une image du plan de salle pour placer les tables.
             Formats acceptés : JPEG, PNG, GIF, WebP.
           </p>
 
           {planUrl && (
             <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Plan actuel :</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Plan actuel :</p>
               <div className="relative inline-block">
                 <img
                   src={planUrl}
                   alt="Plan de salle"
-                  className="max-w-full h-auto max-h-64 rounded-lg border border-gray-200"
+                  className="max-w-full h-auto max-h-64 rounded-lg border border-border"
                 />
               </div>
             </div>
@@ -236,7 +213,7 @@ export function Evenement() {
               )}
             </Button>
             {!planUrl && (
-              <span className="text-sm text-gray-500 flex items-center gap-1">
+              <span className="text-sm text-muted-foreground flex items-center gap-1">
                 <Image className="w-4 h-4" />
                 Aucun plan téléchargé
               </span>

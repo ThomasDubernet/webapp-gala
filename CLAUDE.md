@@ -113,3 +113,52 @@ Core entities with API Platform attributes:
 ## Styling Guidelines
 
 Tailwind CSS v4 is the primary styling framework. Use Shadcn UI patterns (class-variance-authority, tailwind-merge, clsx) for component variants. Lucide React is used for icons.
+
+## Component Creation Rules (MANDATORY)
+
+### Always Prioritize Shadcn/ui
+
+**Before creating ANY UI component, you MUST:**
+
+1. **Check if the component exists on Shadcn/ui** via Context7 MCP:
+   ```
+   mcp__context7__resolve-library-id with libraryName: "shadcn-ui"
+   mcp__context7__query-docs with the component name (e.g., "button", "dialog", "calendar", "date-picker")
+   ```
+
+2. **If the component exists on Shadcn/ui:**
+   - Get the installation command from the docs (e.g., `npx shadcn@latest add button`)
+   - Install the component using the command
+   - Modify it if needed for the specific feature requirements
+   - Components are installed in `assets/components/ui/`
+
+3. **If the component does NOT exist on Shadcn/ui:**
+   - Check if a Radix UI primitive exists that could be used
+   - Only then create a custom component following Shadcn patterns (cva, cn, etc.)
+
+### Detect and Propose Refactoring
+
+**When reviewing or working on existing code:**
+
+If you encounter hand-made UI code that could have used Shadcn/ui or Radix UI primitives, you MUST use `AskUserQuestion` to propose refactoring:
+
+- Custom modal/dialog implementations → Shadcn Dialog
+- Custom dropdown menus → Shadcn DropdownMenu
+- Custom select inputs → Shadcn Select
+- Custom date pickers → Shadcn Calendar/DatePicker
+- Custom tabs → Shadcn Tabs
+- Custom tooltips → Shadcn Tooltip
+- Custom popovers → Shadcn Popover
+- Custom accordions → Shadcn Accordion
+- Any custom component that reinvents a standard UI pattern
+
+Example question to ask:
+```
+"I noticed this [component type] was implemented manually. Shadcn/ui provides a [component name] component that would offer better accessibility, consistency, and maintainability. Would you like me to replace it with the Shadcn version?"
+```
+
+### Component Location
+
+- Shadcn components: `assets/components/ui/`
+- Custom app components: `assets/components/`
+- Pages: `assets/pages/`

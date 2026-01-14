@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Modal } from '../components/ui/modal';
@@ -9,8 +10,6 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
-  CheckCircle,
-  XCircle,
   FileSpreadsheet,
   Users,
   RotateCcw,
@@ -24,14 +23,12 @@ export function Settings() {
   const [exporting, setExporting] = useState(false);
   const [resetModal, setResetModal] = useState<ResetType>(null);
   const [resetting, setResetting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImporting(true);
-    setMessage(null);
 
     try {
       const formData = new FormData();
@@ -40,12 +37,12 @@ export function Settings() {
       const data = await apiPost<{ success: boolean; message?: string; error?: string }>('/api/import', formData);
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message || 'Import réussi' });
+        toast.success(data.message || 'Import réussi');
       } else {
-        setMessage({ type: 'error', text: data.error || 'Erreur lors de l\'importation' });
+        toast.error(data.error || 'Erreur lors de l\'importation');
       }
     } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de l\'importation' });
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'importation');
     } finally {
       setImporting(false);
       if (fileInputRef.current) {
@@ -56,7 +53,6 @@ export function Settings() {
 
   const handleExport = async () => {
     setExporting(true);
-    setMessage(null);
 
     try {
       const response = await fetch('/export');
@@ -75,9 +71,9 @@ export function Settings() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      setMessage({ type: 'success', text: 'Export téléchargé avec succès' });
+      toast.success('Export téléchargé avec succès');
     } catch (error) {
-      setMessage({ type: 'error', text: 'Erreur lors de l\'exportation' });
+      toast.error('Erreur lors de l\'exportation');
     } finally {
       setExporting(false);
     }
@@ -87,18 +83,17 @@ export function Settings() {
     if (!resetModal) return;
 
     setResetting(true);
-    setMessage(null);
 
     try {
       const data = await apiPost<{ success: boolean; message?: string; error?: string }>(`/api/reset/${resetModal}`);
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message || 'Réinitialisation effectuée' });
+        toast.success(data.message || 'Réinitialisation effectuée');
       } else {
-        setMessage({ type: 'error', text: data.error || 'Erreur lors de la réinitialisation' });
+        toast.error(data.error || 'Erreur lors de la réinitialisation');
       }
     } catch (error) {
-      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Erreur lors de la réinitialisation' });
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la réinitialisation');
     } finally {
       setResetting(false);
       setResetModal(null);
@@ -134,29 +129,12 @@ export function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Paramètres</h1>
-
-      {message && (
-        <div
-          className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-            message.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-700'
-              : 'bg-red-50 border border-red-200 text-red-700'
-          }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 flex-shrink-0" />
-          ) : (
-            <XCircle className="w-5 h-5 flex-shrink-0" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <h1 className="text-2xl font-bold text-foreground mb-6">Paramètres</h1>
 
       <div className="grid gap-6">
         {/* Import/Export section */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5" />
             Import / Export
           </h2>
@@ -164,9 +142,9 @@ export function Settings() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Import */}
-              <div className="flex-1 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-900 mb-2">Importer des personnes</h3>
-                <p className="text-sm text-gray-500 mb-4">
+              <div className="flex-1 p-4 bg-muted rounded-lg border border-border">
+                <h3 className="font-medium text-foreground mb-2">Importer des personnes</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Importez un fichier Excel (.xlsx) contenant la liste des personnes.
                 </p>
                 <input
@@ -197,9 +175,9 @@ export function Settings() {
               </div>
 
               {/* Export */}
-              <div className="flex-1 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="font-medium text-gray-900 mb-2">Exporter les données</h3>
-                <p className="text-sm text-gray-500 mb-4">
+              <div className="flex-1 p-4 bg-muted rounded-lg border border-border">
+                <h3 className="font-medium text-foreground mb-2">Exporter les données</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Téléchargez toutes les données au format Excel.
                 </p>
                 <Button
@@ -225,28 +203,28 @@ export function Settings() {
         </Card>
 
         {/* Reset section */}
-        <Card className="p-6 border-red-100">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
+        <Card className="p-6 border-destructive/20">
+          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
             Zone de danger
           </h2>
 
           <div className="space-y-4">
             {/* Delete persons without table */}
-            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-medium text-gray-900 flex items-center gap-2">
+                  <h3 className="font-medium text-foreground flex items-center gap-2">
                     <Users className="w-4 h-4" />
                     Supprimer les personnes sans table
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Supprime uniquement les personnes qui ne sont pas assignées à une table.
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  className="flex-shrink-0 text-orange-600 hover:text-orange-700 hover:bg-orange-100 border-orange-300"
+                  className="flex-shrink-0 text-amber-600 hover:text-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30 border-amber-300 dark:border-amber-700"
                   onClick={() => setResetModal('personnes-without-table')}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -256,20 +234,20 @@ export function Settings() {
             </div>
 
             {/* Simple reset */}
-            <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+            <div className="p-4 bg-destructive/10 rounded-lg border border-destructive/20">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-medium text-gray-900 flex items-center gap-2">
+                  <h3 className="font-medium text-foreground flex items-center gap-2">
                     <RotateCcw className="w-4 h-4" />
                     Réinitialisation simple
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Supprime toutes les personnes et tables, mais conserve le plan et la configuration.
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  className="flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-100 border-red-300"
+                  className="flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                   onClick={() => setResetModal('simple')}
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
@@ -279,14 +257,14 @@ export function Settings() {
             </div>
 
             {/* Full reset */}
-            <div className="p-4 bg-red-100 rounded-lg border border-red-300">
+            <div className="p-4 bg-destructive/20 rounded-lg border border-destructive/30">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-medium text-red-900 flex items-center gap-2">
+                  <h3 className="font-medium text-destructive flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
                     Réinitialisation complète
                   </h3>
-                  <p className="text-sm text-red-700 mt-1">
+                  <p className="text-sm text-destructive/80 mt-1">
                     Supprime TOUTES les données : personnes, tables, plan et configuration. Irréversible !
                   </p>
                 </div>
@@ -312,8 +290,8 @@ export function Settings() {
           title={modalContent.title}
         >
           <div className="flex items-start gap-3 mb-4">
-            <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
-            <p className="text-gray-600">{modalContent.description}</p>
+            <AlertTriangle className="w-6 h-6 text-destructive flex-shrink-0 mt-0.5" />
+            <p className="text-muted-foreground">{modalContent.description}</p>
           </div>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setResetModal(null)}>

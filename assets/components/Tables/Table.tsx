@@ -1,11 +1,22 @@
 import React, { useEffect, useRef, useState, RefObject } from 'react'
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
-import { ChevronRight, MoreHorizontal, Loader2, Check } from 'lucide-react'
+import { MoreHorizontal, Loader2, Check, Users, UserPlus, Pencil, Trash2 } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { Modal, ModalHeader, ModalBody } from '../ui/modal'
 import { Badge } from '../ui/badge'
+import { Input } from '../ui/input'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from '../ui/context-menu'
 import { apiPost, apiPatch, apiDelete } from '../../lib/api'
 import type { Table as TableType, Personne as PersonneType } from '../../types/api'
 
@@ -19,11 +30,6 @@ interface Position {
   y: number
 }
 
-interface ContextMenuPosition {
-  mouseX: number
-  mouseY: number
-}
-
 type DragState = 'idle' | 'dragging' | 'saving' | 'saved'
 
 interface TableProps {
@@ -35,7 +41,6 @@ interface TableProps {
 
 function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
   const nodeRef = useRef<HTMLDivElement>(null)
-  const submenu = useRef<HTMLButtonElement>(null)
   const {
     id,
     nom,
@@ -58,14 +63,11 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
   const [previousPosition, setPreviousPosition] = useState<Position | null>(null)
 
   /**
-   * Menus
+   * Modal for adding people
    */
-  const [contextMenu, setContextMenu] = useState<ContextMenuPosition | null>(null)
   const [open, setOpen] = useState(false)
-  const [openSubMenu, setOpenSubMenu] = useState(false)
 
   const handleOpen = () => setOpen(true)
-  const handleSubMenuOpen = () => setOpenSubMenu(true)
   const handleClose = () => {
     setOpen(false)
     setStringToSearch('')
@@ -73,21 +75,6 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
       setHasAddedPersonne(false)
       load()
     }
-  }
-  const handleMenuClose = () => {
-    setOpenSubMenu(false)
-    setContextMenu(null)
-  }
-  const handleContextMenu = (event: React.MouseEvent) => {
-    event.preventDefault()
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX - 2,
-            mouseY: event.clientY - 4,
-          }
-        : null,
-    )
   }
 
   /**
@@ -267,151 +254,118 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
   return (
     !loading && (
       <>
-        <Draggable
-          nodeRef={nodeRef}
-          defaultPosition={{
-            x: positionPx.x,
-            y: positionPx.y,
-          }}
-          bounds="parent"
-          offsetParent={planRef.current || undefined}
-          onStart={handleStart}
-          onStop={handleStop}
-        >
-          <div
-            ref={nodeRef}
-            className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
-              dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
-            }`}
-            style={{
-              background: couleur,
-              width: `${height}px`,
-              height: `${height}px`,
+        <ContextMenu>
+          <Draggable
+            nodeRef={nodeRef}
+            defaultPosition={{
+              x: positionPx.x,
+              y: positionPx.y,
             }}
-            onContextMenu={handleContextMenu}
+            bounds="parent"
+            offsetParent={planRef.current || undefined}
+            onStart={handleStart}
+            onStop={handleStop}
           >
-            <CircularProgressbarWithChildren
-              strokeWidth={4}
-              value={percentPresent || 0}
-              styles={{
-                path: {
-                  stroke: 'oklch(var(--foreground))',
-                },
+            <div
+              ref={nodeRef}
+              className={`absolute rounded-full text-white z-[1] mb-6 cursor-move transition-opacity duration-200 ${
+                dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
+              }`}
+              style={{
+                background: couleur,
+                width: `${height}px`,
+                height: `${height}px`,
               }}
             >
-              <p className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
-                T{numero}
-              </p>
-              <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
-                {personnes.length} / {nbMax}
-              </p>
-              <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-foreground text-center whitespace-nowrap">
-                {nom}
-              </p>
-            </CircularProgressbarWithChildren>
+              <ContextMenuTrigger className="block w-full h-full">
+                <CircularProgressbarWithChildren
+                  strokeWidth={4}
+                  value={percentPresent || 0}
+                  styles={{
+                    path: {
+                      stroke: 'oklch(var(--foreground))',
+                    },
+                  }}
+                >
+                  <p className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
+                    T{numero}
+                  </p>
+                  <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
+                    {personnes.length} / {nbMax}
+                  </p>
+                  <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-foreground text-center whitespace-nowrap">
+                    {nom}
+                  </p>
+                </CircularProgressbarWithChildren>
 
-            {/* Overlay loader/check */}
-            {(dragState === 'saving' || dragState === 'saved') && (
-              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
-                {dragState === 'saving' && (
-                  <Loader2 className="h-6 w-6 text-white animate-spin" />
-                )}
-                {dragState === 'saved' && (
-                  <div className="bg-green-500 rounded-full p-1 animate-bounce">
-                    <Check className="h-5 w-5 text-white" />
+                {/* Overlay loader/check */}
+                {(dragState === 'saving' || dragState === 'saved') && (
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
+                    {dragState === 'saving' && (
+                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+                    )}
+                    {dragState === 'saved' && (
+                      <div className="bg-green-500 rounded-full p-1 animate-bounce">
+                        <Check className="h-5 w-5 text-white" />
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </div>
-        </Draggable>
-
-        {/* Context Menu */}
-        {contextMenu !== null && (
-          <div
-            className="fixed inset-0 z-40"
-            onClick={handleMenuClose}
-          />
-        )}
-        {contextMenu !== null && (
-          <div
-            className="fixed z-50 bg-popover rounded-lg shadow-lg border border-border py-1 min-w-48"
-            style={{ top: contextMenu.mouseY, left: contextMenu.mouseX }}
-          >
-            <button
-              ref={submenu}
-              type="button"
-              onClick={handleSubMenuOpen}
-              className="w-full px-4 py-2 text-sm text-left text-popover-foreground hover:bg-accent flex items-center justify-between"
-            >
-              <span>Personnes</span>
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <hr className="my-1 border-border" />
-            <a
-              href={`/table/${id}/edit`}
-              className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
-            >
-              Editer la table
-            </a>
-            <div className="px-2 py-2">
-              <button
-                type="button"
-                onClick={() =>
-                  window.confirm(
-                    'Êtes vous sûr de vouloir supprimer cette table ?',
-                  ) && handleDelete()
-                }
-                className="w-full px-3 py-1.5 text-sm font-medium text-destructive-foreground bg-destructive rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={personnes.length > 0}
-              >
-                Supprimer la table
-              </button>
+              </ContextMenuTrigger>
             </div>
-          </div>
-        )}
-
-        {/* Submenu Personnes */}
-        {openSubMenu && submenu.current && (
-          <div
-            className="fixed z-50 bg-popover rounded-lg shadow-lg border border-border py-1 min-w-52"
-            style={{
-              top: submenu.current.getBoundingClientRect().top - 8,
-              left: submenu.current.getBoundingClientRect().right + 4,
-            }}
-          >
-            <button
-              type="button"
-              onClick={handleOpen}
-              disabled={personnes.length >= nbMax}
-              className="w-full px-4 py-2 text-sm text-left text-popover-foreground hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Ajouter une personne
-            </button>
-            {personnes.length >= nbMax ? (
-              <span className="block px-4 py-2 text-sm text-muted-foreground">
-                Créer une personne
-              </span>
-            ) : (
-              <a
-                href={`/personne/new?table=${id}`}
-                className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
-              >
-                Créer une personne
+          </Draggable>
+          <ContextMenuContent className="w-56">
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>
+                <Users className="h-4 w-4 mr-2" />
+                Personnes
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent className="w-56">
+                <ContextMenuItem
+                  onClick={handleOpen}
+                  disabled={personnes.length >= nbMax}
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Ajouter une personne
+                </ContextMenuItem>
+                <ContextMenuItem asChild disabled={personnes.length >= nbMax}>
+                  <a href={`/personne/new?table=${id}`}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Créer une personne
+                  </a>
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+                <div className="px-2 py-1 max-h-40 overflow-y-auto">
+                  {personnes.length > 0 ? (
+                    personnes.map((personne, index) => (
+                      <PersonneItem key={index} personne={personne} />
+                    ))
+                  ) : (
+                    <p className="px-2 py-1 text-sm text-muted-foreground">Aucune personne</p>
+                  )}
+                </div>
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSeparator />
+            <ContextMenuItem asChild>
+              <a href={`/table/${id}/edit`}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Editer la table
               </a>
-            )}
-            <hr className="my-1 border-border" />
-            <div className="px-2 py-1 max-h-40 overflow-y-auto">
-              {personnes.length > 0 ? (
-                personnes.map((personne, index) => (
-                  <PersonneItem key={index} personne={personne} />
-                ))
-              ) : (
-                <p className="px-2 py-1 text-sm text-muted-foreground">Aucune personne</p>
-              )}
-            </div>
-          </div>
-        )}
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={() =>
+                window.confirm('Êtes vous sûr de vouloir supprimer cette table ?') && handleDelete()
+              }
+              disabled={personnes.length > 0}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Supprimer la table
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
 
         {/* Modal Ajouter Personne */}
         <Modal open={open} onClose={handleClose} size="4xl">
@@ -425,13 +379,13 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
           </ModalHeader>
           <ModalBody className="h-[60vh] overflow-hidden flex flex-col">
             <div className="mb-4">
-              <input
+              <Input
                 type="search"
                 placeholder="Rechercher une personne"
                 aria-label="Rechercher"
                 value={stringToSearch}
                 onChange={handleSearch}
-                className="w-full md:w-1/2 px-3 py-2 text-sm border border-input bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                className="w-full md:w-1/2"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start overflow-y-auto flex-1">

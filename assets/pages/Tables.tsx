@@ -44,7 +44,7 @@ export function Tables() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -52,7 +52,7 @@ export function Tables() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Tables</h1>
+        <h1 className="text-2xl font-bold text-foreground">Tables</h1>
         <Link to="/tables/new">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
@@ -63,7 +63,7 @@ export function Tables() {
 
       {tables.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-gray-500 mb-4">Aucune table pour le moment.</p>
+          <p className="text-muted-foreground mb-4">Aucune table pour le moment.</p>
           <Link to="/tables/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
@@ -88,7 +88,7 @@ export function Tables() {
                   <div className="flex items-start justify-between mb-3 pt-1">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-900">N°{table.numero}</span>
+                        <span className="text-lg font-bold text-foreground">N°{table.numero}</span>
                         {table.categorie && (
                           <Badge
                             variant="outline"
@@ -102,7 +102,7 @@ export function Tables() {
                         )}
                       </div>
                       {table.nom && (
-                        <p className="text-sm text-gray-600">{table.nom}</p>
+                        <p className="text-sm text-muted-foreground">{table.nom}</p>
                       )}
                     </div>
                     <Badge variant={getOccupancyColor(occupancy, table.nombrePlacesMax)}>
@@ -113,26 +113,23 @@ export function Tables() {
 
                   {table.personnes && table.personnes.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-xs text-gray-500 mb-1">Personnes assignées :</p>
+                      <p className="text-xs text-muted-foreground mb-1">Personnes assignées :</p>
                       <div className="flex flex-wrap gap-1">
                         {table.personnes.slice(0, 5).map((p) => (
-                          <span
-                            key={p.id}
-                            className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded"
-                          >
+                          <Badge key={p.id} variant="default" className="text-xs">
                             {p.prenom} {p.nom}
-                          </span>
+                          </Badge>
                         ))}
                         {table.personnes.length > 5 && (
-                          <span className="text-xs text-gray-500">
+                          <Badge variant="secondary" className="text-xs">
                             +{table.personnes.length - 5} autres
-                          </span>
+                          </Badge>
                         )}
                       </div>
                     </div>
                   )}
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-2 pt-2 border-t border-border">
                     <Link to={`/tables/${table.id}/edit`} className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                         <Edit2 className="w-3 h-3 mr-1" />
@@ -142,7 +139,7 @@ export function Tables() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => setDeleteId(table.id)}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -159,7 +156,7 @@ export function Tables() {
         onClose={() => setDeleteId(null)}
         title="Supprimer la table"
       >
-        <p className="text-gray-600 mb-4">
+        <p className="text-muted-foreground mb-4">
           Êtes-vous sûr de vouloir supprimer cette table ? Les personnes assignées seront désassignées.
         </p>
         <div className="flex justify-end gap-3">

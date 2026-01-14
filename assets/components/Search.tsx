@@ -1,11 +1,19 @@
 import React, { useMemo, useState, ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { useSearchPersonnes } from '../hooks'
 import { PersonCard } from './PersonCard'
 import { ConfirmModal } from './ui/modal'
 import { Checkbox } from './ui/checkbox'
 import { Badge } from './ui/badge'
+import { Input } from './ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
 import { apiPut, apiRequest } from '../lib/api'
 import type { Personne as PersonneType } from '../types/api'
 
@@ -131,35 +139,29 @@ export function Personne({ isHotesse = false, personne, children }: PersonneProp
               <h5 className="font-semibold text-foreground">{prenom}</h5>
               <h5 className="font-semibold text-foreground">{nom}</h5>
             </div>
-            <div className="relative">
-              <button
-                type="button"
-                className="p-1.5 text-muted-foreground hover:bg-accent rounded-lg transition-colors"
-                onClick={(e) => {
-                  const menu = e.currentTarget.nextElementSibling as HTMLElement
-                  menu?.classList.toggle('hidden')
-                }}
-              >
-                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3 9.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"/>
-                </svg>
-              </button>
-              <div className="hidden absolute right-0 mt-1 w-40 bg-popover rounded-lg shadow-lg border border-border py-1 z-10">
-                <a
-                  href={`/personne/${id}/edit`}
-                  className="block px-4 py-2 text-sm text-popover-foreground hover:bg-accent"
-                >
-                  Editer la fiche
-                </a>
-                <hr className="my-1 border-border" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10"
+                  className="p-1.5 text-muted-foreground hover:bg-accent rounded-lg transition-colors"
                 >
-                  Supprimer
+                  <MoreHorizontal className="h-4 w-4" />
                 </button>
-              </div>
-            </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href={`/personne/${id}/edit`} className="flex items-center gap-2">
+                    <Pencil className="h-4 w-4" />
+                    Editer la fiche
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive focus:text-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Supprimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="space-y-1 text-sm text-muted-foreground pl-4">
             <p>{table ? `Table n°${table.numero}` : 'Pas de table'}</p>
@@ -235,8 +237,7 @@ export function SearchBar() {
 
   return (
     <>
-      <input
-        className="w-full px-3 py-2 text-sm border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+      <Input
         type="search"
         placeholder="Rechercher"
         aria-label="Rechercher"
