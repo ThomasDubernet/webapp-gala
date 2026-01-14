@@ -113,9 +113,9 @@ export function apiGet<T = unknown>(url: string): Promise<T> {
 /**
  * POST request helper
  */
-export function apiPost<T = unknown>(
+export function apiPost<T = unknown, D = Record<string, unknown>>(
   url: string,
-  data?: Record<string, unknown> | FormData
+  data?: D | FormData
 ): Promise<T> {
   return apiRequest<T>(url, {
     method: 'POST',
@@ -126,9 +126,9 @@ export function apiPost<T = unknown>(
 /**
  * PUT request helper
  */
-export function apiPut<T = unknown>(
+export function apiPut<T = unknown, D = Record<string, unknown>>(
   url: string,
-  data?: Record<string, unknown> | FormData
+  data?: D | FormData
 ): Promise<T> {
   return apiRequest<T>(url, {
     method: 'PUT',
@@ -139,9 +139,9 @@ export function apiPut<T = unknown>(
 /**
  * PATCH request helper
  */
-export function apiPatch<T = unknown>(
+export function apiPatch<T = unknown, D = Record<string, unknown>>(
   url: string,
-  data?: Record<string, unknown> | FormData
+  data?: D | FormData
 ): Promise<T> {
   return apiRequest<T>(url, {
     method: 'PATCH',

@@ -4,7 +4,7 @@ import { usePersonne } from '../hooks/usePersonnes'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
-import type { Personne, Civilite, CategoriePersonne, Table } from '../types/api'
+import type { Personne, Civilite, CategoriePersonne, Table, PersonnePayload } from '../types/api'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -137,11 +137,11 @@ export function PersonneDialog() {
     }
   }, [tableId, tables])
 
-  const buildPayload = (): Record<string, unknown> => ({
-    nom: formData.nom,
+  const buildPayload = (): PersonnePayload => ({
+    nom: formData.nom || '',
     prenom: formData.prenom || null,
-    email: formData.email,
-    telephone: formData.telephone,
+    email: formData.email || '',
+    telephone: formData.telephone || null,
     adresse: formData.adresse || null,
     codePostal: formData.codePostal || null,
     ville: formData.ville || null,

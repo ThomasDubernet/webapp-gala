@@ -4,7 +4,7 @@ import { useTable } from '../hooks/useTables'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
-import type { Table, CategorieTable } from '../types/api'
+import type { Table, CategorieTable, TablePayload } from '../types/api'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -87,10 +87,10 @@ export function TableDialog() {
 
     try {
       // Build API payload
-      const payload: Record<string, unknown> = {
+      const payload: TablePayload = {
         nom: formData.nom || null,
-        numero: formData.numero,
-        nombrePlacesMax: formData.nombrePlacesMax,
+        numero: formData.numero ?? 0,
+        nombrePlacesMax: formData.nombrePlacesMax ?? 10,
         posX: formData.posX?.toString() || '0',
         posY: formData.posY?.toString() || '0',
         categorie: formData.categorie ? `/api/categorie_tables/${formData.categorie.id}` : null,

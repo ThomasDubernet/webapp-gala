@@ -86,3 +86,44 @@ export interface ApiError {
   message?: string;
   error?: string;
 }
+
+/**
+ * API Payload types for create/update operations
+ * These use IRI format for relations (e.g., "/api/civilites/1")
+ */
+
+/** IRI reference format used by API Platform */
+export type IRI = string | null;
+
+/** Payload for creating or updating a Personne */
+export interface PersonnePayload {
+  [key: string]: string | number | boolean | null | undefined;
+  nom: string;
+  prenom?: string | null;
+  email: string;
+  telephone?: string | null;
+  adresse?: string | null;
+  codePostal?: string | null;
+  ville?: string | null;
+  montantBillet?: string | null;
+  montantPaye?: string | null;
+  dateReglement?: string | null;
+  moyenPaiement?: string | null;
+  commentaire?: string | null;
+  present?: boolean;
+  civilite?: IRI;
+  categorie?: IRI;
+  table?: IRI;
+  conjoint?: IRI;
+}
+
+/** Payload for creating or updating a Table */
+export interface TablePayload {
+  [key: string]: string | number | boolean | null | undefined;
+  nom?: string | null;
+  numero: number;
+  nombrePlacesMax: number;
+  posX: string;
+  posY: string;
+  categorie?: IRI;
+}
