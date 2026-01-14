@@ -106,7 +106,8 @@ export function AppLayout() {
             {!isHome && <NavButton to="/plan" end>Accès au plan</NavButton>}
             <NavButton to="/tables/new" end>Créer une table</NavButton>
             <NavButton to="/personnes/new" end>Créer une personne</NavButton>
-            <NavButton to="/personnes" end>Liste des personnes</NavButton>
+            <NavButton to="/tables" end>Tables</NavButton>
+            <NavButton to="/personnes" end>Personnes</NavButton>
             <div className="mx-4 w-64">
               <SearchBar />
             </div>
@@ -204,11 +205,18 @@ export function AppLayout() {
                 Créer une personne
               </NavLink>
               <NavLink
+                to="/tables"
+                className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Tables
+              </NavLink>
+              <NavLink
                 to="/personnes"
                 className="block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary/10 text-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Liste des personnes
+                Personnes
               </NavLink>
               <div className="pt-2">
                 <SearchBar />
