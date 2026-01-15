@@ -447,13 +447,19 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                   cursor: getCursor(),
                 }}
               >
-                {/* Table number centered */}
-                <span className="text-xs font-bold">T{numero}</span>
+                {/* Table content - counter-rotated to stay upright */}
+                <div
+                  className="flex flex-col items-center justify-center"
+                  style={{ transform: `rotate(-${undoState.present.rotation}deg)` }}
+                >
+                  {/* Table number centered */}
+                  <span className="text-xs font-bold">T{numero}</span>
 
-                {/* Occupation badge */}
-                <span className="text-[10px] font-medium mt-0.5 bg-black/30 px-1 rounded">
-                  {occupationCount}/{nbMax}
-                </span>
+                  {/* Occupation badge */}
+                  <span className="text-[10px] font-medium mt-0.5 bg-black/30 px-1 rounded">
+                    {occupationCount}/{nbMax}
+                  </span>
+                </div>
 
                 {/* Table name below */}
                 {nom && (
