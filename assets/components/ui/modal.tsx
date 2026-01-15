@@ -184,6 +184,7 @@ interface ConfirmModalProps {
   open: boolean
   onClose?: () => void
   onConfirm?: () => void
+  onCancel?: () => void
   title?: string
   message?: string
   confirmText?: string
@@ -195,6 +196,7 @@ export function ConfirmModal({
   open,
   onClose,
   onConfirm,
+  onCancel,
   title = 'Confirmation',
   message = 'Êtes-vous sûr ?',
   confirmText = 'Confirmer',
@@ -205,6 +207,11 @@ export function ConfirmModal({
     ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
     : 'bg-primary hover:bg-primary/90 text-primary-foreground'
 
+  const handleCancel = () => {
+    onCancel?.()
+    onClose?.()
+  }
+
   return (
     <Modal open={open} onClose={onClose} size="sm">
       <ModalHeader onClose={onClose}>{title}</ModalHeader>
@@ -214,7 +221,7 @@ export function ConfirmModal({
       <ModalFooter>
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleCancel}
           className="px-4 py-2 text-sm font-medium text-foreground bg-background border border-input rounded-lg hover:bg-accent transition-colors"
         >
           {cancelText}

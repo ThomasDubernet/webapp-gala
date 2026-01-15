@@ -13,6 +13,7 @@ interface PersonCardProps {
   personne: Personne
   onRefresh?: () => void
   variant?: 'default' | 'fullpage'
+  onEdit?: (id: number) => void
 }
 
 type PaymentStatus = 'paid' | 'partial' | 'unpaid'
@@ -23,7 +24,7 @@ const paymentBadgeConfig: Record<PaymentStatus, { label: string; variant: 'succe
   unpaid: { label: 'Non payé', variant: 'destructive', icon: '✗' },
 }
 
-export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'default' }: PersonCardProps) {
+export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'default', onEdit }: PersonCardProps) {
   const [person, setPerson] = useState<Personne>(initialPersonne)
   const [awaitingCheckedValue, setAwaitingCheckedValue] = useState<boolean | null>(null)
   const [openModal, setOpenModal] = useState(false)
@@ -120,11 +121,17 @@ export function PersonCard({ personne: initialPersonne, onRefresh, variant = 'de
 
           {/* Actions */}
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" asChild>
-              <a href={`/personne/${id}/edit`} title="Modifier">
+            {onEdit ? (
+              <Button variant="ghost" size="icon" onClick={() => onEdit(id)} title="Modifier">
                 <Pencil className="h-4 w-4" />
-              </a>
-            </Button>
+              </Button>
+            ) : (
+              <Button variant="ghost" size="icon" asChild>
+                <a href={`/personne/${id}/edit`} title="Modifier">
+                  <Pencil className="h-4 w-4" />
+                </a>
+              </Button>
+            )}
           </div>
         </CardHeader>
 

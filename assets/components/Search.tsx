@@ -16,6 +16,7 @@ import {
 } from './ui/dropdown-menu'
 import { apiPut, apiRequest } from '../lib/api'
 import { Kbd } from './ui/kbd'
+import { useDialogs } from '../contexts/DialogContext'
 import type { Personne as PersonneType } from '../types/api'
 
 interface PersonneProps {
@@ -214,6 +215,7 @@ export function PersonneProvider({ personne, load, isHotesse = false }: Personne
 export function SearchBar() {
   const [activeModal, setActiveModal] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
+  const { openPersonneDialog } = useDialogs()
 
   // Detect if user is on Mac
   const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0
@@ -314,6 +316,10 @@ export function SearchBar() {
                   personne={personne}
                   onRefresh={refresh}
                   variant="default"
+                  onEdit={(id) => {
+                    handleClose()
+                    openPersonneDialog(id)
+                  }}
                 />
               ))
             ) : hasSearched ? (

@@ -12,6 +12,7 @@ import { Select } from './ui/select'
 import { Textarea } from './ui/textarea'
 import { Checkbox } from './ui/checkbox'
 import { DatePicker } from './ui/date-picker'
+import { ConfirmModal } from './ui/modal'
 import { Save, Loader2, UserPlus } from 'lucide-react'
 import {
   Dialog,
@@ -47,6 +48,8 @@ export function PersonneDialog() {
   // Form state
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showSmsModal, setShowSmsModal] = useState(false)
+  const [pendingPayload, setPendingPayload] = useState<PersonnePayload | null>(null)
   const [formData, setFormData] = useState<Partial<Personne>>({
     nom: '',
     prenom: '',
@@ -156,6 +159,40 @@ export function PersonneDialog() {
     table: formData.table ? `/api/tables/${formData.table.id}` : null,
   })
 
+  // Update presence with SMS via dedicated endpoint
+  const updatePresenceWithSms = async (personneId: number, withSms: boolean) => {
+    await apiPut(`/api/personnes/${personneId}/update-presence`, {
+      present: true,
+      withSms,
+    })
+  }
+
+  // Save and optionally trigger SMS
+  const saveAndTriggerSms = async (payload: PersonnePayload, withSms: boolean) => {
+    setSaving(true)
+    setError(null)
+
+    try {
+      await apiPut(`/api/personnes/${id}`, payload)
+      await updatePresenceWithSms(id!, withSms)
+      queryClient.invalidateQueries({ queryKey: ['personnes'] })
+      closePersonneDialog()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+    } finally {
+      setSaving(false)
+      setPendingPayload(null)
+      setShowSmsModal(false)
+    }
+  }
+
+  // Handle SMS confirmation modal
+  const handleSmsConfirm = (withSms: boolean) => {
+    if (pendingPayload && id) {
+      saveAndTriggerSms(pendingPayload, withSms)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -163,6 +200,31 @@ export function PersonneDialog() {
 
     try {
       const payload = buildPayload()
+
+      // Check if presence is changing from false to true (edit mode only)
+      if (!isNew && id) {
+        const wasPresent = existingPersonne?.present || false
+        const willBePresent = formData.present || false
+        const presenceChangedToTrue = !wasPresent && willBePresent
+
+        if (presenceChangedToTrue) {
+          const smsSended = existingPersonne?.smsSended || false
+
+          if (smsSended) {
+            // SMS already sent - ask user if they want to resend
+            setPendingPayload(payload)
+            setShowSmsModal(true)
+            setSaving(false)
+            return
+          } else {
+            // SMS not sent yet - save and send SMS automatically
+            await saveAndTriggerSms(payload, false)
+            return
+          }
+        }
+      }
+
+      // Normal save (creation or no presence change)
       const url = isNew ? '/api/personnes' : `/api/personnes/${id}`
       const apiCall = isNew ? apiPost : apiPut
       const savedPersonne = await apiCall<Personne>(url, payload)
@@ -222,7 +284,24 @@ export function PersonneDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && closePersonneDialog()}>
+    <>
+      {/* SMS confirmation modal */}
+      <ConfirmModal
+        open={showSmsModal}
+        onClose={() => {
+          setShowSmsModal(false)
+          setPendingPayload(null)
+          setSaving(false)
+        }}
+        onConfirm={() => handleSmsConfirm(true)}
+        title="Envoi de SMS"
+        message="Un SMS a déjà été envoyé à cette personne. Voulez-vous renvoyer un SMS ?"
+        confirmText="Oui, renvoyer"
+        cancelText="Non, sans SMS"
+        onCancel={() => handleSmsConfirm(false)}
+      />
+
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && closePersonneDialog()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>
@@ -525,5 +604,6 @@ export function PersonneDialog() {
         )}
       </DialogContent>
     </Dialog>
+    </>
   )
 }

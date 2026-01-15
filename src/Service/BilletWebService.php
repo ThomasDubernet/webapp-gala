@@ -49,7 +49,7 @@ class BilletWebService
                                             'price' => $person->getMontantPaye(),
                                             'used' => 0,
                                             'custom' => [
-                                                'Portable' => '+33'.$person->getTelephone(),
+                                                'Portable' => $person->getTelephone() ? '+33'.$person->getTelephone() : null,
                                                 'Adresse' => $person->getAdresse(),
                                                 'Code Postal' => $person->getCodePostal(),
                                                 'Ville' => $person->getVille(),
@@ -100,7 +100,7 @@ class BilletWebService
                                             'price' => $person->getMontantPaye(),
                                             'used' => 0,
                                             'custom' => [
-                                                'Portable' => '+33'.$person->getTelephone(),
+                                                'Portable' => $person->getTelephone() ? '+33'.$person->getTelephone() : null,
                                                 'Adresse' => $person->getAdresse(),
                                                 'Code Postal' => $person->getCodePostal(),
                                                 'Ville' => $person->getVille(),
@@ -114,7 +114,7 @@ class BilletWebService
                                             'price' => $conjoint->getMontantPaye(),
                                             'used' => 0,
                                             'custom' => [
-                                                'Portable' => '+33'.$person->getTelephone(),
+                                                'Portable' => $person->getTelephone() ? '+33'.$person->getTelephone() : null,
                                                 'Adresse' => $person->getAdresse(),
                                                 'Code Postal' => $person->getCodePostal(),
                                                 'Ville' => $person->getVille(),
