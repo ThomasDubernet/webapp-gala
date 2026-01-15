@@ -138,3 +138,9 @@ export interface TablePayload {
   rotation?: string | null;
   categorie?: IRI;
 }
+
+/** Payload for creating or updating a CategorieTable */
+export interface CategorieTablePayload {
+  nom: string;
+  couleur: string;
+}

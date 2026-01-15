@@ -112,13 +112,6 @@ function getShapeStyles(shape: TableShape): { borderRadius: string } {
   }
 }
 
-// Calculate opacity based on occupation rate
-function getOccupationOpacity(current: number, max: number): number {
-  if (max === 0) return 0.3
-  const rate = current / max
-  return 0.3 + (0.7 * rate)
-}
-
 function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect, editable }: TableProps) {
   const targetRef = useRef<HTMLDivElement>(null)
   const moveableRef = useRef<Moveable>(null)
@@ -372,7 +365,6 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
 
   // Calculate occupation
   const occupationCount = personnes.length
-  const occupationOpacity = getOccupationOpacity(occupationCount, nbMax)
   const shapeStyles = getShapeStyles(currentShape)
 
   // Cursor based on state (when not using Moveable handles)
@@ -434,8 +426,7 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                   width: pxState.width,
                   height: pxState.height,
                   transform: `rotate(${undoState.present.rotation}deg)`,
-                  backgroundColor: couleur,
-                  opacity: occupationOpacity,
+                  background: couleur,
                   ...shapeStyles,
                   display: 'flex',
                   flexDirection: 'column',

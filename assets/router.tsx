@@ -6,6 +6,7 @@ import { Tables } from './pages/Tables'
 import { Evenement } from './pages/Evenement'
 import { Hotesse } from './pages/Hotesse'
 import { Settings } from './pages/Settings'
+import { Categories } from './pages/Categories'
 import ConnectedLayout from '@/components/layout/ConnectedLayout'
 
 export const router = createBrowserRouter([
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
       { path: 'personnes', element: <Personnes /> },
       { path: 'tables', element: <Tables /> },
       { path: 'evenement/edit', element: <Evenement /> },
+      { path: 'categories', element: <Categories /> },
       { path: 'settings', element: <Settings /> },
       // Legacy URL redirects
       { path: 'personne', element: <Navigate to="/personnes" replace /> },
