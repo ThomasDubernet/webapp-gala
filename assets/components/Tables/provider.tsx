@@ -14,9 +14,31 @@ interface TableProviderProps {
   tables: TableType[]
 }
 
+// Hook to detect mobile devices
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      // Check both screen size and touch capability
+      const isMobileSize = window.innerWidth < 768
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      setIsMobile(isMobileSize && hasTouch)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  return isMobile
+}
+
 function TableProvider({ plan, container, load, tables }: TableProviderProps) {
   const [planSize, setPlanSize] = useState<PlanSize | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedTableId, setSelectedTableId] = useState<number | null>(null)
+  const isMobile = useIsMobile()
 
   // Function to update plan size
   const updatePlanSize = useCallback(() => {
@@ -71,12 +93,26 @@ function TableProvider({ plan, container, load, tables }: TableProviderProps) {
     }
   }, [container, plan, updatePlanSize])
 
+  // Handle selection - click anywhere on plan background to deselect
+  const handlePlanClick = useCallback((e: React.MouseEvent) => {
+    // Deselect if clicking on the wrapper div (not on a table)
+    // Tables stop propagation via their own onClick
+    if (e.currentTarget === e.target) {
+      setSelectedTableId(null)
+    }
+  }, [])
+
+  // Handle table selection
+  const handleSelectTable = useCallback((id: number) => {
+    setSelectedTableId(prevId => prevId === id ? null : id)
+  }, [])
+
   if (loading || !planSize) {
     return null
   }
 
   return (
-    <>
+    <div onClick={handlePlanClick} style={{ position: 'absolute', inset: 0 }}>
       {tables.map((table) => (
         <Table
           key={table.id}
@@ -84,9 +120,12 @@ function TableProvider({ plan, container, load, tables }: TableProviderProps) {
           load={load}
           planSize={planSize}
           planRef={plan}
+          isSelected={selectedTableId === table.id}
+          onSelect={handleSelectTable}
+          editable={!isMobile}
         />
       ))}
-    </>
+    </div>
   )
 }
 

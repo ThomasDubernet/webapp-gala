@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGetMany } from '../hooks/useGetMany';
 import { apiDelete } from '../lib/api';
 import { useDialogs } from '../contexts/DialogContext';
-import type { Table } from '../types/api';
+import type { Table, TableShape } from '../types/api';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -40,6 +40,16 @@ export function Tables() {
     if (ratio >= 0.8) return 'warning';
     if (ratio >= 0.5) return 'default';
     return 'success';
+  };
+
+  const getShapeIcon = (shape: TableShape | undefined): string => {
+    switch (shape) {
+      case 'circle': return '○';
+      case 'oval': return '⬭';
+      case 'rectangle': return '▭';
+      case 'rounded-rectangle': return '▢';
+      default: return '○';
+    }
   };
 
   if (loading) {
@@ -85,6 +95,7 @@ export function Tables() {
                   <div className="flex items-start justify-between mb-3 pt-1">
                     <div>
                       <div className="flex items-center gap-2">
+                        <span className="text-lg" title={table.shape || 'circle'}>{getShapeIcon(table.shape)}</span>
                         <span className="text-lg font-bold text-foreground">N°{table.numero}</span>
                         {table.categorie && (
                           <Badge
