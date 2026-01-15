@@ -8,6 +8,7 @@
  */
 
 import type { ApiError } from '../types';
+import { translateError } from './errorTranslations';
 
 /**
  * Get a cookie value by name
@@ -87,16 +88,17 @@ export async function apiRequest<T = unknown>(
   try {
     data = await response.json();
   } catch {
-    throw new ApiRequestError('Invalid JSON response', response.status);
+    throw new ApiRequestError(translateError('Invalid JSON response'), response.status);
   }
 
   if (!response.ok) {
     const errorData = data as ApiError;
-    const message =
+    const rawMessage =
       errorData['hydra:description'] ||
       errorData.message ||
       errorData.error ||
       `API error: ${response.status}`;
+    const message = translateError(rawMessage);
     throw new ApiRequestError(message, response.status, errorData);
   }
 

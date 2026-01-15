@@ -88,7 +88,7 @@ export function TableDialog() {
     try {
       // Build API payload
       const payload: TablePayload = {
-        nom: formData.nom || null,
+        nom: formData.nom || '',
         numero: formData.numero ?? 0,
         nombrePlacesMax: formData.nombrePlacesMax ?? 10,
         posX: formData.posX?.toString() || '0',
