@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
+  Palette,
   RefreshCw,
   Sparkles,
   Table2,
@@ -202,6 +203,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <NavLink to="/evenement/edit">
                     <Calendar className="h-4 w-4" />
                     <span>Éditer l'évènement</span>
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/categories')}>
+                  <NavLink to="/categories">
+                    <Palette className="h-4 w-4" />
+                    <span>Catégories de table</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

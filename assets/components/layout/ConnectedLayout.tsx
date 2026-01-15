@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { AppSidebar } from '@/components/app-sidebar'
 import { SearchBar } from '@/components/Search'
 import { Separator } from '@/components/ui/separator'
@@ -12,6 +12,9 @@ import { PersonneDialog } from '@/components/PersonneDialog'
 import { TableDialog } from '@/components/TableDialog'
 
 export default function ConnectedLayout() {
+  const location = useLocation()
+  const isPlanPage = location.pathname === '/plan' || location.pathname === '/'
+
   return (
     <DialogProvider>
       <SidebarProvider>
@@ -27,7 +30,7 @@ export default function ConnectedLayout() {
               <SearchBar />
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className={`flex flex-1 flex-col ${isPlanPage ? 'overflow-hidden' : 'gap-4 p-4'}`}>
             <Outlet />
           </div>
         </SidebarInset>

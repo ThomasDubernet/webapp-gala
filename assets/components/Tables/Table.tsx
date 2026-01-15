@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState, RefObject } from 'react'
-import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
-import { CircularProgressbarWithChildren } from 'react-circular-progressbar'
-import { MoreHorizontal, Loader2, Check, Users, UserPlus, Pencil, Trash2 } from 'lucide-react'
+import React, { useEffect, useRef, useState, RefObject, useReducer, useCallback } from 'react'
+import Moveable from 'react-moveable'
+import { MoreHorizontal, Loader2, Check, Users, UserPlus, Pencil, Trash2, Undo2, Redo2 } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { useDialogs } from '../../contexts/DialogContext'
@@ -18,31 +17,104 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '../ui/context-menu'
-import { apiPost, apiPatch, apiDelete } from '../../lib/api'
+import { TableToolbar } from './TableToolbar'
+import { apiPatch, apiDelete, apiPost } from '../../lib/api'
 import { queryClient } from '../../lib/query-client'
-import type { Table as TableType, Personne as PersonneType } from '../../types/api'
+import type { Table as TableType, Personne as PersonneType, TableShape } from '../../types/api'
 
 interface PlanSize {
   width: number
   height: number
 }
 
-interface Position {
-  x: number
-  y: number
-}
-
-type DragState = 'idle' | 'dragging' | 'saving' | 'saved'
+type SaveState = 'idle' | 'saving' | 'saved'
 
 interface TableProps {
   table: TableType
   load: () => void
   planSize: PlanSize
   planRef: RefObject<HTMLDivElement | null>
+  isSelected: boolean
+  onSelect: (id: number) => void
+  editable: boolean
 }
 
-function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
-  const nodeRef = useRef<HTMLDivElement>(null)
+// Undo/Redo state management
+interface TableState {
+  posX: number
+  posY: number
+  width: number
+  height: number
+  rotation: number
+  shape: TableShape
+}
+
+interface UndoState {
+  past: TableState[]
+  present: TableState
+  future: TableState[]
+}
+
+type UndoAction =
+  | { type: 'SET'; state: TableState }
+  | { type: 'PUSH'; state: TableState }
+  | { type: 'UNDO' }
+  | { type: 'REDO' }
+  | { type: 'CLEAR' }
+
+const MAX_HISTORY = 20
+
+function undoReducer(state: UndoState, action: UndoAction): UndoState {
+  switch (action.type) {
+    case 'SET':
+      return { past: [], present: action.state, future: [] }
+    case 'PUSH':
+      return {
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.present],
+        present: action.state,
+        future: [],
+      }
+    case 'UNDO':
+      if (state.past.length === 0) return state
+      const previous = state.past[state.past.length - 1]
+      return {
+        past: state.past.slice(0, -1),
+        present: previous,
+        future: [state.present, ...state.future],
+      }
+    case 'REDO':
+      if (state.future.length === 0) return state
+      const next = state.future[0]
+      return {
+        past: [...state.past, state.present],
+        present: next,
+        future: state.future.slice(1),
+      }
+    case 'CLEAR':
+      return { past: [], present: state.present, future: [] }
+    default:
+      return state
+  }
+}
+
+// Helper to get CSS classes for table shapes
+function getShapeStyles(shape: TableShape): { borderRadius: string } {
+  switch (shape) {
+    case 'circle':
+    case 'oval':
+      return { borderRadius: '9999px' }
+    case 'rectangle':
+      return { borderRadius: '0' }
+    case 'rounded-rectangle':
+      return { borderRadius: '0.5rem' }
+    default:
+      return { borderRadius: '9999px' }
+  }
+}
+
+function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect, editable }: TableProps) {
+  const targetRef = useRef<HTMLDivElement>(null)
+  const moveableRef = useRef<Moveable>(null)
   const { openPersonneDialog, openTableDialog } = useDialogs()
   const {
     id,
@@ -51,24 +123,60 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     numero,
     posX,
     posY,
+    shape = 'circle',
+    width: initialWidth = '7.76',
+    height: initialHeight = '7.76',
+    rotation: initialRotation = '0',
     personnes = [],
     categorie,
   } = table
 
   const couleur = categorie?.couleur || '#6366f1'
 
-  const [loading, setLoading] = useState(true)
+  const [saveState, setSaveState] = useState<SaveState>('idle')
+  const [planSize, setPlanSize] = useState<PlanSize>(baseSize)
 
-  /**
-   * Drag & Save state: 'idle' | 'dragging' | 'saving' | 'saved'
-   */
-  const [dragState, setDragState] = useState<DragState>('idle')
-  const [previousPosition, setPreviousPosition] = useState<Position | null>(null)
+  // Parse initial values
+  const initialPosX = parseFloat(posX)
+  const initialPosY = parseFloat(posY)
+  const initialW = parseFloat(initialWidth)
+  const initialH = parseFloat(initialHeight)
+  const initialRot = parseFloat(initialRotation)
 
-  /**
-   * Modal for adding people
-   */
+  // Undo/Redo
+  const [undoState, dispatchUndo] = useReducer(undoReducer, {
+    past: [],
+    present: {
+      posX: initialPosX,
+      posY: initialPosY,
+      width: initialW,
+      height: initialH,
+      rotation: initialRot,
+      shape,
+    },
+    future: [],
+  })
+
+  // Interaction state
+  const [isHovered, setIsHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isResizing, setIsResizing] = useState(false)
+  const [isRotating, setIsRotating] = useState(false)
+
+  // Pixel state for rendering - initialized with calculated values
+  const [pxState, setPxState] = useState(() => ({
+    x: (initialPosX * baseSize.width) / 100,
+    y: (initialPosY * baseSize.height) / 100,
+    width: (initialW * baseSize.width) / 100,
+    height: (initialH * baseSize.height) / 100,
+  }))
+
+  // Modal for adding people
   const [open, setOpen] = useState(false)
+  const [stringToSearch, setStringToSearch] = useState('')
+  const [addingPersonneId, setAddingPersonneId] = useState<number | null>(null)
+  const [addedPersonneId, setAddedPersonneId] = useState<number | null>(null)
+  const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => {
@@ -80,24 +188,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     }
   }
 
-  /**
-   * Tailles & positions
-   */
-  const [height, setHeight] = useState<number | null>(null)
-  const [positionPx, setPositionPx] = useState<Position>({ x: 0, y: 0 })
-  const [positionPercent, setPositionPercent] = useState<Position>({ x: parseFloat(posX), y: parseFloat(posY) })
-  const [planSize, setPlanSize] = useState<PlanSize>(baseSize)
-
-  /**
-   * Personnes
-   */
-  const [percentPresent, setPercentPresent] = useState<number | null>(null)
-  const [addingPersonneId, setAddingPersonneId] = useState<number | null>(null)
-  const [addedPersonneId, setAddedPersonneId] = useState<number | null>(null)
-  const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
-  const [stringToSearch, setStringToSearch] = useState('')
-
-  // Recherche côté serveur des personnes non assignées
+  // Search for unassigned people
   const {
     results: filteredPersonnes,
     loading: searchLoading,
@@ -116,19 +207,13 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
 
   const handleAddPersonne = async (personneId: number) => {
     setAddingPersonneId(personneId)
-
     try {
       const data = await apiPost<{ success: boolean; error?: string }>(`/personne/${personneId}/add_table/${id}`)
-
       if (data.success) {
-        // Invalidate personnes cache
         queryClient.invalidateQueries({ queryKey: ['personnes'] })
-        // Rafraîchir la liste des personnes non assignées
         refreshSearch()
-        // Feedback visuel bref
         setAddedPersonneId(personneId)
         setTimeout(() => setAddedPersonneId(null), 1500)
-        // Marquer qu'une personne a été ajoutée (load sera appelé à la fermeture)
         setHasAddedPersonne(true)
       } else {
         alert(data.error || "Erreur lors de l'ajout")
@@ -141,214 +226,284 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
     }
   }
 
-  const pxToPercent = ({ x, y }: Position) => {
-    const percentX = parseFloat(((x * 100) / planSize.width).toPrecision(6))
-    const percentY = parseFloat(((y * 100) / planSize.height).toPrecision(6))
-    return { percentX, percentY }
+  // Conversion helpers
+  const pxToPercent = (px: number, dimension: 'width' | 'height') => {
+    return (px / planSize[dimension]) * 100
   }
 
-  const percentToPx = (percent: number, type: 'width' | 'height', size: PlanSize | null = null): number => {
-    const useSize = size || planSize
-    if (type === 'width') {
-      return (percent * useSize.width) / 100
-    }
-    return (percent * useSize.height) / 100
+  const percentToPx = (percent: number, dimension: 'width' | 'height', size: PlanSize = planSize) => {
+    return (percent * size[dimension]) / 100
   }
 
-  const onWindowResize = () => {
-    if (!planRef.current) return
-    setLoading(true)
-    setHeight(planRef.current.clientHeight * 0.0776)
-    const size: PlanSize = {
-      width: planRef.current.clientWidth,
-      height: planRef.current.clientHeight,
-    }
-    setPositionPx({
-      x: percentToPx(positionPercent.x, 'width', size),
-      y: percentToPx(positionPercent.y, 'height', size),
+  // For circles, use the smaller dimension to ensure true circles
+  const minDimension = Math.min(planSize.width, planSize.height)
+  const percentToPxSquare = (percent: number) => {
+    return (percent * minDimension) / 100
+  }
+
+  // Minimum size: 3% of plan
+  const minSizePx = minDimension * 0.03
+
+  // Get current shape from state
+  const currentShape = undoState.present.shape
+
+  // Update pixel state when percent state or plan size changes
+  useEffect(() => {
+    const isCircle = currentShape === 'circle'
+    const w = isCircle
+      ? percentToPxSquare(undoState.present.width)
+      : percentToPx(undoState.present.width, 'width')
+    const h = isCircle
+      ? percentToPxSquare(undoState.present.width) // Use width for both to ensure square
+      : percentToPx(undoState.present.height, 'height')
+
+    setPxState({
+      x: percentToPx(undoState.present.posX, 'width'),
+      y: percentToPx(undoState.present.posY, 'height'),
+      width: w,
+      height: h,
     })
-    setLoading(false)
-  }
+  }, [undoState.present, planSize, currentShape])
 
-  /**
-   * API events
-   */
+  // React to planSize prop changes
+  useEffect(() => {
+    if (baseSize.width !== planSize.width || baseSize.height !== planSize.height) {
+      setPlanSize(baseSize)
+    }
+  }, [baseSize.width, baseSize.height])
+
+  // Update Moveable when dimensions or shape change
+  useEffect(() => {
+    if (moveableRef.current) {
+      // Small delay to ensure DOM has updated
+      const timer = setTimeout(() => {
+        moveableRef.current?.updateRect()
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [pxState.width, pxState.height, currentShape])
+
+  // Handle delete
   async function handleDelete() {
     await apiDelete(`/api/tables/${id}`)
-    // Invalidate tables cache
     queryClient.invalidateQueries({ queryKey: ['tables'] })
     load()
   }
 
-  const handleStart = () => {
-    setPreviousPosition({ ...positionPercent })
-    setDragState('dragging')
-  }
-
-  const handleStopAsync = async (event: DraggableEvent, data: DraggableData) => {
-    event.preventDefault()
-    setDragState('saving')
-
-    const { percentX, percentY } = pxToPercent({
-      x: data.x,
-      y: data.y,
-    })
-
+  // Save state to API with rollback on error
+  const saveToApi = useCallback(async (state: TableState, previousState?: TableState) => {
+    setSaveState('saving')
     try {
-      const responseData = await apiPatch<TableType>(`/api/tables/${id}`, {
-        posX: String(percentX.toFixed(2)),
-        posY: String(percentY.toFixed(2)),
+      await apiPatch<TableType>(`/api/tables/${id}`, {
+        posX: String(state.posX.toFixed(2)),
+        posY: String(state.posY.toFixed(2)),
+        width: String(state.width.toFixed(2)),
+        height: String(state.height.toFixed(2)),
+        rotation: String(state.rotation.toFixed(2)),
+        shape: state.shape,
       })
-
-      setPositionPercent({
-        x: parseFloat(responseData.posX),
-        y: parseFloat(responseData.posY),
-      })
-      setDragState('saved')
-      setTimeout(() => setDragState('idle'), 1200)
+      setSaveState('saved')
+      // Clear undo history after successful save (no unsaved changes)
+      dispatchUndo({ type: 'CLEAR' })
+      setTimeout(() => setSaveState('idle'), 1200)
     } catch (error) {
-      // Rollback on error
-      if (previousPosition) {
-        setPositionPercent(previousPosition)
-        setPositionPx({
-          x: percentToPx(previousPosition.x, 'width'),
-          y: percentToPx(previousPosition.y, 'height'),
-        })
+      console.error('Erreur sauvegarde:', error)
+      // Rollback to previous state on error
+      if (previousState) {
+        dispatchUndo({ type: 'SET', state: previousState })
       }
-      setDragState('idle')
-      console.error('Erreur lors de la sauvegarde:', error)
+      setSaveState('idle')
     }
+  }, [id])
+
+  // Panel handlers
+  const handlePositionChange = useCallback((x: number, y: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, posX: x, posY: y }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleSizeChange = useCallback((width: number, height: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, width, height }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleRotationChange = useCallback((rotation: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, rotation }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleShapeChange = useCallback((newShape: TableShape) => {
+    const previousState = undoState.present
+    // When changing to circle, make height equal to width
+    const newHeight = newShape === 'circle' ? previousState.width : previousState.height
+    const newState: TableState = { ...previousState, shape: newShape, height: newHeight }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  // Undo handler
+  const handleUndo = useCallback(() => {
+    if (undoState.past.length === 0) return
+    dispatchUndo({ type: 'UNDO' })
+    const prevState = undoState.past[undoState.past.length - 1]
+    saveToApi(prevState)
+  }, [undoState.past, saveToApi])
+
+  // Redo handler
+  const handleRedo = useCallback(() => {
+    if (undoState.future.length === 0) return
+    dispatchUndo({ type: 'REDO' })
+    const nextState = undoState.future[0]
+    saveToApi(nextState)
+  }, [undoState.future, saveToApi])
+
+  // Calculate occupation
+  const occupationCount = personnes.length
+  const shapeStyles = getShapeStyles(currentShape)
+
+  // Cursor based on state (when not using Moveable handles)
+  const getCursor = () => {
+    if (!editable) return 'default'
+    if (isDragging) return 'grabbing'
+    if (isResizing) return 'nwse-resize'
+    if (isRotating) return 'grab'
+    if (isSelected) return 'move'
+    if (isHovered) return 'pointer'
+    return 'default'
   }
 
-  // Wrapper to satisfy Draggable's type requirement (sync handler)
-  const handleStop = (event: DraggableEvent, data: DraggableData) => {
-    handleStopAsync(event, data)
-  }
-
+  // Beforeunload warning
   useEffect(() => {
-    setHeight(planSize.height * 0.0776)
-
-    let personnesPresentes = 0
-    personnes.forEach((personne) => {
-      if (personne.present) {
-        personnesPresentes += 1
+    if (undoState.past.length > 0) {
+      const handler = (e: BeforeUnloadEvent) => {
+        e.preventDefault()
+        e.returnValue = ''
       }
-    })
-    setPercentPresent((personnesPresentes * 100) / nbMax)
-  }, [])
-
-  // React to planSize prop changes (e.g., when sidebar collapses/expands)
-  useEffect(() => {
-    if (baseSize.width !== planSize.width || baseSize.height !== planSize.height) {
-      setPlanSize(baseSize)
-      setHeight(baseSize.height * 0.0776)
-      setPositionPx({
-        x: (positionPercent.x * baseSize.width) / 100,
-        y: (positionPercent.y * baseSize.height) / 100,
-      })
+      window.addEventListener('beforeunload', handler)
+      return () => window.removeEventListener('beforeunload', handler)
     }
-  }, [baseSize.width, baseSize.height])
-
-  useEffect(() => {
-    setPositionPx({
-      x: percentToPx(positionPercent.x, 'width'),
-      y: percentToPx(positionPercent.y, 'height'),
-    })
-
-    let rafId: number | null = null
-    const handleResize = () => {
-      if (rafId) cancelAnimationFrame(rafId)
-      rafId = requestAnimationFrame(onWindowResize)
-    }
-
-    window.addEventListener('resize', handleResize)
-    setLoading(false)
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [positionPercent])
+  }, [undoState.past.length])
 
   return (
-    !loading && (
-      <>
-        <ContextMenu>
-          <Draggable
-            nodeRef={nodeRef}
-            position={{
-              x: positionPx.x,
-              y: positionPx.y,
-            }}
-            bounds="parent"
-            offsetParent={planRef.current || undefined}
-            onStart={handleStart}
-            onDrag={(e, data) => {
-              setPositionPx({ x: data.x, y: data.y })
-            }}
-            onStop={handleStop}
-          >
-            <div
-              ref={nodeRef}
-              className={`absolute rounded-full text-white z-10 mb-6 cursor-move transition-opacity duration-200 ${
-                dragState !== 'idle' ? 'opacity-50' : 'opacity-100'
-              }`}
-              style={{
-                background: couleur,
-                width: `${height}px`,
-                height: `${height}px`,
-                top: 0,
-                left: 0,
-              }}
-            >
-              <ContextMenuTrigger className="block w-full h-full">
-                <CircularProgressbarWithChildren
-                  strokeWidth={4}
-                  value={percentPresent || 0}
-                  styles={{
-                    path: {
-                      stroke: 'oklch(var(--foreground))',
-                    },
-                  }}
-                >
-                  <p className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
-                    T{numero}
-                  </p>
-                  <p className="absolute top-[70%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold w-full text-center">
-                    {personnes.length} / {nbMax}
-                  </p>
-                  <p className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-sm font-medium text-foreground text-center whitespace-nowrap">
-                    {nom}
-                  </p>
-                </CircularProgressbarWithChildren>
+    <>
+        {/* Floating toolbar with dock-style animation */}
+        {editable && (
+          <TableToolbar
+            tableNumber={numero}
+            tableName={nom}
+            shape={currentShape}
+            isOpen={isSelected}
+            onShapeChange={handleShapeChange}
+            onDelete={handleDelete}
+          />
+        )}
 
-                {/* Overlay loader/check */}
-                {(dragState === 'saving' || dragState === 'saved') && (
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30">
-                    {dragState === 'saving' && (
-                      <Loader2 className="h-6 w-6 text-white animate-spin" />
+        {/* Table element with context menu */}
+        <ContextMenu>
+          <ContextMenuTrigger asChild>
+              <div
+                ref={targetRef}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (editable && !isSelected) {
+                    onSelect(id)
+                  }
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className={`absolute z-10 transition-shadow duration-200 ${
+                  saveState !== 'idle' ? 'opacity-70' : ''
+                } ${isHovered && editable && !isSelected ? 'shadow-lg shadow-black/20' : ''}`}
+                style={{
+                  left: pxState.x,
+                  top: pxState.y,
+                  width: pxState.width,
+                  height: pxState.height,
+                  transform: `rotate(${undoState.present.rotation}deg)`,
+                  background: couleur,
+                  ...shapeStyles,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  userSelect: 'none',
+                  boxSizing: 'border-box',
+                  cursor: getCursor(),
+                }}
+              >
+                {/* Table content - counter-rotated to stay upright */}
+                <div
+                  className="flex flex-col items-center justify-center"
+                  style={{ transform: `rotate(-${undoState.present.rotation}deg)` }}
+                >
+                  {/* Table number centered */}
+                  <span className="text-xs font-bold">T{numero}</span>
+
+                  {/* Occupation badge */}
+                  <span className="text-[10px] font-medium mt-0.5 bg-black/30 px-1 rounded">
+                    {occupationCount}/{nbMax}
+                  </span>
+                </div>
+
+                {/* Table name below */}
+                {nom && (
+                  <span
+                    className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-foreground whitespace-nowrap"
+                    style={{ transform: `translateX(-50%) rotate(-${undoState.present.rotation}deg)` }}
+                  >
+                    {nom}
+                  </span>
+                )}
+
+                {/* Save overlay */}
+                {(saveState === 'saving' || saveState === 'saved') && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-black/30"
+                    style={shapeStyles}
+                  >
+                    {saveState === 'saving' && (
+                      <Loader2 className="h-4 w-4 text-white animate-spin" />
                     )}
-                    {dragState === 'saved' && (
-                      <div className="bg-green-500 rounded-full p-1 animate-bounce">
-                        <Check className="h-5 w-5 text-white" />
+                    {saveState === 'saved' && (
+                      <div className="bg-green-500 rounded-full p-0.5">
+                        <Check className="h-3 w-3 text-white" />
                       </div>
                     )}
                   </div>
                 )}
-              </ContextMenuTrigger>
-            </div>
-          </Draggable>
+              </div>
+            </ContextMenuTrigger>
+
           <ContextMenuContent className="w-56">
+            {/* Undo/Redo only when selected and editable */}
+            {isSelected && editable && (undoState.past.length > 0 || undoState.future.length > 0) && (
+              <>
+                <ContextMenuItem onClick={handleUndo} disabled={undoState.past.length === 0}>
+                  <Undo2 className="h-4 w-4 mr-2" />
+                  Annuler
+                </ContextMenuItem>
+                <ContextMenuItem onClick={handleRedo} disabled={undoState.future.length === 0}>
+                  <Redo2 className="h-4 w-4 mr-2" />
+                  Rétablir
+                </ContextMenuItem>
+                <ContextMenuSeparator />
+              </>
+            )}
+
             <ContextMenuSub>
               <ContextMenuSubTrigger>
                 <Users className="h-4 w-4 mr-2" />
                 Personnes
               </ContextMenuSubTrigger>
               <ContextMenuSubContent className="w-56">
-                <ContextMenuItem
-                  onClick={handleOpen}
-                  disabled={personnes.length >= nbMax}
-                >
+                <ContextMenuItem onClick={handleOpen} disabled={personnes.length >= nbMax}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Ajouter une personne
                 </ContextMenuItem>
@@ -390,14 +545,109 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
           </ContextMenuContent>
         </ContextMenu>
 
+        {/* Moveable controls - drag, resize, rotate when selected and editable */}
+        {isSelected && editable && (
+          <Moveable
+            ref={moveableRef}
+            target={targetRef}
+            container={planRef.current}
+            draggable={true}
+            resizable={true}
+            rotatable={true}
+            throttleResize={0}
+            throttleRotate={0}
+            keepRatio={currentShape === 'circle'}
+            renderDirections={['nw', 'ne', 'sw', 'se']}
+            rotationPosition="top"
+            origin={false}
+            padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
+            // Drag handlers
+            onDragStart={() => {
+              setIsDragging(true)
+            }}
+            onDrag={({ target, left, top }) => {
+              target.style.left = `${left}px`
+              target.style.top = `${top}px`
+            }}
+            onDragEnd={({ target }) => {
+              setIsDragging(false)
+              const left = parseFloat(target.style.left)
+              const top = parseFloat(target.style.top)
+              const previousState = undoState.present
+              const newState: TableState = {
+                ...previousState,
+                posX: pxToPercent(left, 'width'),
+                posY: pxToPercent(top, 'height'),
+              }
+              dispatchUndo({ type: 'PUSH', state: newState })
+              saveToApi(newState, previousState)
+            }}
+            // Resize handlers
+            onResizeStart={() => {
+              setIsResizing(true)
+            }}
+            onResize={({ target, width, height, drag }) => {
+              target.style.width = `${width}px`
+              target.style.height = `${height}px`
+              target.style.left = `${drag.left}px`
+              target.style.top = `${drag.top}px`
+            }}
+            onResizeEnd={({ target }) => {
+              setIsResizing(false)
+              const width = parseFloat(target.style.width)
+              const height = parseFloat(target.style.height)
+              const left = parseFloat(target.style.left)
+              const top = parseFloat(target.style.top)
+              const previousState = undoState.present
+
+              // For circles, use the min dimension for both
+              const isCircle = currentShape === 'circle'
+              const newWidth = isCircle
+                ? pxToPercent(Math.min(width, height), 'width') * (planSize.width / minDimension)
+                : pxToPercent(width, 'width')
+              const newHeight = isCircle
+                ? newWidth
+                : pxToPercent(height, 'height')
+
+              const newState: TableState = {
+                ...previousState,
+                posX: pxToPercent(left, 'width'),
+                posY: pxToPercent(top, 'height'),
+                width: newWidth,
+                height: newHeight,
+              }
+              dispatchUndo({ type: 'PUSH', state: newState })
+              saveToApi(newState, previousState)
+            }}
+            // Rotate handlers
+            onRotateStart={() => {
+              setIsRotating(true)
+            }}
+            onRotate={({ target, rotate }) => {
+              target.style.transform = `rotate(${rotate}deg)`
+            }}
+            onRotateEnd={({ target }) => {
+              setIsRotating(false)
+              const transform = target.style.transform
+              const match = transform.match(/rotate\(([^)]+)deg\)/)
+              const rotation = match ? parseFloat(match[1]) : 0
+              const previousState = undoState.present
+              const newState: TableState = {
+                ...previousState,
+                rotation: ((rotation % 360) + 360) % 360, // Normalize to 0-360
+              }
+              dispatchUndo({ type: 'PUSH', state: newState })
+              saveToApi(newState, previousState)
+            }}
+          />
+        )}
+
         {/* Modal Ajouter Personne */}
         <Modal open={open} onClose={handleClose} size="4xl">
           <ModalHeader onClose={handleClose}>
             <div className="flex items-center gap-3">
               <span>Personnes non affectées</span>
-              {searchTotal > 0 && (
-                <Badge variant="secondary">{searchTotal}</Badge>
-              )}
+              {searchTotal > 0 && <Badge variant="secondary">{searchTotal}</Badge>}
             </div>
           </ModalHeader>
           <ModalBody className="h-[60vh] overflow-hidden flex flex-col">
@@ -449,8 +699,7 @@ function Table({ table, load, planSize: baseSize, planRef }: TableProps) {
             </div>
           </ModalBody>
         </Modal>
-      </>
-    )
+    </>
   )
 }
 
