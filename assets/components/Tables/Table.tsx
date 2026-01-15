@@ -400,17 +400,15 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
 
   return (
     <>
-        {/* Floating toolbar when selected */}
-        {isSelected && editable && (
+        {/* Floating toolbar with dock-style animation */}
+        {editable && (
           <TableToolbar
+            tableNumber={numero}
+            tableName={nom}
             shape={currentShape}
+            isOpen={isSelected}
             onShapeChange={handleShapeChange}
             onDelete={handleDelete}
-            style={{
-              left: pxState.x + pxState.width / 2,
-              top: pxState.y - 45,
-              transform: 'translateX(-50%)',
-            }}
           />
         )}
 
