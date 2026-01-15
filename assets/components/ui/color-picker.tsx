@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Paintbrush } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,8 +48,18 @@ interface ColorPickerProps {
   className?: string
 }
 
+/** Validates that a color string is a safe CSS color value */
+const isValidColor = (color: string): boolean => {
+  if (!color) return true
+  // Allow hex colors, rgb/rgba, hsl/hsla, and gradients
+  const pattern = /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|linear-gradient\(|radial-gradient\()/
+  return pattern.test(color)
+}
+
 export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
   const [open, setOpen] = useState(false)
+  const [customInput, setCustomInput] = useState(value || '')
+  const [inputError, setInputError] = useState(false)
 
   const defaultTab = useMemo(() => {
     if (value?.includes('gradient')) return 'gradient'
@@ -58,8 +68,20 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
 
   const handleSelect = (color: string) => {
     onChange(color)
+    setCustomInput(color)
+    setInputError(false)
     setOpen(false)
   }
+
+  const handleCustomInputChange = useCallback((inputValue: string) => {
+    setCustomInput(inputValue)
+    if (isValidColor(inputValue)) {
+      setInputError(false)
+      onChange(inputValue)
+    } else {
+      setInputError(true)
+    }
+  }, [onChange])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -135,11 +157,14 @@ export function ColorPicker({ value, onChange, className }: ColorPickerProps) {
 
         <Input
           id="custom-color"
-          value={value || ''}
+          value={customInput}
           placeholder="#000000"
-          className="h-8 mt-2"
-          onChange={(e) => onChange(e.currentTarget.value)}
+          className={cn('h-8 mt-2', inputError && 'border-destructive focus-visible:ring-destructive')}
+          onChange={(e) => handleCustomInputChange(e.currentTarget.value)}
         />
+        {inputError && (
+          <p className="text-xs text-destructive mt-1">Format invalide (ex: #FF0000)</p>
+        )}
       </PopoverContent>
     </Popover>
   )

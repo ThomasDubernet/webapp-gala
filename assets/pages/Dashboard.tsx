@@ -4,6 +4,7 @@ import { useGetMany } from '../hooks';
 import TableProvider from '../components/Tables/provider';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import { ErrorBoundary } from '../components/ui/error-boundary';
 import type { Table, Evenement } from '../types/api';
 
 export function Dashboard() {
@@ -52,15 +53,20 @@ export function Dashboard() {
   }
 
   return (
-    <div ref={containerRef} className="h-full w-full flex items-center justify-center overflow-hidden">
-      <div id="img-box" className="relative" ref={planRef}>
-        <img
-          src={planUrl!}
-          alt="Plan de salle"
-          className="block max-h-[calc(100vh-120px)] max-w-full h-auto w-auto relative z-0"
-        />
-        <TableProvider tables={tables} plan={planRef} load={loadTables} container={containerRef} />
+    <ErrorBoundary
+      fallbackTitle="Erreur dans le plan de salle"
+      fallbackMessage="Une erreur est survenue lors de l'affichage du plan. Essayez de recharger la page."
+    >
+      <div ref={containerRef} className="h-full w-full flex items-center justify-center overflow-hidden">
+        <div id="img-box" className="relative" ref={planRef}>
+          <img
+            src={planUrl!}
+            alt="Plan de salle"
+            className="block max-h-[calc(100vh-120px)] max-w-full h-auto w-auto relative z-0"
+          />
+          <TableProvider tables={tables} plan={planRef} load={loadTables} container={containerRef} />
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

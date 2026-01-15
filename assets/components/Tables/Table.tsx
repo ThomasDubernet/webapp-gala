@@ -62,8 +62,25 @@ type UndoAction =
   | { type: 'REDO' }
   | { type: 'CLEAR' }
 
+/**
+ * Maximum number of undo steps to keep in history.
+ * Limited to 20 to balance memory usage with reasonable undo depth.
+ * This allows users to undo multiple table manipulations without
+ * consuming excessive memory for large table plans.
+ */
 const MAX_HISTORY = 20
 
+/**
+ * Reducer for managing undo/redo state history.
+ * Implements a classic undo stack with limited history depth.
+ *
+ * Actions:
+ * - SET: Initialize with a new state (clears history)
+ * - PUSH: Add current state to history and set new state
+ * - UNDO: Move back one step in history
+ * - REDO: Move forward one step in history
+ * - CLEAR: Reset to empty history with current state preserved
+ */
 function undoReducer(state: UndoState, action: UndoAction): UndoState {
   switch (action.type) {
     case 'SET':
@@ -226,23 +243,49 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
     }
   }
 
-  // Conversion helpers
+  /**
+   * Converts pixel value to percentage relative to plan dimensions.
+   * Used for saving table positions/sizes in a responsive format.
+   * @param px - Pixel value to convert
+   * @param dimension - 'width' or 'height' of the plan to use as reference
+   * @returns Percentage value (0-100)
+   */
   const pxToPercent = (px: number, dimension: 'width' | 'height') => {
     return (px / planSize[dimension]) * 100
   }
 
+  /**
+   * Converts percentage to pixel value relative to plan dimensions.
+   * Used for rendering tables at their stored percentage positions.
+   * @param percent - Percentage value (0-100)
+   * @param dimension - 'width' or 'height' of the plan to use as reference
+   * @param size - Optional plan size override (defaults to current planSize)
+   * @returns Pixel value
+   */
   const percentToPx = (percent: number, dimension: 'width' | 'height', size: PlanSize = planSize) => {
     return (percent * size[dimension]) / 100
   }
 
-  // For circles, use the smaller dimension to ensure true circles
+  // For circles/squares, use the smaller dimension to ensure true aspect ratio
   const minDimension = Math.min(planSize.width, planSize.height)
+
+  /**
+   * Converts percentage to pixels using the plan's smallest dimension.
+   * Ensures circles remain circular regardless of plan aspect ratio.
+   * @param percent - Percentage value (0-100)
+   * @returns Pixel value based on plan's minimum dimension
+   */
   const percentToPxSquare = (percent: number) => {
     return (percent * minDimension) / 100
   }
 
-  // Minimum size: 3% of plan
-  const minSizePx = minDimension * 0.03
+  /**
+   * Minimum table size: 3% of plan's smallest dimension.
+   * This prevents tables from being resized too small to be visible/usable,
+   * while still allowing reasonably small tables for tight spaces.
+   */
+  const MIN_TABLE_SIZE_PERCENT = 0.03
+  const minSizePx = minDimension * MIN_TABLE_SIZE_PERCENT
 
   // Get current shape from state
   const currentShape = undoState.present.shape

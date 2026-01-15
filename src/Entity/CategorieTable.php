@@ -14,6 +14,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CategorieTableRepository::class)]
 #[ApiResource(
@@ -40,6 +41,10 @@ class CategorieTable
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(['table', 'categorie_table'])]
+    #[Assert\Regex(
+        pattern: '/^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|linear-gradient\(|radial-gradient\()/',
+        message: 'Format de couleur invalide'
+    )]
     private ?string $couleur = null;
 
     #[ORM\OneToMany(targetEntity: Table::class, mappedBy: 'categorie')]
