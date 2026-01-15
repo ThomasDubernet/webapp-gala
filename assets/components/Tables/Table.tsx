@@ -17,6 +17,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '../ui/context-menu'
+import { TablePropertiesPanel } from './TablePropertiesPanel'
 import { apiPatch, apiDelete, apiPost } from '../../lib/api'
 import { queryClient } from '../../lib/query-client'
 import type { Table as TableType, Personne as PersonneType, TableShape } from '../../types/api'
@@ -45,6 +46,7 @@ interface TableState {
   width: number
   height: number
   rotation: number
+  shape: TableShape
 }
 
 interface UndoState {
@@ -156,9 +158,15 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
       width: initialW,
       height: initialH,
       rotation: initialRot,
+      shape,
     },
     future: [],
   })
+
+  // Properties panel state
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Pixel state for rendering - initialized with calculated values
   const [pxState, setPxState] = useState(() => ({
@@ -232,18 +240,35 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
     return (percent * size[dimension]) / 100
   }
 
+  // For circles, use the smaller dimension to ensure true circles
+  const minDimension = Math.min(planSize.width, planSize.height)
+  const percentToPxSquare = (percent: number) => {
+    return (percent * minDimension) / 100
+  }
+
   // Minimum size: 3% of plan
-  const minSizePx = Math.min(planSize.width, planSize.height) * 0.03
+  const minSizePx = minDimension * 0.03
+
+  // Get current shape from state
+  const currentShape = undoState.present.shape
 
   // Update pixel state when percent state or plan size changes
   useEffect(() => {
+    const isCircle = currentShape === 'circle'
+    const w = isCircle
+      ? percentToPxSquare(undoState.present.width)
+      : percentToPx(undoState.present.width, 'width')
+    const h = isCircle
+      ? percentToPxSquare(undoState.present.width) // Use width for both to ensure square
+      : percentToPx(undoState.present.height, 'height')
+
     setPxState({
       x: percentToPx(undoState.present.posX, 'width'),
       y: percentToPx(undoState.present.posY, 'height'),
-      width: percentToPx(undoState.present.width, 'width'),
-      height: percentToPx(undoState.present.height, 'height'),
+      width: w,
+      height: h,
     })
-  }, [undoState.present, planSize])
+  }, [undoState.present, planSize, currentShape])
 
   // React to planSize prop changes
   useEffect(() => {
@@ -270,6 +295,7 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
         width: String(state.width.toFixed(2)),
         height: String(state.height.toFixed(2)),
         rotation: String(state.rotation.toFixed(2)),
+        shape: state.shape,
       })
       setSaveState('saved')
       // Clear undo history after successful save (no unsaved changes)
@@ -284,6 +310,37 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
       setSaveState('idle')
     }
   }, [id])
+
+  // Panel handlers
+  const handlePositionChange = useCallback((x: number, y: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, posX: x, posY: y }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleSizeChange = useCallback((width: number, height: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, width, height }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleRotationChange = useCallback((rotation: number) => {
+    const previousState = undoState.present
+    const newState: TableState = { ...previousState, rotation }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
+
+  const handleShapeChange = useCallback((newShape: TableShape) => {
+    const previousState = undoState.present
+    // When changing to circle, make height equal to width
+    const newHeight = newShape === 'circle' ? previousState.width : previousState.height
+    const newState: TableState = { ...previousState, shape: newShape, height: newHeight }
+    dispatchUndo({ type: 'PUSH', state: newState })
+    saveToApi(newState, previousState)
+  }, [undoState.present, saveToApi])
 
   // Undo handler
   const handleUndo = useCallback(() => {
@@ -304,7 +361,15 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
   // Calculate occupation
   const occupationCount = personnes.length
   const occupationOpacity = getOccupationOpacity(occupationCount, nbMax)
-  const shapeStyles = getShapeStyles(shape)
+  const shapeStyles = getShapeStyles(currentShape)
+
+  // Cursor based on state
+  const getCursor = () => {
+    if (!editable) return 'default'
+    if (isDragging) return 'grabbing'
+    if (isHovered) return 'grab'
+    return 'pointer'
+  }
 
   // Beforeunload warning
   useEffect(() => {
@@ -320,68 +385,103 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
 
   return (
     <>
+        {/* Properties Dialog */}
+        <TablePropertiesPanel
+          isOpen={isPanelOpen && isSelected && editable}
+          onOpenChange={setIsPanelOpen}
+          tableNumber={numero}
+          tableName={nom}
+          position={{ x: undoState.present.posX, y: undoState.present.posY }}
+          size={{ width: undoState.present.width, height: undoState.present.height }}
+          rotation={undoState.present.rotation}
+          shape={currentShape}
+          onPositionChange={handlePositionChange}
+          onSizeChange={handleSizeChange}
+          onRotationChange={handleRotationChange}
+          onShapeChange={handleShapeChange}
+          onDelete={handleDelete}
+        />
+
+        {/* Table element with context menu */}
         <ContextMenu>
           <ContextMenuTrigger asChild>
-            <div
-              ref={targetRef}
-              onClick={() => editable && onSelect(id)}
-              className={`absolute z-10 cursor-move transition-opacity duration-200 ${
-                saveState !== 'idle' ? 'opacity-70' : 'opacity-100'
-              }`}
-              style={{
-                left: pxState.x,
-                top: pxState.y,
-                width: pxState.width,
-                height: pxState.height,
-                transform: `rotate(${undoState.present.rotation}deg)`,
-                backgroundColor: couleur,
-                opacity: occupationOpacity,
-                ...shapeStyles,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                userSelect: 'none',
-                boxSizing: 'border-box',
-              }}
-            >
-              {/* Table number centered */}
-              <span className="text-xs font-bold">T{numero}</span>
+              <div
+                ref={targetRef}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (editable) {
+                    if (isSelected) {
+                      // Already selected - open panel
+                      setIsPanelOpen(true)
+                    } else {
+                      // Not selected - select it
+                      onSelect(id)
+                    }
+                  }
+                }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onDoubleClick={() => editable && setIsPanelOpen(true)}
+                className={`absolute z-10 transition-all duration-200 ${
+                  saveState !== 'idle' ? 'opacity-70' : ''
+                } ${isSelected && editable ? 'ring-2 ring-primary ring-offset-2' : ''} ${
+                  isHovered && editable ? 'scale-105' : ''
+                }`}
+                style={{
+                  left: pxState.x,
+                  top: pxState.y,
+                  width: pxState.width,
+                  height: pxState.height,
+                  transform: `rotate(${undoState.present.rotation}deg)`,
+                  backgroundColor: couleur,
+                  opacity: occupationOpacity,
+                  ...shapeStyles,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  userSelect: 'none',
+                  boxSizing: 'border-box',
+                  cursor: getCursor(),
+                }}
+              >
+                {/* Table number centered */}
+                <span className="text-xs font-bold">T{numero}</span>
 
-              {/* Occupation badge */}
-              <span className="text-[10px] font-medium mt-0.5 bg-black/30 px-1 rounded">
-                {occupationCount}/{nbMax}
-              </span>
-
-              {/* Table name below */}
-              {nom && (
-                <span
-                  className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-foreground whitespace-nowrap"
-                  style={{ transform: `translateX(-50%) rotate(-${undoState.present.rotation}deg)` }}
-                >
-                  {nom}
+                {/* Occupation badge */}
+                <span className="text-[10px] font-medium mt-0.5 bg-black/30 px-1 rounded">
+                  {occupationCount}/{nbMax}
                 </span>
-              )}
 
-              {/* Save overlay */}
-              {(saveState === 'saving' || saveState === 'saved') && (
-                <div
-                  className="absolute inset-0 flex items-center justify-center bg-black/30"
-                  style={shapeStyles}
-                >
-                  {saveState === 'saving' && (
-                    <Loader2 className="h-4 w-4 text-white animate-spin" />
-                  )}
-                  {saveState === 'saved' && (
-                    <div className="bg-green-500 rounded-full p-0.5">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </ContextMenuTrigger>
+                {/* Table name below */}
+                {nom && (
+                  <span
+                    className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-foreground whitespace-nowrap"
+                    style={{ transform: `translateX(-50%) rotate(-${undoState.present.rotation}deg)` }}
+                  >
+                    {nom}
+                  </span>
+                )}
+
+                {/* Save overlay */}
+                {(saveState === 'saving' || saveState === 'saved') && (
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-black/30"
+                    style={shapeStyles}
+                  >
+                    {saveState === 'saving' && (
+                      <Loader2 className="h-4 w-4 text-white animate-spin" />
+                    )}
+                    {saveState === 'saved' && (
+                      <div className="bg-green-500 rounded-full p-0.5">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </ContextMenuTrigger>
 
           <ContextMenuContent className="w-56">
             {/* Undo/Redo only when selected and editable */}
@@ -447,14 +547,14 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
           </ContextMenuContent>
         </ContextMenu>
 
-        {/* Moveable controls - only when selected and editable */}
+        {/* Moveable controls - only drag when selected and editable */}
         {isSelected && editable && (
           <Moveable
             target={targetRef}
             container={planRef.current}
             draggable={true}
-            resizable={true}
-            rotatable={true}
+            resizable={false}
+            rotatable={false}
             bounds={{
               left: 0,
               top: 0,
@@ -462,16 +562,16 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
               bottom: planSize.height - pxState.height,
               position: 'css',
             }}
-            keepRatio={shape === 'circle'}
-            rotationPosition="top"
+            hideDefaultLines={true}
             onDragStart={() => {
-              // Store current state for undo
+              setIsDragging(true)
             }}
             onDrag={({ target, left, top }) => {
               target.style.left = `${left}px`
               target.style.top = `${top}px`
             }}
             onDragEnd={({ target }) => {
+              setIsDragging(false)
               const left = parseFloat(target.style.left)
               const top = parseFloat(target.style.top)
               const previousState = undoState.present
@@ -482,47 +582,6 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
               }
               dispatchUndo({ type: 'PUSH', state: newState })
               saveToApi(newState, previousState)
-            }}
-            onResize={({ target, width, height, drag }) => {
-              const newWidth = Math.max(width, minSizePx)
-              const newHeight = shape === 'circle' ? newWidth : Math.max(height, minSizePx)
-              target.style.width = `${newWidth}px`
-              target.style.height = `${newHeight}px`
-              target.style.left = `${drag.left}px`
-              target.style.top = `${drag.top}px`
-            }}
-            onResizeEnd={({ target }) => {
-              const width = parseFloat(target.style.width)
-              const height = parseFloat(target.style.height)
-              const left = parseFloat(target.style.left)
-              const top = parseFloat(target.style.top)
-              const previousState = undoState.present
-              const newState: TableState = {
-                ...previousState,
-                width: pxToPercent(width, 'width'),
-                height: pxToPercent(height, 'height'),
-                posX: pxToPercent(left, 'width'),
-                posY: pxToPercent(top, 'height'),
-              }
-              dispatchUndo({ type: 'PUSH', state: newState })
-              saveToApi(newState, previousState)
-            }}
-            onRotate={({ target, transform }) => {
-              target.style.transform = transform
-            }}
-            onRotateEnd={({ target }) => {
-              const transform = target.style.transform
-              const match = transform.match(/rotate\(([-\d.]+)deg\)/)
-              if (match) {
-                const rotation = parseFloat(match[1])
-                const previousState = undoState.present
-                const newState: TableState = {
-                  ...previousState,
-                  rotation,
-                }
-                dispatchUndo({ type: 'PUSH', state: newState })
-                saveToApi(newState, previousState)
-              }
             }}
           />
         )}
