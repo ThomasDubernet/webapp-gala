@@ -18,8 +18,13 @@ class SmsController extends AbstractController
     public function __invoke(Request $request): void
     {
         $personne = $request->get('data');
-        $numero_table = $personne->getTable()->getNumero();
         $telephone = $personne->getTelephone();
+
+        if (!$telephone) {
+            return;
+        }
+
+        $numero_table = $personne->getTable()?->getNumero();
         $this->sendSms($numero_table, $telephone);
     }
 

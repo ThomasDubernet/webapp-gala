@@ -71,7 +71,7 @@ class Personne
     #[Groups(['personne'])]
     private ?string $adresse = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups(['personne'])]
     private ?string $telephone = null;
 
@@ -187,7 +187,7 @@ class Personne
         return $this->telephone;
     }
 
-    public function setTelephone(string $telephone): self
+    public function setTelephone(?string $telephone): self
     {
         $this->telephone = $telephone;
 
