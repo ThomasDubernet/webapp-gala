@@ -1,22 +1,29 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Loader2, Plus, Search, Pencil, Users, UserCheck } from 'lucide-react';
-import { useSearchPersonnes } from '../hooks';
+import { useSearchPersonnes, useGetMany } from '../hooks';
 import { useDialogs } from '../contexts/DialogContext';
+import { apiPut } from '../lib/api';
 import { Badge } from '../components/ui/badge';
 import { Checkbox } from '../components/ui/checkbox';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { Select } from '../components/ui/select';
+import type { Table } from '../types/api';
 
 export function Personnes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [unassignedOnly, setUnassignedOnly] = useState(false);
+  const [updatingPersonId, setUpdatingPersonId] = useState<number | null>(null);
   const { openPersonneDialog } = useDialogs();
+  const { loading: loadingTables, load: loadTables, items: tables } = useGetMany<Table>('tables');
 
   const {
     results: personnes,
     loading,
     total,
     hasSearched,
+    refresh: refreshPersonnes,
   } = useSearchPersonnes({
     searchQuery,
     minChars: 0,
@@ -24,6 +31,15 @@ export function Personnes() {
     limit: 500,
     unassignedOnly,
   });
+
+  useEffect(() => {
+    loadTables();
+  }, [loadTables]);
+
+  // Sort tables by numero for the dropdown
+  const sortedTables = useMemo(() => {
+    return [...tables].sort((a, b) => a.numero - b.numero);
+  }, [tables]);
 
   // Compute stats from results
   const stats = useMemo(() => {
@@ -41,6 +57,21 @@ export function Personnes() {
     if (p.montantBillet === p.montantPaye) return 'paid';
     if (p.montantPaye && p.montantPaye > 0) return 'partial';
     return 'unpaid';
+  };
+
+  const handleTableChange = async (personneId: number, tableId: string) => {
+    setUpdatingPersonId(personneId);
+    try {
+      const tableIri = tableId ? `/api/tables/${tableId}` : null;
+      await apiPut(`/api/personnes/${personneId}`, { table: tableIri });
+      refreshPersonnes();
+      await loadTables(); // Refresh table capacities
+      toast.success('Table mise à jour');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour');
+    } finally {
+      setUpdatingPersonId(null);
+    }
   };
 
   return (
@@ -139,11 +170,28 @@ export function Personnes() {
                         {personne.telephone || <span className="text-muted-foreground/50">-</span>}
                       </td>
                       <td className="px-4 py-3">
-                        {personne.table ? (
-                          <Badge variant="info">Table {personne.table.numero}</Badge>
-                        ) : (
-                          <Badge variant="warning">Sans table</Badge>
-                        )}
+                        <Select
+                          value={personne.table?.id?.toString() || ''}
+                          onChange={(e) => handleTableChange(personne.id, e.target.value)}
+                          disabled={updatingPersonId === personne.id || loadingTables}
+                          className="h-8 w-36 text-xs"
+                        >
+                          <option value="">Sans table</option>
+                          {sortedTables.map((table) => {
+                            const occupancy = table.personnes?.length || 0;
+                            const isFull = occupancy >= table.nombrePlacesMax;
+                            const isCurrentTable = table.id === personne.table?.id;
+                            return (
+                              <option
+                                key={table.id}
+                                value={table.id}
+                                disabled={isFull && !isCurrentTable}
+                              >
+                                Table {table.numero} ({occupancy}/{table.nombrePlacesMax})
+                              </option>
+                            );
+                          })}
+                        </Select>
                       </td>
                       <td className="px-4 py-3">
                         {paymentStatus === 'paid' && <Badge variant="success">Payé</Badge>}
