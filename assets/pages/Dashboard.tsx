@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useGetMany } from '../hooks';
+import { useDialogs } from '../contexts/DialogContext';
 import TableProvider from '../components/Tables/provider';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -12,11 +13,20 @@ export function Dashboard() {
   const planRef = useRef<HTMLDivElement>(null);
   const { items: tables, load: loadTables, loading: loadingTables } = useGetMany<Table>('tables');
   const { items: events, load: loadEvents, loading: loadingEvents } = useGetMany<Evenement>('evenements');
+  const { subscribeToDataChange } = useDialogs();
 
   useEffect(() => {
     loadTables();
     loadEvents();
   }, []);
+
+  // Subscribe to data changes from dialogs (PersonneDialog, TableDialog)
+  useEffect(() => {
+    const unsubscribe = subscribeToDataChange(() => {
+      loadTables();
+    });
+    return unsubscribe;
+  }, [subscribeToDataChange, loadTables]);
 
   const loading = loadingTables || loadingEvents;
   const event = events.length > 0 ? events[0] : null;

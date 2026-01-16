@@ -192,15 +192,17 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
   const [open, setOpen] = useState(false)
   const [stringToSearch, setStringToSearch] = useState('')
   const [addingPersonneId, setAddingPersonneId] = useState<number | null>(null)
-  const [addedPersonneId, setAddedPersonneId] = useState<number | null>(null)
-  const [hasAddedPersonne, setHasAddedPersonne] = useState(false)
+  const [addedPersonneIds, setAddedPersonneIds] = useState<Set<number>>(new Set())
+  const [lastAddedId, setLastAddedId] = useState<number | null>(null)
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => {
+    const hasAdded = addedPersonneIds.size > 0
     setOpen(false)
     setStringToSearch('')
-    if (hasAddedPersonne) {
-      setHasAddedPersonne(false)
+    setAddedPersonneIds(new Set())
+    setLastAddedId(null)
+    if (hasAdded) {
       load()
     }
   }
@@ -211,7 +213,6 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
     loading: searchLoading,
     total: searchTotal,
     hasSearched,
-    refresh: refreshSearch,
   } = useSearchPersonnes({
     searchQuery: stringToSearch,
     minChars: 2,
@@ -227,11 +228,12 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
     try {
       const data = await apiPost<{ success: boolean; error?: string }>(`/personne/${personneId}/add_table/${id}`)
       if (data.success) {
+        // Track locally for immediate UI update (no cache timing issues)
+        setAddedPersonneIds((prev) => new Set(prev).add(personneId))
+        setLastAddedId(personneId)
+        setTimeout(() => setLastAddedId(null), 1500)
+        // Invalidate cache in background for other components
         queryClient.invalidateQueries({ queryKey: ['personnes'] })
-        refreshSearch()
-        setAddedPersonneId(personneId)
-        setTimeout(() => setAddedPersonneId(null), 1500)
-        setHasAddedPersonne(true)
       } else {
         alert(data.error || "Erreur lors de l'ajout")
       }
@@ -709,27 +711,29 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                 <div className="col-span-full flex justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
-              ) : filteredPersonnes.length > 0 ? (
-                filteredPersonnes.map((personne, index) => (
-                  <SearchPersonne key={index} personne={personne}>
-                    <button
-                      type="button"
-                      className={`absolute bottom-3 right-3 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-                        addedPersonneId === personne.id
-                          ? 'bg-green-600 text-white'
-                          : 'border border-primary text-primary hover:bg-primary/10'
-                      } disabled:opacity-50`}
-                      onClick={() => handleAddPersonne(personne.id)}
-                      disabled={addingPersonneId === personne.id}
-                    >
-                      {addingPersonneId === personne.id
-                        ? 'Ajout...'
-                        : addedPersonneId === personne.id
-                          ? 'Ajouté'
-                          : 'Ajouter'}
-                    </button>
-                  </SearchPersonne>
-                ))
+              ) : filteredPersonnes.filter((p) => !addedPersonneIds.has(p.id)).length > 0 ? (
+                filteredPersonnes
+                  .filter((p) => !addedPersonneIds.has(p.id))
+                  .map((personne) => (
+                    <SearchPersonne key={personne.id} personne={personne}>
+                      <button
+                        type="button"
+                        className={`absolute bottom-3 right-3 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+                          lastAddedId === personne.id
+                            ? 'bg-green-600 text-white'
+                            : 'border border-primary text-primary hover:bg-primary/10'
+                        } disabled:opacity-50`}
+                        onClick={() => handleAddPersonne(personne.id)}
+                        disabled={addingPersonneId === personne.id}
+                      >
+                        {addingPersonneId === personne.id
+                          ? 'Ajout...'
+                          : lastAddedId === personne.id
+                            ? 'Ajouté'
+                            : 'Ajouter'}
+                      </button>
+                    </SearchPersonne>
+                  ))
               ) : hasSearched ? (
                 <div className="col-span-full text-center text-muted-foreground py-8">
                   Aucune personne ne correspond à votre recherche

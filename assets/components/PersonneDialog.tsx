@@ -32,7 +32,7 @@ const PAYMENT_METHODS = [
 ]
 
 export function PersonneDialog() {
-  const { personneDialogState, closePersonneDialog, openPersonneDialog } = useDialogs()
+  const { personneDialogState, closePersonneDialog, openPersonneDialog, notifyDataChange } = useDialogs()
   const { open, id, tableId, conjointOf } = personneDialogState
   const isNew = !id
   const isConjoint = !!conjointOf
@@ -176,6 +176,7 @@ export function PersonneDialog() {
       await apiPut(`/api/personnes/${id}`, payload)
       await updatePresenceWithSms(id!, withSms)
       queryClient.invalidateQueries({ queryKey: ['personnes'] })
+      notifyDataChange()
       closePersonneDialog()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
@@ -238,6 +239,7 @@ export function PersonneDialog() {
 
       // Invalidate personnes cache to refresh lists
       queryClient.invalidateQueries({ queryKey: ['personnes'] })
+      notifyDataChange()
 
       closePersonneDialog()
     } catch (err) {
@@ -258,6 +260,7 @@ export function PersonneDialog() {
 
       // Invalidate personnes cache
       queryClient.invalidateQueries({ queryKey: ['personnes'] })
+      notifyDataChange()
 
       // Close current dialog and open for conjoint
       closePersonneDialog()

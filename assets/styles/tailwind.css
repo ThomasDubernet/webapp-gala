@@ -209,12 +209,6 @@ body {
 }
 
 /* Custom elements */
-custom-plan {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-}
-
 custom-searchbar {
   display: block;
   width: 100%;

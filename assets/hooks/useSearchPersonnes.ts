@@ -104,9 +104,9 @@ export const useSearchPersonnes = ({
   }, [data?.items])
 
   const refresh = useCallback(() => {
-    // Invalidate all personnes queries to force refetch
-    queryClient.invalidateQueries({ queryKey: ['personnes'] })
-  }, [queryClient])
+    // Refetch the current search query to get updated results immediately
+    queryClient.refetchQueries({ queryKey })
+  }, [queryClient, queryKey])
 
   return {
     results: shouldFetch ? results : [],
