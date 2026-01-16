@@ -53,6 +53,16 @@ npm run watch    # Development with hot reload
 npm run dev      # One-time development build
 ```
 
+### Frontend Build Rules (IMPORTANT)
+
+**NEVER run `npm run build` when `npm run watch` is running in background** - it will kill the watch process and cause a blank page.
+
+Follow this workflow:
+1. **Check if watch is running**: Look for background tasks or check `/tasks` output
+2. **If watch is NOT running**: Start it with `npm run watch` in background
+3. **To verify build succeeds**: Read the watch task output file (`tail` the output) instead of running `npm run build`
+4. **TypeScript check**: Use `npx tsc --noEmit` - this doesn't interfere with watch
+
 ### Linting
 
 ```bash
@@ -76,11 +86,12 @@ npx eslint assets/   # Lint JavaScript/React files
 
 - **Webpack Encore**: Compiles assets from `assets/` to `public/build/`
 - **React Components** (`assets/components/`):
-  - `Search.jsx`: Main guest search interface with server-side search
-  - `HotesseSearch.jsx`: Simplified search for hostesses
-  - `Plan.jsx`: Visual table layout
-  - `Tables/`: Table management components
-  - `PersonCard.jsx`: Guest card component using Tailwind + Shadcn UI patterns
+  - `Search.tsx`: Main guest search interface with server-side search
+  - `HotesseSearch.tsx`: Simplified search for hostesses
+  - `Tables/`: Table management components (Table, TableToolbar, provider)
+  - `PersonCard.tsx`: Guest card component using Tailwind + Shadcn UI patterns
+- **Pages** (`assets/pages/`):
+  - `Dashboard.tsx`: Visual table layout (plan view)
 - **Stimulus Controllers** (`assets/controllers/`): Lightweight JS behaviors
 - **Styling**:
   - Tailwind CSS v4 (primary styling framework)

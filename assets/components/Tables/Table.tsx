@@ -497,11 +497,16 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                   </span>
                 </div>
 
-                {/* Table name below */}
+                {/* Table name above */}
                 {nom && (
                   <span
-                    className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-foreground whitespace-nowrap"
-                    style={{ transform: `translateX(-50%) rotate(-${undoState.present.rotation}deg)` }}
+                    className="absolute -top-6 left-1/2 text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded-md backdrop-blur-sm"
+                    style={{
+                      transform: `translateX(-50%) rotate(-${undoState.present.rotation}deg)`,
+                      backgroundColor: `${couleur}99`,
+                      color: 'white',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                    }}
                   >
                     {nom}
                   </span>
