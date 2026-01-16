@@ -4,7 +4,7 @@ import { useTable } from '../hooks/useTables'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
-import type { Table, CategorieTable, TablePayload } from '../types/api'
+import type { Table, CategorieTable, TablePayload, TableShape } from '../types/api'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -29,6 +29,14 @@ export function TableDialog() {
   // Fetch existing table using TanStack Query
   const { data: existingTable, isLoading: loadingTable, error: fetchError } = useTable(id)
 
+  // Shape options
+  const shapeOptions: { value: TableShape; label: string; icon: string }[] = [
+    { value: 'circle', label: 'Cercle', icon: '○' },
+    { value: 'oval', label: 'Ovale', icon: '⬭' },
+    { value: 'rectangle', label: 'Rectangle', icon: '▭' },
+    { value: 'rounded-rectangle', label: 'Rectangle arrondi', icon: '▢' },
+  ]
+
   // Form state
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,6 +46,7 @@ export function TableDialog() {
     nombrePlacesMax: 10,
     posX: '50',
     posY: '50',
+    shape: 'circle',
     categorie: undefined,
   })
 
@@ -58,6 +67,7 @@ export function TableDialog() {
         nombrePlacesMax: existingTable.nombrePlacesMax,
         posX: existingTable.posX,
         posY: existingTable.posY,
+        shape: existingTable.shape || 'circle',
         categorie: existingTable.categorie,
       })
     } else if (!id && open) {
@@ -68,6 +78,7 @@ export function TableDialog() {
         nombrePlacesMax: 10,
         posX: '50',
         posY: '50',
+        shape: 'circle',
         categorie: undefined,
       })
     }
@@ -93,6 +104,7 @@ export function TableDialog() {
         nombrePlacesMax: formData.nombrePlacesMax ?? 10,
         posX: formData.posX?.toString() || '0',
         posY: formData.posY?.toString() || '0',
+        shape: formData.shape || 'circle',
         categorie: formData.categorie ? `/api/categorie_tables/${formData.categorie.id}` : null,
       }
 
@@ -161,6 +173,28 @@ export function TableDialog() {
                     placeholder="ex: Table VIP"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Shape */}
+            <div>
+              <h3 className="text-sm font-semibold text-foreground mb-3">Forme</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {shapeOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleChange('shape', option.value)}
+                    className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-colors ${
+                      formData.shape === option.value
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <span className="text-2xl mb-1">{option.icon}</span>
+                    <span className="text-xs text-muted-foreground">{option.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
 

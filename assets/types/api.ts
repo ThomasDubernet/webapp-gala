@@ -25,6 +25,9 @@ export interface MediaObject {
   filePath?: string;
 }
 
+/** Table shape types */
+export type TableShape = 'circle' | 'oval' | 'rectangle' | 'rounded-rectangle';
+
 export interface Evenement {
   id: number;
   nom?: string;
@@ -40,6 +43,10 @@ export interface Table {
   nombrePlacesMax: number;
   posX: string;
   posY: string;
+  shape: TableShape;
+  width: string;
+  height: string;
+  rotation: string;
   categorie?: CategorieTable;
   personnes?: Personne[];
 }
@@ -125,5 +132,15 @@ export interface TablePayload {
   nombrePlacesMax: number;
   posX: string;
   posY: string;
+  shape?: string | null;
+  width?: string | null;
+  height?: string | null;
+  rotation?: string | null;
   categorie?: IRI;
+}
+
+/** Payload for creating or updating a CategorieTable */
+export interface CategorieTablePayload {
+  nom: string;
+  couleur: string;
 }

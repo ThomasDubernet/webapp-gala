@@ -32,5 +32,7 @@ node_modules
 
 ###> Custom ###
 deploy.sh
-###< Custom ###
 .playwright-mcp/
+_bmad
+_bmad-output
+###< Custom ###
