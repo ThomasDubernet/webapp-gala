@@ -19,7 +19,7 @@ import {
 } from './ui/dialog'
 
 export function TableDialog() {
-  const { tableDialogState, closeTableDialog } = useDialogs()
+  const { tableDialogState, closeTableDialog, notifyDataChange } = useDialogs()
   const { open, id } = tableDialogState
   const isNew = !id
 
@@ -114,6 +114,7 @@ export function TableDialog() {
 
       // Invalidate tables cache to refresh lists
       queryClient.invalidateQueries({ queryKey: ['tables'] })
+      notifyDataChange()
 
       closeTableDialog()
     } catch (err) {

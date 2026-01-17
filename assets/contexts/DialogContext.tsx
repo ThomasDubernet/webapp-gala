@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react'
 
 interface PersonneDialogState {
   open: boolean
@@ -12,6 +12,8 @@ interface TableDialogState {
   id?: number
 }
 
+type DataChangeListener = () => void
+
 interface DialogContextType {
   // Personne dialog
   personneDialogState: PersonneDialogState
@@ -22,6 +24,10 @@ interface DialogContextType {
   tableDialogState: TableDialogState
   openTableDialog: (id?: number) => void
   closeTableDialog: () => void
+
+  // Data change notifications
+  notifyDataChange: () => void
+  subscribeToDataChange: (listener: DataChangeListener) => () => void
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined)
@@ -33,6 +39,20 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
   const [tableDialogState, setTableDialogState] = useState<TableDialogState>({
     open: false,
   })
+
+  // Data change listeners
+  const listenersRef = useRef<Set<DataChangeListener>>(new Set())
+
+  const notifyDataChange = useCallback(() => {
+    listenersRef.current.forEach((listener) => listener())
+  }, [])
+
+  const subscribeToDataChange = useCallback((listener: DataChangeListener) => {
+    listenersRef.current.add(listener)
+    return () => {
+      listenersRef.current.delete(listener)
+    }
+  }, [])
 
   const openPersonneDialog = useCallback(
     (id?: number, options?: { tableId?: number; conjointOf?: number }) => {
@@ -67,6 +87,8 @@ export function DialogProvider({ children }: { children: React.ReactNode }) {
         tableDialogState,
         openTableDialog,
         closeTableDialog,
+        notifyDataChange,
+        subscribeToDataChange,
       }}
     >
       {children}
