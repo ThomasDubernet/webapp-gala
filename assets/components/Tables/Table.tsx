@@ -565,7 +565,7 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                   Créer une personne
                 </ContextMenuItem>
                 <ContextMenuSeparator />
-                <div className="px-2 py-1 max-h-40 overflow-y-auto">
+                <div className="px-2 py-1 max-h-80 overflow-y-auto">
                   {personnes.length > 0 ? (
                     personnes.map((personne, index) => (
                       <PersonneItem key={index} personne={personne} onEdit={openPersonneDialog} />
