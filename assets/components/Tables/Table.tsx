@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, RefObject, useReducer, useCallback } from 'react'
 import Moveable from 'react-moveable'
-import { MoreHorizontal, Loader2, Check, Users, UserPlus, Pencil, Trash2, Undo2, Redo2 } from 'lucide-react'
+import { Loader2, Check, Users, UserPlus, Pencil, Trash2, Undo2, Redo2 } from 'lucide-react'
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { useDialogs } from '../../contexts/DialogContext'
@@ -771,7 +771,7 @@ function PersonneItem({ personne: { prenom, nom, id, present }, onEdit }: Person
         onClick={() => onEdit(id)}
         className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
       >
-        <MoreHorizontal className="h-4 w-4" />
+        <Pencil className="h-4 w-4" />
       </button>
     </div>
   )
