@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react'
-import { useGetMany } from '../hooks/useGetMany'
-import { usePersonne, useDeletePersonne } from '../hooks/usePersonnes'
-import { apiPost, apiPut } from '../lib/api'
-import { queryClient } from '../lib/query-client'
-import { useDialogs } from '../contexts/DialogContext'
-import type { Personne, Civilite, CategoriePersonne, Table, PersonnePayload } from '../types/api'
+import { useGetMany } from '@/hooks'
+import { useDeletePersonne, usePersonne } from '../hooks/usePersonnes'
+import { apiPost, apiPut } from '@/lib/api'
+import { queryClient } from '@/lib/query-client'
+import { useDialogs } from '@/contexts/DialogContext'
+import type {
+  CategoriePersonne,
+  Civilite,
+  Personne,
+  PersonnePayload,
+  Table,
+} from '../types/api'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -12,14 +18,14 @@ import { Select } from './ui/select'
 import { Textarea } from './ui/textarea'
 import { Checkbox } from './ui/checkbox'
 import { DatePicker } from './ui/date-picker'
-import { ConfirmModal } from './ui/modal'
-import { Save, Loader2, UserPlus, Trash2 } from 'lucide-react'
+import { ConfirmDialog } from './ui/alert-dialog'
+import { Loader2, Save, Trash2, UserPlus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from './ui/dialog'
 
 const PAYMENT_METHODS = [
@@ -32,18 +38,29 @@ const PAYMENT_METHODS = [
 ]
 
 export function PersonneDialog() {
-  const { personneDialogState, closePersonneDialog, openPersonneDialog, notifyDataChange } = useDialogs()
+  const {
+    personneDialogState,
+    closePersonneDialog,
+    openPersonneDialog,
+    notifyDataChange,
+  } = useDialogs()
   const { open, id, tableId, conjointOf } = personneDialogState
   const isNew = !id
   const isConjoint = !!conjointOf
 
   // Reference data
-  const { items: civilites, load: loadCivilites } = useGetMany<Civilite>('civilites')
-  const { items: categories, load: loadCategories } = useGetMany<CategoriePersonne>('categorie_personnes')
+  const { items: civilites, load: loadCivilites } =
+    useGetMany<Civilite>('civilites')
+  const { items: categories, load: loadCategories } =
+    useGetMany<CategoriePersonne>('categorie_personnes')
   const { items: tables, load: loadTables } = useGetMany<Table>('tables')
 
   // Fetch existing personne using TanStack Query
-  const { data: existingPersonne, isLoading: loadingPersonne, error: fetchError } = usePersonne(id)
+  const {
+    data: existingPersonne,
+    isLoading: loadingPersonne,
+    error: fetchError,
+  } = usePersonne(id)
   const deletePersonne = useDeletePersonne()
 
   // Form state
@@ -51,7 +68,9 @@ export function PersonneDialog() {
   const [error, setError] = useState<string | null>(null)
   const [showSmsModal, setShowSmsModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [pendingPayload, setPendingPayload] = useState<PersonnePayload | null>(null)
+  const [pendingPayload, setPendingPayload] = useState<PersonnePayload | null>(
+    null,
+  )
   const [formData, setFormData] = useState<Partial<Personne>>({
     nom: '',
     prenom: '',
@@ -128,7 +147,11 @@ export function PersonneDialog() {
   // Handle fetch error
   useEffect(() => {
     if (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : 'Personne non trouvée')
+      setError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : 'Personne non trouvée',
+      )
     }
   }, [fetchError])
 
@@ -156,13 +179,20 @@ export function PersonneDialog() {
     moyenPaiement: formData.moyenPaiement || null,
     commentaire: formData.commentaire || null,
     present: formData.present || false,
-    civilite: formData.civilite ? `/api/civilites/${formData.civilite.id}` : null,
-    categorie: formData.categorie ? `/api/categorie_personnes/${formData.categorie.id}` : null,
+    civilite: formData.civilite
+      ? `/api/civilites/${formData.civilite.id}`
+      : null,
+    categorie: formData.categorie
+      ? `/api/categorie_personnes/${formData.categorie.id}`
+      : null,
     table: formData.table ? `/api/tables/${formData.table.id}` : null,
   })
 
   // Update presence with SMS via dedicated endpoint
-  const updatePresenceWithSms = async (personneId: number, withSms: boolean) => {
+  const updatePresenceWithSms = async (
+    personneId: number,
+    withSms: boolean,
+  ) => {
     await apiPut(`/api/personnes/${personneId}/update-presence`, {
       present: true,
       withSms,
@@ -170,7 +200,10 @@ export function PersonneDialog() {
   }
 
   // Save and optionally trigger SMS
-  const saveAndTriggerSms = async (payload: PersonnePayload, withSms: boolean) => {
+  const saveAndTriggerSms = async (
+    payload: PersonnePayload,
+    withSms: boolean,
+  ) => {
     setSaving(true)
     setError(null)
 
@@ -288,7 +321,9 @@ export function PersonneDialog() {
       notifyDataChange()
       closePersonneDialog()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
+      setError(
+        err instanceof Error ? err.message : 'Erreur lors de la suppression',
+      )
     } finally {
       setShowDeleteModal(false)
     }
@@ -303,352 +338,410 @@ export function PersonneDialog() {
 
   return (
     <>
-      {/* SMS confirmation modal */}
-      <ConfirmModal
+      {/* SMS confirmation dialog */}
+      <ConfirmDialog
         open={showSmsModal}
-        onClose={() => {
-          setShowSmsModal(false)
-          setPendingPayload(null)
-          setSaving(false)
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowSmsModal(false)
+            setPendingPayload(null)
+            setSaving(false)
+          }
         }}
         onConfirm={() => handleSmsConfirm(true)}
         title="Envoi de SMS"
-        message="Un SMS a déjà été envoyé à cette personne. Voulez-vous renvoyer un SMS ?"
+        description="Un SMS a déjà été envoyé à cette personne. Voulez-vous renvoyer un SMS ?"
         confirmText="Oui, renvoyer"
         cancelText="Non, sans SMS"
         onCancel={() => handleSmsConfirm(false)}
       />
 
-      {/* Delete confirmation modal */}
-      <ConfirmModal
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
         open={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
+        onOpenChange={setShowDeleteModal}
         onConfirm={handleDelete}
         title="Supprimer la personne"
-        message={`Êtes-vous sûr de vouloir supprimer ${formData.prenom}${formData.nom ? ` ${formData.nom}` : ''} ? Cette action est irréversible.`}
+        description={`Êtes-vous sûr de vouloir supprimer ${formData.prenom}${formData.nom ? ` ${formData.nom}` : ''} ? Cette action est irréversible.`}
         confirmText="Supprimer"
         cancelText="Annuler"
-        variant="danger"
+        variant="destructive"
       />
 
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && closePersonneDialog()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{getTitle()}</DialogTitle>
-          <DialogDescription>
-            {isNew ? 'Remplissez les informations pour créer une nouvelle personne.' : 'Modifiez les informations de la personne.'}
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => !isOpen && closePersonneDialog()}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{getTitle()}</DialogTitle>
+            <DialogDescription>
+              {isNew
+                ? 'Remplissez les informations pour créer une nouvelle personne.'
+                : 'Modifiez les informations de la personne.'}
+            </DialogDescription>
+          </DialogHeader>
 
-        {loadingPersonne && id ? (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-                {error}
-              </div>
-            )}
-
-            {/* Identity section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Identité</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="civilite">Civilité *</Label>
-                  <Select
-                    id="civilite"
-                    value={formData.civilite?.id?.toString() || ''}
-                    onChange={(e) => {
-                      const civilite = civilites.find((c) => c.id === parseInt(e.target.value))
-                      handleChange('civilite', civilite)
-                    }}
-                    required
-                  >
-                    <option value="">Choisir</option>
-                    {civilites.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nom}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="nom">Nom *</Label>
-                  <Input
-                    id="nom"
-                    value={formData.nom || ''}
-                    onChange={(e) => handleChange('nom', e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="prenom">Prénom</Label>
-                  <Input
-                    id="prenom"
-                    value={formData.prenom || ''}
-                    onChange={(e) => handleChange('prenom', e.target.value)}
-                  />
-                </div>
-              </div>
+          {loadingPersonne && id ? (
+            <div className="flex items-center justify-center min-h-[200px]">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-
-            {/* Contact section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Contact</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email || ''}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    required
-                  />
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+                  {error}
                 </div>
-                <div>
-                  <Label htmlFor="telephone">Téléphone</Label>
-                  <Input
-                    id="telephone"
-                    value={formData.telephone || ''}
-                    onChange={(e) => handleChange('telephone', e.target.value)}
-                  />
+              )}
+
+              {/* Identity section */}
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Identité
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="civilite">Civilité *</Label>
+                    <Select
+                      id="civilite"
+                      value={formData.civilite?.id?.toString() || ''}
+                      onChange={(e) => {
+                        const civilite = civilites.find(
+                          (c) => c.id === parseInt(e.target.value),
+                        )
+                        handleChange('civilite', civilite)
+                      }}
+                      required
+                    >
+                      <option value="">Choisir</option>
+                      {civilites.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nom}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="nom">Nom *</Label>
+                    <Input
+                      id="nom"
+                      value={formData.nom || ''}
+                      onChange={(e) => handleChange('nom', e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="prenom">Prénom</Label>
+                    <Input
+                      id="prenom"
+                      value={formData.prenom || ''}
+                      onChange={(e) => handleChange('prenom', e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Address section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Adresse</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <Label htmlFor="adresse">Adresse postale</Label>
-                  <Input
-                    id="adresse"
-                    value={formData.adresse || ''}
-                    onChange={(e) => handleChange('adresse', e.target.value)}
-                  />
-                </div>
+              {/* Contact section */}
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Contact
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="codePostal">Code postal</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
-                      id="codePostal"
-                      value={formData.codePostal || ''}
-                      onChange={(e) => handleChange('codePostal', e.target.value)}
+                      id="email"
+                      type="email"
+                      value={formData.email || ''}
+                      onChange={(e) => handleChange('email', e.target.value)}
+                      required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ville">Ville</Label>
+                    <Label htmlFor="telephone">Téléphone</Label>
                     <Input
-                      id="ville"
-                      value={formData.ville || ''}
-                      onChange={(e) => handleChange('ville', e.target.value)}
+                      id="telephone"
+                      value={formData.telephone || ''}
+                      onChange={(e) =>
+                        handleChange('telephone', e.target.value)
+                      }
                     />
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Payment section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Paiement</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <Label htmlFor="montantBillet">Montant du billet</Label>
-                  <Input
-                    id="montantBillet"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.montantBillet ?? ''}
-                    onChange={(e) =>
-                      handleChange('montantBillet', e.target.value ? parseFloat(e.target.value) : undefined)
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="montantPaye">Montant payé</Label>
-                  <Input
-                    id="montantPaye"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="0.00"
-                    value={formData.montantPaye ?? ''}
-                    onChange={(e) =>
-                      handleChange('montantPaye', e.target.value ? parseFloat(e.target.value) : undefined)
-                    }
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dateReglement">Date de paiement</Label>
-                  <DatePicker
-                    id="dateReglement"
-                    value={formData.dateReglement}
-                    onChange={(date) => {
-                      if (date) {
-                        const yyyy = date.getFullYear()
-                        const mm = String(date.getMonth() + 1).padStart(2, '0')
-                        const dd = String(date.getDate()).padStart(2, '0')
-                        handleChange('dateReglement', `${yyyy}-${mm}-${dd}`)
-                      } else {
-                        handleChange('dateReglement', undefined)
-                      }
-                    }}
-                    placeholder="Sélectionner une date"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="moyenPaiement">Moyen de paiement</Label>
-                  <Select
-                    id="moyenPaiement"
-                    value={formData.moyenPaiement || ''}
-                    onChange={(e) => handleChange('moyenPaiement', e.target.value)}
-                  >
-                    <option value="">Choisir</option>
-                    {PAYMENT_METHODS.map((pm) => (
-                      <option key={pm.value} value={pm.value}>
-                        {pm.label}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Assignment section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Affectation</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="categorie">Catégorie</Label>
-                  <Select
-                    id="categorie"
-                    value={formData.categorie?.id?.toString() || ''}
-                    onChange={(e) => {
-                      const categorie = categories.find((c) => c.id === parseInt(e.target.value))
-                      handleChange('categorie', categorie || undefined)
-                    }}
-                  >
-                    <option value="">Choisir une catégorie</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nom}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="table">Table</Label>
-                  <Select
-                    id="table"
-                    value={formData.table?.id?.toString() || ''}
-                    onChange={(e) => {
-                      const table = tables.find((t) => t.id === parseInt(e.target.value))
-                      handleChange('table', table || undefined)
-                    }}
-                  >
-                    <option value="">Choisir une table</option>
-                    {tables.map((t) => {
-                      const occupancy = t.personnes?.length || 0
-                      const isFull = occupancy >= t.nombrePlacesMax
-                      const isCurrentTable = formData.table?.id === t.id
-                      if (isFull && !isCurrentTable) return null
-                      return (
-                        <option key={t.id} value={t.id}>
-                          N°{t.numero} | {t.nom} ({occupancy}/{t.nombrePlacesMax})
-                        </option>
-                      )
-                    })}
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Presence & comment section */}
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-3">Présence et commentaire</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="present"
-                    checked={formData.present || false}
-                    onChange={(e) => handleChange('present', e.target.checked)}
-                  />
-                  <Label htmlFor="present" className="cursor-pointer">
-                    Présent
-                  </Label>
-                </div>
-                <div>
-                  <Label htmlFor="commentaire">Commentaire</Label>
-                  <Textarea
-                    id="commentaire"
-                    rows={3}
-                    value={formData.commentaire || ''}
-                    onChange={(e) => handleChange('commentaire', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex justify-between gap-3 pt-4 border-t border-border">
+              {/* Address section */}
               <div>
-                {!isNew && (
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Adresse
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <Label htmlFor="adresse">Adresse postale</Label>
+                    <Input
+                      id="adresse"
+                      value={formData.adresse || ''}
+                      onChange={(e) => handleChange('adresse', e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="codePostal">Code postal</Label>
+                      <Input
+                        id="codePostal"
+                        value={formData.codePostal || ''}
+                        onChange={(e) =>
+                          handleChange('codePostal', e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="ville">Ville</Label>
+                      <Input
+                        id="ville"
+                        value={formData.ville || ''}
+                        onChange={(e) => handleChange('ville', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment section */}
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Paiement
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="montantBillet">Montant du billet</Label>
+                    <Input
+                      id="montantBillet"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={formData.montantBillet ?? ''}
+                      onChange={(e) =>
+                        handleChange(
+                          'montantBillet',
+                          e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
+                        )
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="montantPaye">Montant payé</Label>
+                    <Input
+                      id="montantPaye"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={formData.montantPaye ?? ''}
+                      onChange={(e) =>
+                        handleChange(
+                          'montantPaye',
+                          e.target.value
+                            ? parseFloat(e.target.value)
+                            : undefined,
+                        )
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="dateReglement">Date de paiement</Label>
+                    <DatePicker
+                      id="dateReglement"
+                      value={formData.dateReglement}
+                      onChange={(date) => {
+                        if (date) {
+                          const yyyy = date.getFullYear()
+                          const mm = String(date.getMonth() + 1).padStart(
+                            2,
+                            '0',
+                          )
+                          const dd = String(date.getDate()).padStart(2, '0')
+                          handleChange('dateReglement', `${yyyy}-${mm}-${dd}`)
+                        } else {
+                          handleChange('dateReglement', undefined)
+                        }
+                      }}
+                      placeholder="Sélectionner une date"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="moyenPaiement">Moyen de paiement</Label>
+                    <Select
+                      id="moyenPaiement"
+                      value={formData.moyenPaiement || ''}
+                      onChange={(e) =>
+                        handleChange('moyenPaiement', e.target.value)
+                      }
+                    >
+                      <option value="">Choisir</option>
+                      {PAYMENT_METHODS.map((pm) => (
+                        <option key={pm.value} value={pm.value}>
+                          {pm.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assignment section */}
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Affectation
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="categorie">Catégorie</Label>
+                    <Select
+                      id="categorie"
+                      value={formData.categorie?.id?.toString() || ''}
+                      onChange={(e) => {
+                        const categorie = categories.find(
+                          (c) => c.id === parseInt(e.target.value),
+                        )
+                        handleChange('categorie', categorie || undefined)
+                      }}
+                    >
+                      <option value="">Choisir une catégorie</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.nom}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="table">Table</Label>
+                    <Select
+                      id="table"
+                      value={formData.table?.id?.toString() || ''}
+                      onChange={(e) => {
+                        const table = tables.find(
+                          (t) => t.id === parseInt(e.target.value),
+                        )
+                        handleChange('table', table || undefined)
+                      }}
+                    >
+                      <option value="">Choisir une table</option>
+                      {tables.map((t) => {
+                        const occupancy = t.personnes?.length || 0
+                        const isFull = occupancy >= t.nombrePlacesMax
+                        const isCurrentTable = formData.table?.id === t.id
+                        if (isFull && !isCurrentTable) return null
+                        return (
+                          <option key={t.id} value={t.id}>
+                            N°{t.numero} | {t.nom} ({occupancy}/
+                            {t.nombrePlacesMax})
+                          </option>
+                        )
+                      })}
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Presence & comment section */}
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Présence et commentaire
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="present"
+                      checked={formData.present || false}
+                      onChange={(e) =>
+                        handleChange('present', e.target.checked)
+                      }
+                    />
+                    <Label htmlFor="present" className="cursor-pointer">
+                      Présent
+                    </Label>
+                  </div>
+                  <div>
+                    <Label htmlFor="commentaire">Commentaire</Label>
+                    <Textarea
+                      id="commentaire"
+                      rows={3}
+                      value={formData.commentaire || ''}
+                      onChange={(e) =>
+                        handleChange('commentaire', e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between gap-3 pt-4 border-t border-border">
+                <div>
+                  {!isNew && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setShowDeleteModal(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Supprimer
+                    </Button>
+                  )}
+                </div>
+                <div className="flex gap-3">
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setShowDeleteModal(true)}
+                    variant="outline"
+                    onClick={closePersonneDialog}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Supprimer
+                    Annuler
                   </Button>
-                )}
-              </div>
-              <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={closePersonneDialog}>
-                Annuler
-              </Button>
-              {isNew && !isConjoint && (
-                <Button type="button" variant="secondary" disabled={saving} onClick={handleSubmitWithConjoint}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Enregistrement...
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Enregistrer avec conjoint
-                    </>
+                  {isNew && !isConjoint && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      disabled={saving}
+                      onClick={handleSubmitWithConjoint}
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Enregistrement...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Enregistrer avec conjoint
+                        </>
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
-              <Button type="submit" disabled={saving}>
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Enregistrement...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Enregistrer
-                  </>
-                )}
-              </Button>
+                  <Button type="submit" disabled={saving}>
+                    {saving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Enregistrer
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
-        )}
-      </DialogContent>
-    </Dialog>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

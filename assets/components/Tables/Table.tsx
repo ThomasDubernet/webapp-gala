@@ -4,7 +4,8 @@ import { Loader2, Check, Users, UserPlus, Pencil, Trash2, Undo2, Redo2 } from 'l
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { useDialogs } from '../../contexts/DialogContext'
-import { Modal, ModalHeader, ModalBody, ConfirmModal } from '../ui/modal'
+import { Modal, ModalHeader, ModalBody } from '../ui/modal'
+import { ConfirmDialog } from '../ui/alert-dialog'
 import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
 import {
@@ -768,15 +769,15 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
           </ModalBody>
         </Modal>
 
-        <ConfirmModal
+        <ConfirmDialog
           open={personneToRemove !== null}
-          onClose={() => setPersonneToRemove(null)}
+          onOpenChange={(open) => !open && setPersonneToRemove(null)}
           onConfirm={handleRemoveFromTable}
           title="Retirer de la table"
-          message={personneToRemove ? `Retirer ${personneToRemove.prenom}${personneToRemove.nom ? ` ${personneToRemove.nom}` : ''} de la table ?` : ''}
+          description={personneToRemove ? `Retirer ${personneToRemove.prenom}${personneToRemove.nom ? ` ${personneToRemove.nom}` : ''} de la table ?` : ''}
           confirmText="Retirer"
           cancelText="Annuler"
-          variant="danger"
+          variant="destructive"
         />
     </>
   )
