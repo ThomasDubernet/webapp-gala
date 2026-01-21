@@ -7,6 +7,8 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
     return (
       <textarea
+        data-1p-ignore
+        autoComplete="off"
         className={cn(
           'flex min-h-[80px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground',
           'placeholder:text-muted-foreground',

@@ -7,7 +7,7 @@ import { apiPut } from '../lib/api';
 import { Badge } from '../components/ui/badge';
 import { Checkbox } from '../components/ui/checkbox';
 import { Button } from '../components/ui/button';
-import { ConfirmModal } from '../components/ui/modal';
+import { ConfirmDialog } from '../components/ui/alert-dialog';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import type { Table, Personne } from '../types/api';
@@ -261,15 +261,15 @@ export function Personnes() {
         </div>
       )}
 
-      <ConfirmModal
+      <ConfirmDialog
         open={personneToDelete !== null}
-        onClose={() => setPersonneToDelete(null)}
+        onOpenChange={(open) => !open && setPersonneToDelete(null)}
         onConfirm={handleDelete}
         title="Supprimer la personne"
-        message={personneToDelete ? `Êtes-vous sûr de vouloir supprimer ${personneToDelete.prenom} ${personneToDelete.nom} ?` : ''}
+        description={personneToDelete ? `Êtes-vous sûr de vouloir supprimer ${personneToDelete.prenom} ${personneToDelete.nom} ?` : ''}
         confirmText="Supprimer"
         cancelText="Annuler"
-        variant="danger"
+        variant="destructive"
       />
     </div>
   );
