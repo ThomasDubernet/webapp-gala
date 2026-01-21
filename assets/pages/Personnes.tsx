@@ -1,22 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Loader2, Plus, Search, Pencil, Users, UserCheck } from 'lucide-react';
-import { useSearchPersonnes, useGetMany } from '../hooks';
+import { Loader2, Plus, Search, Pencil, Trash2, Users, UserCheck } from 'lucide-react';
+import { useSearchPersonnes, useGetMany, useDeletePersonne } from '../hooks';
 import { useDialogs } from '../contexts/DialogContext';
 import { apiPut } from '../lib/api';
 import { Badge } from '../components/ui/badge';
 import { Checkbox } from '../components/ui/checkbox';
 import { Button } from '../components/ui/button';
+import { ConfirmModal } from '../components/ui/modal';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
-import type { Table } from '../types/api';
+import type { Table, Personne } from '../types/api';
 
 export function Personnes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [unassignedOnly, setUnassignedOnly] = useState(false);
   const [updatingPersonId, setUpdatingPersonId] = useState<number | null>(null);
+  const [personneToDelete, setPersonneToDelete] = useState<Personne | null>(null);
   const { openPersonneDialog } = useDialogs();
   const { loading: loadingTables, load: loadTables, items: tables } = useGetMany<Table>('tables');
+  const deletePersonne = useDeletePersonne();
 
   const {
     results: personnes,
@@ -71,6 +74,17 @@ export function Personnes() {
       toast.error(error instanceof Error ? error.message : 'Erreur lors de la mise à jour');
     } finally {
       setUpdatingPersonId(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!personneToDelete) return;
+    try {
+      await deletePersonne.mutateAsync(personneToDelete.id);
+      refreshPersonnes();
+      await loadTables();
+    } finally {
+      setPersonneToDelete(null);
     }
   };
 
@@ -211,10 +225,20 @@ export function Personnes() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button variant="ghost" size="sm" onClick={() => openPersonneDialog(personne.id)}>
-                          <Pencil className="h-3 w-3" />
-                          Modifier
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openPersonneDialog(personne.id)}>
+                            <Pencil className="h-3 w-3" />
+                            Modifier
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setPersonneToDelete(personne)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -236,6 +260,17 @@ export function Personnes() {
           </Button>
         </div>
       )}
+
+      <ConfirmModal
+        open={personneToDelete !== null}
+        onClose={() => setPersonneToDelete(null)}
+        onConfirm={handleDelete}
+        title="Supprimer la personne"
+        message={personneToDelete ? `Êtes-vous sûr de vouloir supprimer ${personneToDelete.prenom} ${personneToDelete.nom} ?` : ''}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        variant="danger"
+      />
     </div>
   );
 }
