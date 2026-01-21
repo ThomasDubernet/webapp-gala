@@ -4,7 +4,7 @@ import { Loader2, Check, Users, UserPlus, Pencil, Trash2, Undo2, Redo2 } from 'l
 import { Personne as SearchPersonne } from '../Search'
 import { useSearchPersonnes } from '../../hooks'
 import { useDialogs } from '../../contexts/DialogContext'
-import { Modal, ModalHeader, ModalBody } from '../ui/modal'
+import { Modal, ModalHeader, ModalBody, ConfirmModal } from '../ui/modal'
 import { Badge } from '../ui/badge'
 import { Input } from '../ui/input'
 import {
@@ -18,7 +18,7 @@ import {
   ContextMenuTrigger,
 } from '../ui/context-menu'
 import { TableToolbar } from './TableToolbar'
-import { apiPatch, apiDelete, apiPost } from '../../lib/api'
+import { apiPatch, apiDelete, apiPost, apiPut } from '../../lib/api'
 import { queryClient } from '../../lib/query-client'
 import type { Table as TableType, Personne as PersonneType, TableShape } from '../../types/api'
 
@@ -194,6 +194,7 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
   const [addingPersonneId, setAddingPersonneId] = useState<number | null>(null)
   const [addedPersonneIds, setAddedPersonneIds] = useState<Set<number>>(new Set())
   const [lastAddedId, setLastAddedId] = useState<number | null>(null)
+  const [personneToRemove, setPersonneToRemove] = useState<PersonneType | null>(null)
 
   const handleOpen = () => setOpen(true)
   const handleClose = () => {
@@ -242,6 +243,21 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
       alert(`Erreur: ${error instanceof Error ? error.message : String(error)}`)
     } finally {
       setAddingPersonneId(null)
+    }
+  }
+
+  const handleRemoveFromTable = async () => {
+    if (!personneToRemove) return
+    try {
+      await apiPut(`/api/personnes/${personneToRemove.id}`, { table: null })
+      load()
+      queryClient.invalidateQueries({ queryKey: ['personnes'] })
+      queryClient.invalidateQueries({ queryKey: ['tables'] })
+    } catch (error) {
+      console.error('Erreur réseau:', error)
+      alert(`Erreur: ${error instanceof Error ? error.message : String(error)}`)
+    } finally {
+      setPersonneToRemove(null)
     }
   }
 
@@ -568,7 +584,7 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
                 <div className="px-2 py-1 max-h-80 overflow-y-auto">
                   {personnes.length > 0 ? (
                     personnes.map((personne, index) => (
-                      <PersonneItem key={index} personne={personne} onEdit={openPersonneDialog} />
+                      <PersonneItem key={index} personne={personne} onEdit={openPersonneDialog} onRemove={setPersonneToRemove} />
                     ))
                   ) : (
                     <p className="px-2 py-1 text-sm text-muted-foreground">Aucune personne</p>
@@ -751,6 +767,17 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
             </div>
           </ModalBody>
         </Modal>
+
+        <ConfirmModal
+          open={personneToRemove !== null}
+          onClose={() => setPersonneToRemove(null)}
+          onConfirm={handleRemoveFromTable}
+          title="Retirer de la table"
+          message={personneToRemove ? `Retirer ${personneToRemove.prenom}${personneToRemove.nom ? ` ${personneToRemove.nom}` : ''} de la table ?` : ''}
+          confirmText="Retirer"
+          cancelText="Annuler"
+          variant="danger"
+        />
     </>
   )
 }
@@ -758,21 +785,32 @@ function Table({ table, load, planSize: baseSize, planRef, isSelected, onSelect,
 interface PersonneItemProps {
   personne: PersonneType
   onEdit: (id: number) => void
+  onRemove: (personne: PersonneType) => void
 }
 
-function PersonneItem({ personne: { prenom, nom, id, present }, onEdit }: PersonneItemProps) {
+function PersonneItem({ personne, onEdit, onRemove }: PersonneItemProps) {
+  const { prenom, nom, id, present } = personne
   return (
     <div className="flex items-center justify-between w-full py-1">
       <p className={`text-sm ${present ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
-        {prenom !== null ? prenom : null} {nom}
+        {prenom} {nom}
       </p>
-      <button
-        type="button"
-        onClick={() => onEdit(id)}
-        className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
-      >
-        <Pencil className="h-4 w-4" />
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => onEdit(id)}
+          className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onRemove(personne)}
+          className="p-1 text-destructive hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   )
 }
