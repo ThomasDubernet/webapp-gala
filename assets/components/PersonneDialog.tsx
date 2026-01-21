@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useGetMany } from '../hooks/useGetMany'
-import { usePersonne } from '../hooks/usePersonnes'
+import { usePersonne, useDeletePersonne } from '../hooks/usePersonnes'
 import { apiPost, apiPut } from '../lib/api'
 import { queryClient } from '../lib/query-client'
 import { useDialogs } from '../contexts/DialogContext'
@@ -13,7 +13,7 @@ import { Textarea } from './ui/textarea'
 import { Checkbox } from './ui/checkbox'
 import { DatePicker } from './ui/date-picker'
 import { ConfirmModal } from './ui/modal'
-import { Save, Loader2, UserPlus } from 'lucide-react'
+import { Save, Loader2, UserPlus, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -44,11 +44,13 @@ export function PersonneDialog() {
 
   // Fetch existing personne using TanStack Query
   const { data: existingPersonne, isLoading: loadingPersonne, error: fetchError } = usePersonne(id)
+  const deletePersonne = useDeletePersonne()
 
   // Form state
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showSmsModal, setShowSmsModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [pendingPayload, setPendingPayload] = useState<PersonnePayload | null>(null)
   const [formData, setFormData] = useState<Partial<Personne>>({
     nom: '',
@@ -279,6 +281,19 @@ export function PersonneDialog() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleDelete = async () => {
+    if (!id) return
+    try {
+      await deletePersonne.mutateAsync(id)
+      notifyDataChange()
+      closePersonneDialog()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
+    } finally {
+      setShowDeleteModal(false)
+    }
+  }
+
   const getTitle = () => {
     if (isNew) {
       return isConjoint ? 'Ajouter un conjoint' : 'Nouvelle personne'
@@ -302,6 +317,18 @@ export function PersonneDialog() {
         confirmText="Oui, renvoyer"
         cancelText="Non, sans SMS"
         onCancel={() => handleSmsConfirm(false)}
+      />
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Supprimer la personne"
+        message={`Êtes-vous sûr de vouloir supprimer ${formData.prenom}${formData.nom ? ` ${formData.nom}` : ''} ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
+        variant="danger"
       />
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && closePersonneDialog()}>
@@ -570,7 +597,21 @@ export function PersonneDialog() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+            <div className="flex justify-between gap-3 pt-4 border-t border-border">
+              <div>
+                {!isNew && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Supprimer
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-3">
               <Button type="button" variant="outline" onClick={closePersonneDialog}>
                 Annuler
               </Button>
@@ -602,6 +643,7 @@ export function PersonneDialog() {
                   </>
                 )}
               </Button>
+              </div>
             </div>
           </form>
         )}
